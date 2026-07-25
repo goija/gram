@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX 13:20 & Maya Long Count Calculator</title>
+    <style>
+        :root {
+            --bg-base: #080a0f;
+            --bg-panel: #111622;
+            --bg-card: #181f30;
+            --cyan-glow: #00f0ff;
+            --gold-glow: #ffd700;
+            --red-alert: #ff3366;
+            --text-main: #e0e6ed;
+            --text-dim: #8892b0;
+            --border-color: #263147;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--bg-panel);
+            border: 1px solid var(--cyan-glow);
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.15);
+        }
+
+        h1 {
+            color: var(--cyan-glow);
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 0;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        .controls {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 6px;
+            border-left: 4px solid var(--gold-glow);
+            margin-bottom: 25px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        label {
+            font-weight: bold;
+            color: var(--gold-glow);
+            font-size: 1.1em;
+        }
+
+        input[type="date"] {
+            background: #080a0f;
+            border: 1px solid var(--cyan-glow);
+            color: var(--cyan-glow);
+            padding: 10px 15px;
+            font-family: inherit;
+            font-size: 1.1em;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-today {
+            background: var(--cyan-glow);
+            color: #000;
+            border: none;
+            padding: 10px 15px;
+            font-weight: bold;
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: 0.2s;
+        }
+
+        .btn-today:hover {
+            background: var(--gold-glow);
+            box-shadow: 0 0 10px var(--gold-glow);
+        }
+
+        .grid-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 18px;
+            border-radius: 6px;
+            position: relative;
+        }
+
+        .card h3 {
+            margin: 0 0 10px 0;
+            color: var(--text-dim);
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .card .value {
+            font-size: 1.6em;
+            font-weight: bold;
+            color: var(--gold-glow);
+        }
+
+        .card .subvalue {
+            font-size: 0.9em;
+            color: var(--cyan-glow);
+            margin-top: 5px;
+        }
+
+        .long-count-box {
+            background: #000;
+            border: 1px solid var(--gold-glow);
+            padding: 20px;
+            text-align: center;
+            border-radius: 6px;
+            margin-bottom: 25px;
+        }
+
+        .lc-title {
+            color: var(--text-dim);
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .lc-number {
+            font-size: 2.8em;
+            color: var(--cyan-glow);
+            font-weight: bold;
+            letter-spacing: 4px;
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+        }
+
+        .lc-units {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            font-size: 0.8em;
+            color: var(--gold-glow);
+            margin-top: 5px;
+        }
+
+        .status-panel {
+            background: #080a0f;
+            border-left: 4px solid var(--cyan-glow);
+            padding: 15px;
+            border-radius: 4px;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+        
+        .highlight {
+            color: var(--gold-glow);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>VORTEX & Maya Synchronometer</h1>
+    
+    <div class="controls">
+        <div>
+            <label for="datePicker">Selecteer Datum:</label>
+            <input type="date" id="datePicker">
+        </div>
+        <button class="btn-today" onclick="setToday()">Zet op Vandaag</button>
+    </div>
+
+    <div class="long-count-box">
+        <div class="lc-title">MAYA LANGE TELLING (LONG COUNT - GMT 584.283)</div>
+        <div id="longCountDisplay" class="lc-number">13.0.0.0.0</div>
+        <div class="lc-units">
+            <span>B'ak'tun</span> • <span>K'atun</span> • <span>Tun</span> • <span>Winal</span> • <span>K'in</span>
+        </div>
+    </div>
+
+    <div class="grid-results">
+        <div class="card">
+            <h3>Tzolkin (13:20 Frequentie)</h3>
+            <div id="tzolkinDisplay" class="value">-</div>
+            <div id="kinDisplay" class="subvalue">Kin: -</div>
+        </div>
+        <div class="card">
+            <h3>Haab (Zonnejaar Cyclus)</h3>
+            <div id="haabDisplay" class="value">-</div>
+            <div id="haabSub" class="subvalue">365-Dagen Ritmiek</div>
+        </div>
+        <div class="card">
+            <h3>13-Maan Kalender</h3>
+            <div id="moonDisplay" class="value">-</div>
+            <div id="mod21Display" class="subvalue">Mod 21: -</div>
+        </div>
+    </div>
+
+    <div id="statusPanel" class="status-panel">
+        <span id="statusText">Berekening wordt geladen...</span>
+    </div>
+</div>
+
+<script>
+    // 20 Zonnezegels (Tzolkin Day Names)
+    const tzolkinNames = [
+        "Ajaw (Zon)", "Imix (Draak)", "Ik' (Wind)", "Ak'b'al (Nacht)", "K'an (Zaad)", 
+        "Chikchan (Slang)", "Kimi (Dood)", "Manik' (Hert)", "Lamat (Ster)", "Muluk (Water)", 
+        "Ok (Hond)", "Chuwen (Aap)", "Eb' (Mens)", "B'en (Hemelloper)", "Ix (Tovenaar)", 
+        "Men (Adelaar)", "K'ib' (Krijger)", "Kab'an (Aarde)", "Etz'nab' (Spiegel)", "Kawak (Storm)"
+    ];
+
+    // 19 Maanden van de Haab (18x20 + 5 Wayeb)
+    const haabMonths = [
+        "Pop", "Wo'", "Sip", "Sotz'", "Sek", "Xul", "Yaxk'in", "Mol", "Ch'en", "Yax", 
+        "Sak'", "Keh", "Mak", "K'ank'in", "Muwan", "Pax", "K'ayab", "Kumk'u", "Wayeb'"
+    ];
+
+    function getJDN(year, month, day) {
+        // Gregoriaanse naar Julian Day Number (JDN) algoritme
+        if (month <= 2) {
+            year -= 1;
+            month += 12;
+        }
+        const A = Math.floor(year / 100);
+        const B = 2 - A + Math.floor(A / 4);
+        return Math.floor(365.25 * (year + 4716)) + Math.floor(30.6001 * (month + 1)) + day + B - 1524.5;
+    }
+
+    function calculateMayaDate(dateObj) {
+        const year = dateObj.getFullYear();
+        const month = dateObj.getMonth() + 1;
+        const day = dateObj.getDate();
+
+        // 1. Bereken JDN en het verstreken aantal dagen sinds Maya Nulpunt (GMT 584283)
+        const jdn = getJDN(year, month, day);
+        const mayaDays = Math.round(jdn - 584283);
+
+        // 2. Lange Telling (Long Count)
+        let d = mayaDays;
+        const baktun = Math.floor(d / 144000);
+        d %= 144000;
+        const katun = Math.floor(d / 7200);
+        d %= 7200;
+        const tun = Math.floor(d / 360);
+        d %= 360;
+        const winal = Math.floor(d / 20);
+        const kin = d % 20;
+
+        document.getElementById('longCountDisplay').innerText = `${baktun}.${katun}.${tun}.${winal}.${kin}`;
+
+        // 3. Tzolkin (13 Tonen, 20 Zegels)
+        const tzolkinTone = ((mayaDays + 3) % 13) + 1;
+        const tzolkinNameIndex = (mayaDays + 19) % 20;
+        const tzolkinName = tzolkinNames[tzolkinNameIndex];
+        const kinNumber = ((mayaDays + 159) % 260) + 1;
+
+        document.getElementById('tzolkinDisplay').innerText = `${tzolkinTone} ${tzolkinName.split(' ')[0]}`;
+        document.getElementById('kinDisplay').innerText = `Kin ${kinNumber}: ${tzolkinName}`;
+
+        // 4. Haab (365 Dagen)
+        const haabDays = (mayaDays + 348) % 365;
+        const haabMonthIndex = Math.floor(haabDays / 20);
+        const haabDay = haabDays % 20;
+        const haabMonthName = haabMonths[haabMonthIndex];
+        
+        document.getElementById('haabDisplay').innerText = `${haabDay} ${haabMonthName}`;
+        document.getElementById('haabSub').innerText = haabMonthIndex === 18 ? "⚠️ WAYEB (5 Rustdagen)" : `Maanhuis cyclus ${haabMonthIndex + 1}/19`;
+
+        // 5. 13-Maan Kalender & VORTEX Modulo 21
+        const startOfYear = new Date(year, 6, 26); // 26 juli is start van het jaar
+        if (dateObj < startOfYear) startOfYear.setFullYear(year - 1);
+        
+        const diffTime = Math.abs(dateObj - startOfYear);
+        let dayOfYear = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        
+        // 25 Juli is Day Out of Time
+        if (month === 7 && day === 25) dayOfYear = 365;
+
+        if (dayOfYear === 365) {
+            document.getElementById('moonDisplay').innerText = "Day Out of Time";
+            document.getElementById('mod21Display').innerText = "Restwaarde 1 (Nulpunt)";
+            document.getElementById('statusText').innerHTML = 
+                `STATUS: <span class="highlight">GALACTISCHE PAUZE (25 JULI)</span>. De 364 dagen van het zonnejaar zijn voltooid. De overtollige energie wordt op Index 13 geabsorbeerd door het Modulo 21 filter. Pegasus staat in het Oosten om 23:00, wachtend op de rotatie naar de Draak om 24:00.`;
+        } else {
+            const moonNum = Math.ceil(dayOfYear / 28);
+            const moonDay = ((dayOfYear - 1) % 28) + 1;
+            const mod21 = dayOfYear % 21 || 21;
+
+            document.getElementById('moonDisplay').innerText = `Maan ${moonNum}, Dag ${moonDay}`;
+            document.getElementById('mod21Display').innerText = `Mod 21: ${mod21} (Dag ${dayOfYear}/365)`;
+            
+            document.getElementById('statusText').innerHTML = 
+                `STATUS: <span class="highlight">13:20 HARMONISCHE EXPANSIE</span>. Het systeem bevindt zich in Maan ${moonNum} en bouwt kinetische energie op binnen de 13x18 VORTEX-matrix. Modulo 21-resonate is actief op cycluswaarde ${mod21}.`;
+        }
+    }
+
+    function setToday() {
+        const today = new Date();
+        const dateString = today.toISOString().split('T')[0];
+        document.getElementById('datePicker').value = dateString;
+        calculateMayaDate(today);
+    }
+
+    document.getElementById('datePicker').addEventListener('change', (e) => {
+        if (!e.target.value) return;
+        const selectedDate = new Date(e.target.value);
+        calculateMayaDate(selectedDate);
+    });
+
+    // Start direct op vandaag
+    setToday();
+</script>
+
+</body>
+</html>
