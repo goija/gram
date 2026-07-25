@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX Synchronometer & Modulo 21 Resonator</title>
+    <style>
+        :root {
+            --bg-color: #0f111a;
+            --panel-bg: #1a1e29;
+            --cyan-glow: #00f0ff;
+            --yellow-glow: #ffd700;
+            --text-main: #e0e6ed;
+            --text-dim: #8892b0;
+            --accent-red: #ff3366;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .dashboard {
+            width: 100%;
+            max-width: 900px;
+            background: var(--panel-bg);
+            border: 1px solid var(--cyan-glow);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
+            border-radius: 8px;
+            padding: 25px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--cyan-glow);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 0;
+            border-bottom: 1px dashed var(--text-dim);
+            padding-bottom: 15px;
+        }
+
+        .controls {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--yellow-glow);
+        }
+
+        label {
+            font-weight: bold;
+            color: var(--yellow-glow);
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--cyan-glow);
+            cursor: pointer;
+        }
+
+        .time-selector {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            gap: 10px;
+        }
+
+        button {
+            flex: 1;
+            background: #232a3b;
+            color: var(--text-main);
+            border: 1px solid var(--text-dim);
+            padding: 10px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        button.active, button:hover {
+            background: var(--cyan-glow);
+            color: #000;
+            border-color: var(--cyan-glow);
+            box-shadow: 0 0 10px var(--cyan-glow);
+        }
+
+        .grid-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .data-card {
+            background: #141722;
+            border: 1px solid #2d3548;
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        .data-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 0.9em;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+
+        .data-value {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: var(--yellow-glow);
+        }
+
+        .status-panel {
+            background: #0a0c12;
+            border: 1px solid var(--accent-red);
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+
+        .status-panel.reset-active {
+            border-color: var(--cyan-glow);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+        }
+
+        .status-title {
+            color: var(--accent-red);
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .reset-active .status-title {
+            color: var(--cyan-glow);
+        }
+
+        .matrix-visualizer {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(18, 1fr);
+            gap: 3px;
+            background: #000;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #333;
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            background: #1a1e29;
+            border-radius: 2px;
+            transition: background 0.3s;
+        }
+
+        .cell.active {
+            background: var(--yellow-glow);
+            box-shadow: 0 0 5px var(--yellow-glow);
+        }
+
+        .cell.portal {
+            background: var(--cyan-glow);
+            box-shadow: 0 0 8px var(--cyan-glow);
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <h1>VORTEX 13:20 Synchronometer</h1>
+    
+    <div class="controls">
+        <label id="dayLabel" for="dayInput">Dag van het Jaar: 365 (25 Juli - Day Out of Time)</label>
+        <input type="range" id="dayInput" min="1" max="365" value="365">
+        
+        <div class="time-selector">
+            <button class="time-btn active" data-time="default">Standaard / Overdag</button>
+            <button class="time-btn" data-time="2300">23:00 (Pegasus)</button>
+            <button class="time-btn" data-time="2400">24:00 (De Draak)</button>
+        </div>
+    </div>
+
+    <div class="grid-display">
+        <div class="data-card">
+            <h3>13-Maan Kalender</h3>
+            <div id="moonDisplay" class="data-value">Day Out of Time</div>
+        </div>
+        <div class="data-card">
+            <h3>Modulo 21 Resonator</h3>
+            <div id="modDisplay" class="data-value">Restwaarde: 1</div>
+        </div>
+        <div class="data-card">
+            <h3>Actieve Vector</h3>
+            <div id="vectorDisplay" class="data-value">Index 13 (Nulpunt)</div>
+        </div>
+    </div>
+
+    <div id="statusPanel" class="status-panel reset-active">
+        <div id="statusTitle" class="status-title">STATUS: GALACTISCHE PAUZE (NULPUNT)</div>
+        <div id="statusDesc">De 364 dagen van kinetische opbouw zijn voltooid. Het systeem absorbeert de torsie via het Modulo 21 filter op Index 13. Wachtende op ruimtelijke uitlijning.</div>
+    </div>
+
+    <label style="margin-top: 20px; font-size: 0.8em; text-align: center;">18x13 MATRIX ROUTING VISUALIZER (RULE 232)</label>
+    <div id="matrixGrid" class="matrix-visualizer"></div>
+</div>
+
+<script>
+    const dayInput = document.getElementById('dayInput');
+    const dayLabel = document.getElementById('dayLabel');
+    const moonDisplay = document.getElementById('moonDisplay');
+    const modDisplay = document.getElementById('modDisplay');
+    const vectorDisplay = document.getElementById('vectorDisplay');
+    const statusPanel = document.getElementById('statusPanel');
+    const statusTitle = document.getElementById('statusTitle');
+    const statusDesc = document.getElementById('statusDesc');
+    const matrixGrid = document.getElementById('matrixGrid');
+    const timeButtons = document.querySelectorAll('.time-btn');
+
+    let currentTimeState = 'default';
+
+    // Genereer 18x13 Matrix Grid (234 cellen)
+    for (let i = 0; i < 234; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.id = `cell-${i}`;
+        matrixGrid.appendChild(cell);
+    }
+
+    function updateCalculator() {
+        const day = parseInt(dayInput.value);
+        let dateStr = "";
+        
+        // Simpele datum mapping vanaf 26 juli (Dag 1) tot 25 juli (Dag 365)
+        if (day === 365) {
+            dateStr = "25 Juli (Day Out of Time)";
+        } else if (day === 1) {
+            dateStr = "26 Juli (Galactisch Nieuwjaar)";
+        } else {
+            dateStr = `Dag ${day} van de Cyclus`;
+        }
+
+        dayLabel.innerText = `Selectie: ${dateStr} [Dag ${day}/365]`;
+
+        // 13-Maan Kalender Berekening
+        if (day === 365) {
+            moonDisplay.innerText = "Day Out of Time";
+            vectorDisplay.innerText = "Index 13 (Nulpunt)";
+        } else {
+            const moon = Math.ceil(day / 28);
+            const moonDay = ((day - 1) % 28) + 1;
+            moonDisplay.innerText = `Maan ${moon}, Dag ${moonDay}`;
+            vectorDisplay.innerText = `Kin Expansie (${Math.round((day/364)*100)}%)`;
+        }
+
+        // Modulo 21 Resonator & Restwaarde
+        const mod21 = day % 21;
+        if (day === 365) {
+            modDisplay.innerText = "Restwaarde: 1 (Reset)";
+        } else {
+            modDisplay.innerText = `Mod 21: ${mod21 === 0 ? 21 : mod21}`;
+        }
+
+        // Routing & Status Systeemgedrag
+        updateSystemState(day);
+        renderMatrix(day);
+    }
+
+    function updateSystemState(day) {
+        statusPanel.className = 'status-panel';
+        
+        if (day === 365) {
+            statusPanel.classList.add('reset-active');
+            if (currentTimeState === '2300') {
+                statusTitle.innerText = "STATUS: 23:00 - RUIMTELIJKE VERANKERING";
+                statusDesc.innerText = "Pegasus (Markab & Scheat - Maanhuis 13) staat in het Oosten. De ruimtelijke coördinaten worden strakgetrokken voor de 90-graden rotatie.";
+                vectorDisplay.innerText = "Pegasus (Maanhuis 13)";
+            } else if (currentTimeState === '2400') {
+                statusTitle.innerText = "STATUS: 24:00 - HET UUR VAN DE DRAAK";
+                statusDesc.innerText = "Geometrische rotatie voltooid (90 graden kanteling). Hexagram 5 (Wachten/Voeding). Het systeem reset via Index 13 naar Restwaarde 1 voor het nieuwe octaaf.";
+                vectorDisplay.innerText = "Azuurblauwe Draak";
+                modDisplay.innerText = "Restwaarde: 1 (OCTAAF RESET)";
+            } else {
+                statusTitle.innerText = "STATUS: GALACTISCHE PAUZE (OVERDAG)";
+                statusDesc.innerText = "De 364 dagen van kinetische opbouw zijn voltooid ($13 \\times 28 = 364$). Het systeem absorbeert de torsie via het Modulo 21 filter op Index 13.";
+            }
+        } else if (day === 1) {
+            statusTitle.innerText = "STATUS: 26 JULI - GALACTISCH NIEUWJAAR";
+            statusDesc.innerText = "De cyclus opent in een fonkelnieuw octaaf. De Azuurblauwe Draak initieert als hout-element de actieve scheppingskracht voor de komende 364 dagen.";
+            statusPanel.classList.add('reset-active');
+        } else {
+            statusTitle.innerText = "STATUS: KINETISCHE OPBOUW (12:60 FILTER ACTIEF)";
+            statusDesc.innerText = "De 13-Maan synchronometer bouwt de kinetische energie op richting de maximale uitdijing van de Feniks (Index 169).";
+        }
+    }
+
+    function renderMatrix(day) {
+        // Reset grid
+        document.querySelectorAll('.cell').forEach(c => {
+            c.className = 'cell';
+        });
+
+        if (day === 365) {
+            if (currentTimeState === '2300') {
+                // Activeer Maanhuis 13 patroon (Pegasus - Oosten)
+                for(let i = 0; i < 234; i += 13) document.getElementById(`cell-${i}`).classList.add('portal');
+            } else if (currentTimeState === '2400') {
+                // Exacte reset: Modulo 21 lijnen & Index 13
+                for(let i = 0; i < 234; i += 21) document.getElementById(`cell-${i}`).classList.add('active');
+                document.getElementById('cell-13').classList.add('portal');
+                document.getElementById('cell-169').classList.add('portal');
+            } else {
+                // Absorptie patroon (Centrum indexen)
+                [110, 111, 112, 128, 129, 130].forEach(id => {
+                    if(document.getElementById(`cell-${id}`)) document.getElementById(`cell-${id}`).classList.add('portal');
+                });
+            }
+        } else {
+            // Normale opbouw gebaseerd op dag van het jaar
+            const activeCount = Math.floor((day / 364) * 234);
+            for(let i = 0; i < activeCount; i++) {
+                if (i % 21 === 0) {
+                    document.getElementById(`cell-${i}`).classList.add('portal');
+                } else if (i % 2 === 0) {
+                    document.getElementById(`cell-${i}`).classList.add('active');
+                }
+            }
+        }
+    }
+
+    timeButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            timeButtons.forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            currentTimeState = e.target.getAttribute('data-time');
+            updateCalculator();
+        });
+    });
+
+    dayInput.addEventListener('input', () => {
+        // Als we schuiven en het is niet dag 365, zet tijdrekening terug naar standaard
+        if (parseInt(dayInput.value) !== 365 && currentTimeState !== 'default') {
+            timeButtons.forEach(b => b.classList.remove('active'));
+            timeButtons[0].classList.add('active');
+            currentTimeState = 'default';
+        }
+        updateCalculator();
+    });
+
+    // Initialiseer bij start
+    updateCalculator();
+</script>
+
+</body>
+</html>
