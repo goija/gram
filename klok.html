@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX - De Wiskundige 181-Klok & Kinetische Resonator</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #111827;
+            --card-border: #1f2937;
+            --accent-gold: #facc15;
+            --accent-green: #10b981;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --btn-bg: #1f2937;
+            --btn-hover: #374151;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        h1, h2, h3 {
+            color: var(--accent-gold);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-box {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--card-border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .stat-value.gold { color: var(--accent-gold); }
+        .stat-value.purple { color: var(--accent-purple); }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        button {
+            background-color: var(--btn-bg);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+            padding: 0.625rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        button:hover {
+            background-color: var(--btn-hover);
+            border-color: var(--text-muted);
+        }
+
+        button.outline-gold {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+
+        button.outline-purple {
+            border-color: var(--accent-purple);
+            color: var(--accent-purple);
+        }
+
+        .console-screen {
+            background-color: rgba(0, 0, 0, 0.6);
+            border-left: 4px solid var(--accent-green);
+            padding: 1.25rem;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 1.25rem 0;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            color: var(--accent-green);
+            border-radius: 0 0.375rem 0.375rem 0;
+            word-break: break-all;
+        }
+
+        .visualizer-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 0.5rem;
+            border: 1px dashed var(--card-border);
+        }
+
+        svg {
+            max-width: 320px;
+            height: auto;
+            overflow: visible;
+        }
+
+        .clock-ring {
+            fill: none;
+            stroke: var(--card-border);
+            stroke-width: 4;
+        }
+
+        .node-circle {
+            fill: var(--card-bg);
+            stroke: var(--text-muted);
+            stroke-width: 2;
+            transition: all 0.3s ease;
+        }
+
+        .node-text {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            font-weight: bold;
+            fill: var(--text-main);
+            text-anchor: middle;
+            dominant-baseline: central;
+        }
+
+        .node-active .node-circle {
+            fill: var(--accent-gold);
+            stroke: #fff;
+            stroke-width: 4;
+            filter: drop-shadow(0 0 8px var(--accent-gold));
+        }
+
+        .node-active .node-text {
+            fill: #000;
+        }
+
+        .table-container {
+            max-height: 240px;
+            overflow-y: auto;
+            margin-top: 1rem;
+            border: 1px solid var(--card-border);
+            border-radius: 0.375rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        th {
+            background-color: rgba(0, 0, 0, 0.5);
+            color: var(--accent-gold);
+            position: sticky;
+            top: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- Hoofdcard: De Wiskundige 181-Klok & 6-Staps Cyclus -->
+    <div class="card">
+        <h2>VORTEX - Wiskundige 181-Klok & Zespuntige Symmetrie</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;">
+            Implementatie van de hexagonaal verankerde <strong>181-klok</strong> ($n=6$, $3! = 6$) en de modulaire doubling-cyclus <strong>1-2-4-8-7-5</strong> (Modulo 9 / negenproef). De stator-waarde <strong>9</strong> fungeert als het onzichtbare coherence basin.
+        </p>
+
+        <div class="grid-3">
+            <div class="stat-box">
+                <div class="stat-label">Huidige Macht ($2^n$)</div>
+                <div class="stat-value gold" id="clock-power">2<sup>0</sup> = 1</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Digitale Wortel (Mod 9)</div>
+                <div class="stat-value purple" id="clock-root">1</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Hexagonale Index ($n=6$)</div>
+                <div class="stat-value" style="color: var(--accent-green);" id="clock-step">Stap 1 / 6</div>
+            </div>
+        </div>
+
+        <!-- SVG Zespuntige Klok Visualisatie -->
+        <div class="visualizer-container">
+            <svg viewBox="0 0 300 300">
+                <circle cx="150" cy="150" r="110" class="clock-ring" />
+                
+                <!-- Zespuntige stervorm / verbindingen -->
+                <polygon points="150,40 245,95 245,205 150,260 55,205 55,95" fill="none" stroke="rgba(59, 130, 246, 0.25)" stroke-width="2" />
+
+                <!-- Nodes op de 6-puntige ring (gebaseerd op 1-2-4-8-7-5 volgorde posities of hexagram matrix) -->
+                <!-- Positie 1 (Top: 150, 40) -->
+                <g id="node-pos-1" transform="translate(150, 40)"><circle class="node-circle" r="20"/><text class="node-text" id="txt-pos-1">1</text></g>
+                <!-- Positie 2 (Rechtsboven: 245, 95) -->
+                <g id="node-pos-2" transform="translate(245, 95)"><circle class="node-circle" r="20"/><text class="node-text" id="txt-pos-2">2</text></g>
+                <!-- Positie 3 (Rechtsonder: 245, 205) -->
+                <g id="node-pos-3" transform="translate(245, 205)"><circle class="node-circle" r="20"/><text class="node-text" id="txt-pos-3">4</text></g>
+                <!-- Positie 4 (Onder: 150, 260) -->
+                <g id="node-pos-4" transform="translate(150, 260)"><circle class="node-circle" r="20"/><text class="node-text" id="txt-pos-4">8</text></g>
+                <!-- Positie 5 (Linksonder: 55, 205) -->
+                <g id="node-pos-5" transform="translate(55, 205)"><circle class="node-circle" r="20"/><text class="node-text" id="txt-pos-5">7</text></g>
+                <!-- Positie 6 (Linksboven: 55, 95) -->
+                <g id="node-pos-6" transform="translate(55, 95)"><circle class="node-circle" r="20"/><text class="node-text" id="txt-pos-6">5</text></g>
+            </svg>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">
+                * De 181-klok visualisator toont de iteratieve voortgang door het hexagonale veld.
+            </div>
+        </div>
+
+        <div class="console-screen" id="clock-console">
+            > Klok geïnitialiseerd op basisingang $2^0 = 1$. Wacht op puls...
+        </div>
+
+        <div class="btn-group">
+            <button class="outline-purple" onclick="clockStep(-1)">Vorige Stap</button>
+            <button class="outline-gold" onclick="clockStep(1)">Puls Klok ($2^{n+1}$)</button>
+            <button onclick="toggleAutoClock()">Auto-Tick Loop</button>
+            <button onclick="resetClock()">Reset Klok</button>
+        </div>
+
+        <!-- Tabel met machten van 2 en digitale wortels -->
+        <div class="table-container">
+            <table id="clock-table">
+                <thead>
+                    <tr>
+                        <th>Macht ($n$)</th>
+                        <th>Waarde ($2^n$)</th>
+                        <th>Digitale Wortel (Mod 9)</th>
+                        <th>Hexagonale Fase</th>
+                    </tr>
+                </thead>
+                <tbody id="clock-table-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // De vaste 6-staps volgorde van het doubling circuit
+    const vortexSequence = [1, 2, 4, 8, 7, 5];
+    let clockPower = 0;
+    let autoClockInterval = null;
+
+    function computeDigitalRoot(n) {
+        let val = BigInt(2) ** BigInt(n);
+        let valStr = val.toString();
+        let currentStr = valStr;
+        while (currentStr.length > 1) {
+            let sum = 0;
+            for (let char of currentStr) sum += parseInt(char);
+            currentStr = sum.toString();
+        }
+        return { value: valStr, root: parseInt(currentStr) };
+    }
+
+    function initClockTable() {
+        const tbody = document.getElementById("clock-table-body");
+        tbody.innerHTML = "";
+        for (let i = 0; i <= 24; i++) {
+            let res = computeDigitalRoot(i);
+            let seqIndex = (i % 6);
+            let tr = document.createElement("tr");
+            tr.id = `row-clock-${i}`;
+            tr.innerHTML = `
+                <td>2<sup>${i}</sup></td>
+                <td style="color: var(--accent-gold);">${res.value.length > 10 ? res.value.substring(0, 8) + '...' : res.value}</td>
+                <td style="font-weight: bold; color: var(--accent-purple);">${res.root}</td>
+                <td>Stap ${(i % 6) + 1} (Waarde: ${vortexSequence[seqIndex]})</td>
+            `;
+            tbody.appendChild(tr);
+        }
+    }
+
+    function updateClockDisplay() {
+        let res = computeDigitalRoot(clockPower);
+        let stepIndex = clockPower % 6;
+        let currentVal = vortexSequence[stepIndex];
+
+        document.getElementById("clock-power").innerHTML = `2<sup>${clockPower}</sup> = ${res.value.length > 8 ? res.value.substring(0, 6) + '...' : res.value}`;
+        document.getElementById("clock-root").innerText = res.root;
+        document.getElementById("clock-step").innerText = `Stap ${stepIndex + 1} / 6`;
+
+        document.getElementById("clock-console").innerHTML = 
+            `> Klokslag n=${clockPower} | Waarde: 2^${clockPower} | Digital Root: <strong>${res.root}</strong> | Vortex Pad Positie: <strong>${currentVal}</strong>`;
+
+        // Update SVG nodes active state (activeer node op basis van stap 1 t/m 6)
+        for (let i = 1; i <= 6; i++) {
+            let nodeGroup = document.getElementById(`node-pos-${i}`);
+            if (nodeGroup) nodeGroup.classList.remove("node-active");
+        }
+        let activeNodeGroup = document.getElementById(`node-pos-${stepIndex + 1}`);
+        if (activeNodeGroup) activeNodeGroup.classList.add("node-active");
+
+        // Update tekst in de SVG nodes met de actuele volgorde
+        for (let i = 0; i < 6; i++) {
+            let txtEl = document.getElementById(`txt-pos-${i + 1}`);
+            if (txtEl) txtEl.innerText = vortexSequence[(clockPower + i) % 6];
+        }
+
+        // Highlight tabelrij
+        document.querySelectorAll("#clock-table tr").forEach(el => el.style.backgroundColor = "");
+        let activeRow = document.getElementById(`row-clock-${clockPower}`);
+        if (activeRow) {
+            activeRow.style.backgroundColor = "rgba(250, 204, 21, 0.15)";
+            activeRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    function clockStep(dir) {
+        clockPower += dir;
+        if (clockPower < 0) clockPower = 24;
+        if (clockPower > 24) clockPower = 0;
+        updateClockDisplay();
+    }
+
+    function resetClock() {
+        if (autoClockInterval) {
+            clearInterval(autoClockInterval);
+            autoClockInterval = null;
+        }
+        clockPower = 0;
+        updateClockDisplay();
+    }
+
+    function toggleAutoClock() {
+        if (autoClockInterval) {
+            clearInterval(autoClockInterval);
+            autoClockInterval = null;
+            document.getElementById("clock-console").innerHTML = "> Auto-Tick gepauzeerd.";
+        } else {
+            document.getElementById("clock-console").innerHTML = "> Auto-Tick geactiveerd. De 181-klok pulseert door de 6-staps cyclus...";
+            autoClockInterval = setInterval(() => {
+                clockStep(1);
+            }, 1000);
+        }
+    }
+
+    window.onload = () => {
+        initClockTable();
+        updateClockDisplay();
+    };
+</script>
+
+</body>
+</html>
