@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX • 13:20 Chronometrie & 18x13 Torsie-Algebra</title>
+    <style>
+        :root {
+            --bg-color: #07090e;
+            --panel-bg: #111622;
+            --border-color: #1e293b;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --accent-cyan: #06b6d4;
+            --accent-gold: #f59e0b;
+            
+            /* Wuxing Element Kleuren */
+            --wood: #10b981;  /* Hout - Groen */
+            --fire: #ef4444;  /* Vuur - Rood/Feniks */
+            --earth: #d97706; /* Aarde - Amber */
+            --metal: #94a3b8; /* Metaal - Zilver */
+            --water: #3b82f6; /* Water - Blauw */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            color: var(--accent-cyan);
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+
+        h2 {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            font-weight: normal;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 18x13 Matrix Grid */
+        .grid-container {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .grid-title {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(13, 1fr);
+            gap: 4px;
+            width: 100%;
+            aspect-ratio: 13 / 18;
+            max-height: 70vh;
+        }
+
+        .cell {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .cell.active {
+            transform: scale(1.15);
+            z-index: 10;
+            box-shadow: 0 0 12px currentColor;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .cell.visited {
+            opacity: 0.85;
+        }
+
+        /* Speciale Coördinaten */
+        .cell[data-index="13"] {
+            border-color: var(--water);
+            box-shadow: inset 0 0 5px var(--water);
+        }
+        
+        .cell[data-index="169"] {
+            border: 2px solid var(--fire);
+            box-shadow: inset 0 0 8px var(--fire);
+        }
+
+        .cell[data-index="169"]::after {
+            content: '★';
+            position: absolute;
+            top: 1px;
+            right: 1px;
+            font-size: 0.5rem;
+            color: var(--accent-gold);
+        }
+
+        /* Control & Telemetrie Panel */
+        .panel {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .panel-section {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 12px;
+        }
+
+        .panel-section:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--accent-cyan);
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .sub-value {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            font-weight: normal;
+        }
+
+        .torsion-meter {
+            width: 100%;
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin-top: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .torsion-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--wood), var(--fire));
+            transition: width 0.2s ease, background-color 0.2s ease;
+        }
+
+        /* Spinor Matrix Display */
+        .spinor-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 3px solid var(--accent-cyan);
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        /* Log / Console */
+        .console-log {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            height: 140px;
+            overflow-y: auto;
+            padding: 8px;
+            font-size: 0.7rem;
+            color: #a3e635;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .log-entry {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            padding-bottom: 2px;
+        }
+
+        .log-entry.warn { color: var(--accent-gold); }
+        .log-entry.alert { color: var(--fire); font-weight: bold; }
+        .log-entry.reset { color: var(--accent-cyan); font-weight: bold; }
+
+        /* Knoppen */
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            flex: 1;
+            background: var(--accent-cyan);
+            color: #000;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        button:hover {
+            background: #0891b2;
+            color: #fff;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button.secondary {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        button.secondary:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>VORTEX 18x13 Torsie- & Resonantie Dashboard</h1>
+        <h2>B(4,6) Manifold • Modulo 21 Resonator • Day Out of Time (25 juli 2026)</h2>
+    </header>
+
+    <main class="dashboard">
+        <section class="grid-container">
+            <div class="grid-title">
+                <span>MATRIX ROOSTER [18 Rijen × 13 Kolommen]</span>
+                <span id="grid-status">Gereed voor transport</span>
+            </div>
+            <div class="matrix-grid" id="grid"></div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-section">
+                <div class="label">Chronometrische Coördinaat</div>
+                <div class="value" id="val-index">Index: 0 <span class="sub-value" id="val-coord">(R:0, C:0)</span></div>
+                <div class="sub-value" id="val-kin" style="margin-top: 4px; color: var(--accent-gold);">Kin -- : Wait for Sync</div>
+            </div>
+
+            <div class="panel-section">
+                <div class="label">Wuxing Element & Transport</div>
+                <div class="value" id="val-element" style="color: var(--wood);">Hout <span class="sub-value" id="val-relation">--</span></div>
+                <div class="sub-value" id="val-b46" style="margin-top: 4px;">B(4,6) Vector: [-, -, -, -, -, -]</div>
+            </div>
+
+            <div class="panel-section">
+                <div class="label">Netto Mechanische Torsie (τ)</div>
+                <div class="value"><span id="val-torsion">0.0000</span> <span class="sub-value">τ</span></div>
+                <div class="torsion-meter">
+                    <div class="torsion-bar" id="torsion-bar"></div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="label">SU(2) Spinor Matrix U(θ, φ) <span id="val-theta" style="float:right; color: var(--accent-cyan);">θ = 0.00π</span></div>
+                <div class="spinor-box">
+                    <div id="sp-00">1.00 + 0.00i</div>
+                    <div id="sp-01">0.00 + 0.00i</div>
+                    <div id="sp-10">0.00 + 0.00i</div>
+                    <div id="sp-11">1.00 + 0.00i</div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="label">Systeem Logboek</div>
+                <div class="console-log" id="console">
+                    <div class="log-entry">Systeem geïnitieerd. GMT Constante: 584.283</div>
+                    <div class="log-entry">Wachten op start van 13:20 cyclus...</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="btn-start">Start Transport</button>
+                <button id="btn-step" class="secondary">Stap +1</button>
+                <button id="btn-reset" class="secondary">Reset</button>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // --- VORTEX 18x13 CONFIGURATIE & ENGINE ---
+        const ROWS = 18;
+        const COLS = 13;
+        const TOTAL_INDICES = ROWS * COLS; // 234
+
+        const WUXING = {
+            0: { name: 'Wood',  color: 'var(--wood)',  nl: 'Hout' },
+            1: { name: 'Fire',  color: 'var(--fire)',  nl: 'Vuur' },
+            2: { name: 'Earth', color: 'var(--earth)', nl: 'Aarde' },
+            3: { name: 'Metal', color: 'var(--metal)', nl: 'Metaal' },
+            4: { name: 'Water', color: 'var(--water)', nl: 'Water' }
+        };
+
+        const L0_STATES = {
+            6: 2, // Oud Yin -> Aarde (2)
+            7: 0, // Jong Yang -> Hout (0)
+            8: 4, // Jong Yin -> Water (4)
+            9: 1  // Oud Yang -> Vuur (1)
+        };
+
+        let currentIndex = 0;
+        let currentTorsion = 0.0;
+        let prevElementIdx = 4; // Start in Water (Absorptie)
+        let timer = null;
+        let isRunning = false;
+        let spinorTheta = 0.0;
+
+        // DOM Elementen
+        const gridEl = document.getElementById('grid');
+        const valIndex = document.getElementById('val-index');
+        const valCoord = document.getElementById('val-coord');
+        const valKin = document.getElementById('val-kin');
+        const valElement = document.getElementById('val-element');
+        const valRelation = document.getElementById('val-relation');
+        const valB46 = document.getElementById('val-b46');
+        const valTorsion = document.getElementById('val-torsion');
+        const torsionBar = document.getElementById('torsion-bar');
+        const consoleEl = document.getElementById('console');
+        const gridStatus = document.getElementById('grid-status');
+        const btnStart = document.getElementById('btn-start');
+        const btnStep = document.getElementById('btn-step');
+        const btnReset = document.getElementById('btn-reset');
+
+        // --- INITIEER RASTER ---
+        function initGrid() {
+            gridEl.innerHTML = '';
+            for (let i = 0; i < TOTAL_INDICES; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.dataset.index = i;
+                cell.textContent = i;
+                
+                // Tooltip info bij hover
+                const r = Math.floor(i / COLS);
+                const c = i % COLS;
+                cell.title = `Index ${i} (R:${r}, C:${c})`;
+
+                cell.addEventListener('click', () => jumpToIndex(i));
+                gridEl.appendChild(cell);
+            }
+        }
+
+        // --- DETERMINISTISCHE B(4,6) GENERATOR ---
+        function getB46Vector(index) {
+            // Pseudorandom generatie gebaseerd op index en jaartal 2026
+            let seed = index * 13 + 2026;
+            const vector = [];
+            const states = [6, 7, 8, 9];
+            for (let i = 0; i < 6; i++) {
+                seed = (seed * 9301 + 49297) % 233280;
+                vector.push(states[Math.floor((seed / 233280) * 4)]);
+            }
+            return vector;
+        }
+
+        // --- WUXING INTERACTIE ALGEBRA ---
+        function getWuxingRelation(e1, e2) {
+            if ((e1 + 1) % 5 === e2) return { type: 'SHENG (Genererend)', delta: -1.0 };
+            if ((e1 + 2) % 5 === e2) return { type: 'KE (Controlerend)', delta: +3.5 };
+            if (e1 === e2) return { type: 'RESONANT (Balans)', delta: 0.0 };
+            return { type: 'NEUTRAAL', delta: +1.0 };
+        }
+
+        // --- LOGBOEK FUNCTIE ---
+        function log(msg, type = '') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `> ${msg}`;
+            consoleEl.appendChild(entry);
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+
+        // --- SIMULATIE STAP ---
+        function step() {
+            if (currentIndex >= TOTAL_INDICES) {
+                triggerSpinorReset();
+                return;
+            }
+
+            const r = Math.floor(currentIndex / COLS);
+            const c = currentIndex % COLS;
+            
+            // B(4,6) en Wuxing berekening
+            const b46 = getB46Vector(currentIndex);
+            const dominantState = b46[0];
+            const currentElementIdx = L0_STATES[dominantState];
+            const elemData = WUXING[currentElementIdx];
+            
+            const rel = getWuxingRelation(prevElementIdx, currentElementIdx);
+            currentTorsion += rel.delta;
+            if (currentTorsion < 0) currentTorsion = 0; // Geen negatieve absolute torsie in weergave
+
+            // Speciale Index Regels
+            if (currentIndex === 13) {
+                currentTorsion *= 0.5;
+                log('Index 13: Kun/Aarde Absorptie-portal actief (τ × 0.5)', 'warn');
+            }
+
+            let isApex = false;
+            if (currentIndex === 169) {
+                isApex = true;
+                log('APEX INDEX 169 BEREIKT! Kin 228 (Yellow Resonant Star)', 'alert');
+                log(`Cumulatieve torsie voor Li-Paleis: ${currentTorsion.toFixed(4)} τ`, 'warn');
+                
+                // Modulo 21 Resonator & Plus One Factor (365 mod 364 = 1)
+                const plusOne = 365 % 364;
+                const tauMod = (currentTorsion * plusOne) % 21;
+                currentTorsion = 0.0000; // Volledige entropie ontlading
+                
+                log('Modulo 21 Resonator & Plus One Factor geactiveerd: τ -> 0.0000', 'alert');
+            }
+
+            // --- UI UPGRADEN ---
+            // Raster cellen updaten
+            document.querySelectorAll('.cell.active').forEach(el => el.classList.remove('active'));
+            const currentCell = gridEl.children[currentIndex];
+            currentCell.classList.add('active', 'visited');
+            currentCell.style.color = elemData.color;
+            currentCell.style.borderColor = elemData.color;
+            currentCell.style.backgroundColor = 'rgba(255,255,255,0.08)';
+
+            // Tekst & Waarden updaten
+            valIndex.innerHTML = `Index: ${currentIndex} <span class="sub-value" id="val-coord">(R:${r}, C:${c})</span>`;
+            valElement.innerHTML = `${elemData.nl} <span class="sub-value" id="val-relation" style="color:#fff">${rel.type}</span>`;
+            valElement.style.color = elemData.color;
+            valB46.textContent = `B(4,6) Vector: [${b46.join(', ')}]`;
+            valTorsion.textContent = currentTorsion.toFixed(4);
+            
+            // Balk weergave (max ca 50 torsie voor 100% breedte)
+            const barWidth = Math.min(100, (currentTorsion / 40) * 100);
+            torsionBar.style.width = `${barWidth}%`;
+            torsionBar.style.background = isApex ? 'var(--accent-gold)' : `linear-gradient(90deg, var(--wood), ${elemData.color})`;
+
+            // Galactische Signatuur update
+            if (currentIndex === 169) {
+                valKin.textContent = "Kin 228: Yellow Resonant Star ★";
+                valKin.style.color = "var(--fire)";
+            } else {
+                valKin.textContent = `Kin ${(currentIndex % 260) + 59}: Galactische Cyclus`;
+                valKin.style.color = "var(--text-dim)";
+            }
+
+            gridStatus.textContent = `Actief op R:${r} C:${c} (${elemData.nl})`;
+
+            prevElementIdx = currentElementIdx;
+            currentIndex++;
+        }
+
+        // --- 4π SPINOR ROTATIE RESET (23:00 - 24:00) ---
+        function triggerSpinorReset() {
+            pause();
+            log('Einde matrix bereikt. Start Uur van de Rat (4π Spinor Reset)...', 'reset');
+            gridStatus.textContent = "Heliakische Reset Actief...";
+            
+            let steps = 0;
+            const maxSteps = 40;
+            const interval = setInterval(() => {
+                steps++;
+                spinorTheta = (steps / maxSteps) * 4 * Math.PI;
+                
+                // SU(2) berekening: cos(θ/2) op diagonaal, sin(θ/2) op off-diagonaal
+                const cosHalf = Math.cos(spinorTheta / 2);
+                const sinHalf = Math.sin(spinorTheta / 2);
+
+                document.getElementById('val-theta').textContent = `θ = ${(spinorTheta / Math.PI).toFixed(2)}π`;
+                document.getElementById('sp-00').textContent = `${cosHalf.toFixed(2)} + 0.00i`;
+                document.getElementById('sp-01').textContent = `${(-sinHalf).toFixed(2)} + 0.00i`;
+                document.getElementById('sp-10').textContent = `${sinHalf.toFixed(2)} + 0.00i`;
+                document.getElementById('sp-11').textContent = `${cosHalf.toFixed(2)} + 0.00i`;
+
+                if (steps === maxSteps / 2) {
+                    log('θ = 2π bereikt. Fase-inversie (Tekenwisseling -I)', 'warn');
+                }
+
+                if (steps >= maxSteps) {
+                    clearInterval(interval);
+                    log('θ = 4π voltooid. Identiteitsmatrix I hersteld!', 'reset');
+                    log('26 JULI 2026: Kin 229 (Blue Magnetic Dragon) Geïnitieerd.', 'reset');
+                    valKin.textContent = "Kin 229: Blue Magnetic Dragon (Nieuw Zonnejaar)";
+                    valKin.style.color = "var(--accent-cyan)";
+                    gridStatus.textContent = "Galactische Sync Voltooid.";
+                    btnStart.textContent = "Herstart Cyclus";
+                    currentIndex = 0;
+                    currentTorsion = 0.0;
+                }
+            }, 50);
+        }
+
+        // --- BEDIENINGSFUNCTIES ---
+        function start() {
+            if (isRunning) {
+                pause();
+                return;
+            }
+            if (currentIndex >= TOTAL_INDICES) {
+                reset();
+            }
+            isRunning = true;
+            btnStart.textContent = "Pauzeer";
+            timer = setInterval(step, 80); // Snelheid van transport
+        }
+
+        function pause() {
+            isRunning = false;
+            btnStart.textContent = "Hervat Transport";
+            clearInterval(timer);
+        }
+
+        function reset() {
+            pause();
+            currentIndex = 0;
+            currentTorsion = 0.0;
+            prevElementIdx = 4;
+            spinorTheta = 0.0;
+            btnStart.textContent = "Start Transport";
+            valIndex.innerHTML = `Index: 0 <span class="sub-value" id="val-coord">(R:0, C:0)</span>`;
+            valTorsion.textContent = "0.0000";
+            torsionBar.style.width = "0%";
+            valKin.textContent = "Kin -- : Wait for Sync";
+            valKin.style.color = "var(--accent-gold)";
+            gridStatus.textContent = "Gereed voor transport";
+            
+            document.getElementById('val-theta').textContent = `θ = 0.00π`;
+            document.getElementById('sp-00').textContent = `1.00 + 0.00i`;
+            document.getElementById('sp-01').textContent = `0.00 + 0.00i`;
+            document.getElementById('sp-10').textContent = `0.00 + 0.00i`;
+            document.getElementById('sp-11').textContent = `1.00 + 0.00i`;
+
+            initGrid();
+            consoleEl.innerHTML = '';
+            log('Systeem gereset naar galactisch nulpunt.');
+        }
+
+        function jumpToIndex(idx) {
+            pause();
+            reset();
+            while (currentIndex <= idx && currentIndex < TOTAL_INDICES) {
+                step();
+            }
+        }
+
+        // Event Listeners
+        btnStart.addEventListener('click', start);
+        btnStep.addEventListener('click', () => {
+            pause();
+            step();
+        });
+        btnReset.addEventListener('click', reset);
+
+        // Start initialisatie
+        initGrid();
+    </script>
+</body>
+</html>
