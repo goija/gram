@@ -9,6 +9,8 @@ https://gram-eta.vercel.app/vortex_18x13_simulation.html
 
 https://gram-eta.vercel.app/9%20sqrt(62430).html
 
+https://gram-eta.vercel.app/webrtc-bridge.html
+
 
 # VORTEX • 13:20 CHRONOMETRIE & GALACTISCHE TORSIE-ALGEBRA
 **Synthese van de 18x13 Matrix, Modulo 21 Resonator, Shao Yong Wuxing & de Law of Time**
