@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX Chronometrie & Academische Dork Explorer</title>
+    <style>
+        :root {
+            --bg-base: #0a0d14;
+            --bg-panel: #141923;
+            --bg-card: #1c2331;
+            --cyan-glow: #00f0ff;
+            --gold-glow: #ffd700;
+            --red-alert: #ff3366;
+            --text-main: #e0e6ed;
+            --text-dim: #8892b0;
+            --border-color: #2d3748;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: 'Courier New', Courier, monospace;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            border-bottom: 2px solid var(--cyan-glow);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--cyan-glow);
+            font-size: 1.8em;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            color: var(--gold-glow);
+            font-size: 0.9em;
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+        }
+
+        @media(min-width: 900px) {
+            .grid-layout {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .panel h2 {
+            color: var(--gold-glow);
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .slider-group {
+            margin-bottom: 20px;
+            background: var(--bg-card);
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid var(--cyan-glow);
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--cyan-glow);
+            cursor: pointer;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .stat-box {
+            background: var(--bg-base);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.75em;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--cyan-glow);
+            margin-top: 5px;
+        }
+
+        .stat-value.alert {
+            color: var(--red-alert);
+        }
+
+        .stat-value.gold {
+            color: var(--gold-glow);
+        }
+
+        .matrix-container {
+            margin-top: 15px;
+        }
+
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(18, 1fr);
+            gap: 2px;
+            background: #000;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            background: var(--bg-panel);
+            font-size: 0.5em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: transparent;
+            transition: all 0.2s;
+        }
+
+        .cell.active {
+            background: #2a354d;
+        }
+
+        .cell.mod21 {
+            background: var(--cyan-glow);
+            box-shadow: 0 0 4px var(--cyan-glow);
+        }
+
+        .cell.index13 {
+            background: var(--gold-glow);
+            box-shadow: 0 0 6px var(--gold-glow);
+        }
+
+        .cell.index169 {
+            background: var(--red-alert);
+            box-shadow: 0 0 6px var(--red-alert);
+        }
+
+        .dork-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: border-color 0.2s;
+        }
+
+        .dork-card:hover {
+            border-color: var(--cyan-glow);
+        }
+
+        .dork-category {
+            font-size: 0.75em;
+            color: var(--gold-glow);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .dork-title {
+            font-size: 1em;
+            font-weight: bold;
+            color: var(--text-main);
+            margin: 5px 0;
+        }
+
+        .dork-code {
+            background: #000;
+            color: #00ff66;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin: 10px 0;
+            border-left: 3px solid #00ff66;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            background: var(--bg-panel);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            font-family: inherit;
+            font-size: 0.85em;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+            flex: 1;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: var(--cyan-glow);
+            color: #000;
+            border-color: var(--cyan-glow);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+        }
+
+        button.search-btn:hover {
+            background: var(--gold-glow);
+            color: #000;
+            border-color: var(--gold-glow);
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
+        .status-box {
+            background: #000;
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            margin-top: 15px;
+            font-size: 0.85em;
+            color: var(--text-dim);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>VORTEX 13:18 Chronometrie & Dork Explorer</h1>
+        <div class="subtitle">12:60 Kalendertorsie Analyse & Academische Paleografie Launcher</div>
+    </header>
+
+    <div class="grid-layout">
+        <!-- LINKER KANTOOR: CHRONOMETRIE & MATRIX CALCULATOR -->
+        <div class="panel">
+            <h2>I. 12:60 Torsie vs 13:20 Absorptie</h2>
+            
+            <div class="slider-group">
+                <label id="yearLabel" for="yearSlider">Historisch Jaar: 1582 (Pauselijke Ingreep)</label>
+                <input type="range" id="yearSlider" min="325" max="2026" value="1582">
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-label">Jaren sinds Nicaea (325 n.Chr.)</div>
+                    <div id="statYears" class="stat-value">1257</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Cumulatieve Torsie (Δt)</div>
+                    <div id="statTorsion" class="stat-value alert">+9.817 Dagen</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">13x18 Matrix Vectoren</div>
+                    <div class="stat-value gold">234 (Mod 21 = 3)</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">365e Dag Restwaarde</div>
+                    <div class="stat-value">1 (Galactisch Nulpunt)</div>
+                </div>
+            </div>
+
+            <div class="slider-group">
+                <label id="dayLabel" for="daySlider">Synchronometer Dag: 365 (25 Juli - Day Out of Time)</label>
+                <input type="range" id="daySlider" min="1" max="365" value="365">
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-label">13-Maan Positie</div>
+                    <div id="statMoon" class="stat-value gold">Day Out of Time</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Modulo 21 Resonantie</div>
+                    <div id="statMod" class="stat-value">Restwaarde: 1</div>
+                </div>
+            </div>
+
+            <div class="matrix-container">
+                <label style="font-size: 0.8em; color: var(--text-dim);">18x13 VORTEX ROUTING (234 CELLEN / MODULO 21 FILTER)</label>
+                <div id="matrixGrid" class="matrix-grid"></div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.7em; margin-top: 6px; color: var(--text-dim);">
+                    <span><span style="color:var(--gold-glow);">■</span> Index 13 (Nulpunt/Pegasus)</span>
+                    <span><span style="color:var(--cyan-glow);">■</span> Modulo 21 Resonantie</span>
+                    <span><span style="color:var(--red-alert);">■</span> Index 169 (Feniks Apex)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- RECHTER KANTOOR: GOOGLE DORKS EXPLORER -->
+        <div class="panel">
+            <h2>II. Paleografische & Epigrafische Dorks</h2>
+            <p style="font-size: 0.85em; color: var(--text-dim); margin-bottom: 15px;">
+                Voer geavanceerde zoekopdrachten uit in academische archieven (KB, DBNL, Universiteit Leiden, Meso-Amerikaanse epigrafie) zonder commerciële ruis.
+            </p>
+
+            <div id="dorksContainer"></div>
+
+            <div id="clipboardStatus" class="status-box">
+                Selecteer een zoekoperator of voer direct uit in Google.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- PART 1: MATH & MATRIX CALCULATOR ---
+    const yearSlider = document.getElementById('yearSlider');
+    const yearLabel = document.getElementById('yearLabel');
+    const statYears = document.getElementById('statYears');
+    const statTorsion = document.getElementById('statTorsion');
+    
+    const daySlider = document.getElementById('daySlider');
+    const dayLabel = document.getElementById('dayLabel');
+    const statMoon = document.getElementById('statMoon');
+    const statMod = document.getElementById('statMod');
+    const matrixGrid = document.getElementById('matrixGrid');
+
+    // Build 18x13 Matrix (234 cells)
+    for (let i = 0; i < 234; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.id = `cell-${i}`;
+        
+        // Highlights based on VORTEX constants
+        if (i === 13) cell.classList.add('index13');
+        else if (i === 169) cell.classList.add('index169');
+        else if (i % 21 === 0) cell.classList.add('mod21');
+        
+        matrixGrid.appendChild(cell);
+    }
+
+    function updateChronometry() {
+        // Year calculation
+        const year = parseInt(yearSlider.value);
+        const yearsPassed = year - 325;
+        const torsion = (yearsPassed * 0.00781).toFixed(3);
+        
+        yearLabel.innerText = `Historisch Jaar: ${year} ${year === 1582 ? '(Pauselijke Ingreep)' : ''}`;
+        statYears.innerText = yearsPassed;
+        statTorsion.innerText = `+${torsion} Dagen`;
+        
+        if (torsion > 9.8) {
+            statTorsion.className = 'stat-value alert';
+        } else {
+            statTorsion.className = 'stat-value';
+        }
+
+        // Day calculation
+        const day = parseInt(daySlider.value);
+        if (day === 365) {
+            dayLabel.innerText = "Synchronometer Dag: 365 (25 Juli - Day Out of Time)";
+            statMoon.innerText = "Day Out of Time";
+            statMod.innerText = "Restwaarde: 1 (Reset)";
+        } else {
+            const moon = Math.ceil(day / 28);
+            const moonDay = ((day - 1) % 28) + 1;
+            dayLabel.innerText = `Synchronometer Dag: ${day} / 365`;
+            statMoon.innerText = `Maan ${moon}, Dag ${moonDay}`;
+            const mod21 = day % 21;
+            statMod.innerText = `Mod 21: ${mod21 === 0 ? 21 : mod21}`;
+        }
+
+        // Matrix visual update
+        document.querySelectorAll('.cell').forEach((cell, idx) => {
+            if (idx !== 13 && idx !== 169 && idx % 21 !== 0) {
+                if (idx < (day / 365) * 234) {
+                    cell.classList.add('active');
+                } else {
+                    cell.classList.remove('active');
+                }
+            }
+        });
+    }
+
+    yearSlider.addEventListener('input', updateChronometry);
+    daySlider.addEventListener('input', updateChronometry);
+    updateChronometry();
+
+    // --- PART 2: GOOGLE DORKS EXPLORER ---
+    const dorksData = [
+        {
+            category: "1. Maya Epigrafie & Codices",
+            title: "Kalenderrekening in Codices (PDF)",
+            query: `site:edu OR site:org "Maya" AND ("Tzolk'in" OR "Haab" OR "Dresden Codex" OR "Madrid Codex") AND ("364 days" OR "modulo" OR "calendar round" OR "synchronometer") filetype:pdf`
+        },
+        {
+            category: "1. Maya Epigrafie & Codices",
+            title: "Archeo-astronomie & 13:20 Frequentie",
+            query: `allintitle: Maya AND ("astronomy" OR "calendar" OR "codex") AND ("epigraphy" OR "iconography" OR "zero") -site:pinterest.* -site:facebook.* filetype:pdf`
+        },
+        {
+            category: "1. Maya Epigrafie & Codices",
+            title: "Meso-Amerikaanse Nulpuntsystemen",
+            query: `inurl:archaeology OR inurl:anthropology "Mesoamerican" AND ("base zero" OR "vigesimal" OR "day out of time" OR "wayeb") filetype:pdf`
+        },
+        {
+            category: "2. Middelnederlandse Paleografie",
+            title: "De Feniks in Handschriften & Bestiaria",
+            query: `(site:dbnl.org OR site:kb.nl OR site:universiteitleiden.nl OR site:ugent.be) "Middelnederlands" OR "Middelnederlandse" AND ("Feniks" OR "fénix" OR "Der Naturen Bloeme" OR "Physiologus") filetype:pdf`
+        },
+        {
+            category: "2. Middelnederlandse Paleografie",
+            title: "Middeleeuwse Astronomie & Computus",
+            query: `intitle:"Middelnederlandse" OR intitle:"Middelnederlands" ("handschrift" OR "codex" OR "paleografie") AND ("astronomie" OR "kalender" OR "tijdrekening" OR "computus")`
+        },
+        {
+            category: "2. Middelnederlandse Paleografie",
+            title: "Jacob van Maerlant & Symbolische Dierennamen",
+            query: `(site:archive.org OR site:rjb.x-cels.ugent.be OR site:nederlands.nl) "Jacob van Maerlant" AND ("vogel" OR "feniks" OR "zon") AND ("handschrift" OR "fabel" OR "allegorie")`
+        },
+        {
+            category: "3. Kosmografische Cross-Referentie",
+            title: "Vergelijkende Iconografie & Modulo Wiskunde",
+            query: `("epigraphy" OR "paleography" OR "iconography") AND ("matrix" OR "modulo" OR "vigesimal" OR "duodecimal") AND ("calendar" OR "tijdrekening") filetype:pdf`
+        },
+        {
+            category: "3. Kosmografische Cross-Referentie",
+            title: "Museum & Bibliotheek Catalogus Zoeker",
+            query: `(inurl:collection OR inurl:manuscripts OR inurl:codex) ("astronomical" OR "calendrical") AND ("Mesoamerican" OR "Medieval") AND ("symbolism" OR "iconography")`
+        }
+    ];
+
+    const dorksContainer = document.getElementById('dorksContainer');
+    const clipboardStatus = document.getElementById('clipboardStatus');
+
+    dorksData.forEach((dork, index) => {
+        const card = document.createElement('div');
+        card.className = 'dork-card';
+        card.innerHTML = `
+            <div class="dork-category">${dork.category}</div>
+            <div class="dork-title">${dork.title}</div>
+            <div class="dork-code">${dork.query}</div>
+            <div class="button-group">
+                <button onclick="copyDork(${index})">Kopiëer Code</button>
+                <button class="search-btn" onclick="launchDork(${index})">Direct Zoeken in Google ↗</button>
+            </div>
+        `;
+        dorksContainer.appendChild(card);
+    });
+
+    function copyDork(index) {
+        const query = dorksData[index].query;
+        navigator.clipboard.writeText(query).then(() => {
+            clipboardStatus.style.color = "#00ff66";
+            clipboardStatus.innerText = `✔ Gekopieerd naar klembord: "${dorksData[index].title}"`;
+            setTimeout(() => {
+                clipboardStatus.style.color = "var(--text-dim)";
+                clipboardStatus.innerText = "Selecteer een zoekoperator of voer direct uit in Google.";
+            }, 3000);
+        });
+    }
+
+    function launchDork(index) {
+        const query = dorksData[index].query;
+        const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+        window.open(url, '_blank');
+        clipboardStatus.style.color = "var(--cyan-glow)";
+        clipboardStatus.innerText = `↗ Zoekopdracht geopend in nieuw tabblad: "${dorksData[index].title}"`;
+    }
+</script>
+
+</body>
+</html>
