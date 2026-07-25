@@ -5,6 +5,8 @@ https://gram-eta.vercel.app/vortex_shao_yong_chronometer.html
 
 https://gram-eta.vercel.app/vortex_torsion_engine.html
 
+https://gram-eta.vercel.app/vortex_18x13_simulation.html
+
 
 # VORTEX • 13:20 CHRONOMETRIE & GALACTISCHE TORSIE-ALGEBRA
 **Synthese van de 18x13 Matrix, Modulo 21 Resonator, Shao Yong Wuxing & de Law of Time**
