@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX OMNI-BRIDGE - Modulo 11 Fermat-Klok & Primitieve Wortels</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #111827;
+            --card-border: #1f2937;
+            --accent-gold: #facc15;
+            --accent-green: #10b981;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --btn-bg: #1f2937;
+            --btn-hover: #374151;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        h1, h2, h3 {
+            color: var(--accent-gold);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-box {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--card-border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .stat-value.gold { color: var(--accent-gold); }
+        .stat-value.purple { color: var(--accent-purple); }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        button {
+            background-color: var(--btn-bg);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+            padding: 0.625rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        button:hover {
+            background-color: var(--btn-hover);
+            border-color: var(--text-muted);
+        }
+
+        button.outline-gold {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+
+        button.outline-purple {
+            border-color: var(--accent-purple);
+            color: var(--accent-purple);
+        }
+
+        .console-screen {
+            background-color: rgba(0, 0, 0, 0.6);
+            border-left: 4px solid var(--accent-green);
+            padding: 1.25rem;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 1.25rem 0;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            color: var(--accent-green);
+            border-radius: 0 0.375rem 0.375rem 0;
+            word-break: break-all;
+        }
+
+        .visualizer-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 0.5rem;
+            border: 1px dashed var(--card-border);
+        }
+
+        svg {
+            max-width: 340px;
+            height: auto;
+            overflow: visible;
+        }
+
+        .clock-ring {
+            fill: none;
+            stroke: var(--card-border);
+            stroke-width: 4;
+        }
+
+        .node-circle {
+            fill: var(--card-bg);
+            stroke: var(--text-muted);
+            stroke-width: 2;
+            transition: all 0.3s ease;
+        }
+
+        .node-text {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            font-weight: bold;
+            fill: var(--text-main);
+            text-anchor: middle;
+            dominant-baseline: central;
+        }
+
+        .node-active .node-circle {
+            fill: var(--accent-gold);
+            stroke: #fff;
+            stroke-width: 4;
+            filter: drop-shadow(0 0 8px var(--accent-gold));
+        }
+
+        .node-active .node-text {
+            fill: #000;
+        }
+
+        .table-container {
+            max-height: 240px;
+            overflow-y: auto;
+            margin-top: 1rem;
+            border: 1px solid var(--card-border);
+            border-radius: 0.375rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        th {
+            background-color: rgba(0, 0, 0, 0.5);
+            color: var(--accent-gold);
+            position: sticky;
+            top: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div class="card">
+        <h2>VORTEX - Modulo 11 Fermat-Klok & Decimale 11-Proef</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;">
+            Operationele simulatie van de <strong>10-staps Fermat-klok</strong> (Modulo 11) gedreven door de primitieve wortel <strong>2</strong>. In tegenstelling tot de 9-klok dekt dit systeem alle 10 residuen feitelijk af zonder blinde vlekken.
+        </p>
+
+        <div class="grid-3">
+            <div class="stat-box">
+                <div class="stat-label">Huidige Exponent ($n$)</div>
+                <div class="stat-value gold" id="f11-power">2<sup>0</sup></div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Residu Modulo 11</div>
+                <div class="stat-value purple" id="f11-residue">1</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Cyclus Status</div>
+                <div class="stat-value" style="color: var(--accent-green);" id="f11-step">Stap 1 / 10</div>
+            </div>
+        </div>
+
+        <!-- SVG 10-Puntige Decimale / Modulo 11 Klok -->
+        <div class="visualizer-container">
+            <svg viewBox="0 0 340 340" id="f11-svg">
+                <circle cx="170" cy="170" r="125" class="clock-ring" />
+                <polygon id="f11-polygon" points="" fill="none" stroke="rgba(59, 130, 246, 0.3)" stroke-width="2" />
+                <!-- 10 Nodes worden dynamisch ingetekend via JavaScript -->
+            </svg>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">
+                * Modulo 11 decagonaal veld: toont de volledige dekking van de primitieve wortel 2.
+            </div>
+        </div>
+
+        <div class="console-screen" id="f11-console">
+            > Fermat-klok (Mod 11) gereed. Basisgenerator: 2. Wacht op puls...
+        </div>
+
+        <div class="btn-group">
+            <button class="outline-purple" onclick="f11Step(-1)">Vorige Stap</button>
+            <button class="outline-gold" onclick="f11Step(1)">Puls Klok ($2^{n+1}$)</button>
+            <button onclick="toggleAutoF11()">Auto-Tick Loop</button>
+            <button onclick="resetF11()">Reset Klok</button>
+        </div>
+
+        <!-- Tabel Modulo 11 -->
+        <div class="table-container">
+            <table id="f11-table">
+                <thead>
+                    <tr>
+                        <th>Exponent ($n$)</th>
+                        <th>Macht ($2^n$)</th>
+                        <th>Residu Modulo 11 ($2^n \equiv r \pmod{11}$)</th>
+                        <th>Fasedekking</th>
+                    </tr>
+                </thead>
+                <tbody id="f11-table-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let f11Power = 0;
+    let autoF11Interval = null;
+    const primeMod = 11;
+
+    // Genereer coördinaten voor 10 nodes in een cirkel
+    const nodeCoords = [];
+    for (let i = 0; i < 10; i++) {
+        // Start bovenaan (-90 graden / -Math.PI/2)
+        const angle = (i * 2 * Math.PI / 10) - (Math.PI / 2);
+        const x = 170 + 125 * Math.cos(angle);
+        const y = 170 + 125 * Math.sin(angle);
+        nodeCoords.push({ x, y });
+    }
+
+    function buildSvgNodes() {
+        const svg = document.getElementById("f11-svg");
+        // Verwijder oude nodes indien aanwezig
+        svg.querySelectorAll(".dynamic-node").forEach(n => n.remove());
+
+        nodeCoords.forEach((coord, idx) => {
+            const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            g.setAttribute("class", "dynamic-node");
+            g.id = `f11-node-${idx + 1}`;
+            g.setAttribute("transform", `translate(${coord.x}, ${coord.y})`);
+
+            const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            c.setAttribute("class", "node-circle");
+            c.setAttribute("r", "16");
+
+            const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            t.setAttribute("class", "node-text");
+            t.id = `f11-txt-${idx + 1}`;
+            t.textContent = idx + 1;
+
+            g.appendChild(c);
+            g.appendChild(t);
+            svg.appendChild(g);
+        });
+    }
+
+    function getMod11Residue(n) {
+        let val = BigInt(2) ** BigInt(n);
+        let rem = Number(val % BigInt(primeMod));
+        return { valStr: val.toString(), residue: rem };
+    }
+
+    function initF11Table() {
+        const tbody = document.getElementById("f11-table-body");
+        tbody.innerHTML = "";
+        for (let i = 0; i <= 20; i++) {
+            let res = getMod11Residue(i);
+            let tr = document.createElement("tr");
+            tr.id = `row-f11-${i}`;
+            tr.innerHTML = `
+                <td>2<sup>${i}</sup></td>
+                <td style="color: var(--accent-gold);">${res.valStr.length > 10 ? res.valStr.substring(0, 8) + '...' : res.valStr}</td>
+                <td style="font-weight: bold; color: var(--accent-purple);">${res.residue}</td>
+                <td>Stap ${(i % 10) + 1} / 10</td>
+            `;
+            tbody.appendChild(tr);
+        }
+    }
+
+    function updateF11Display() {
+        let res = getMod11Residue(f11Power);
+        let stepInCycle = (f11Power % 10) + 1;
+
+        document.getElementById("f11-power").innerHTML = `2<sup>${f11Power}</sup>`;
+        document.getElementById("f11-residue").innerText = res.residue;
+        document.getElementById("f11-step").innerText = `Stap ${stepInCycle} / 10`;
+
+        document.getElementById("f11-console").innerHTML = 
+            `> Fermat-klok puls n=${f11Power} | 2^${f11Power} = ${res.valStr.length > 10 ? res.valStr.substring(0,8)+'...' : res.valStr} | Residu mod 11: <strong>${res.residue}</strong> (Geen blinde vlekken)`;
+
+        // Highlight actieve node
+        for (let i = 1; i <= 10; i++) {
+            let nodeEl = document.getElementById(`f11-node-${i}`);
+            if (nodeEl) nodeEl.classList.remove("node-active");
+        }
+        
+        // Zoek welk getal (1 t/m 10) overeenkomt met het residu. Als residu 0 is (komt bij macht van 2 mod 11 niet voor, maar voor de zekerheid), map naar 10 of passend residu.
+        let activeResidueNode = res.residue === 0 ? 10 : res.residue;
+        let activeNodeEl = document.getElementById(`f11-node-${activeResidueNode}`);
+        if (activeNodeEl) activeNodeEl.classList.add("node-active");
+
+        // Tabel selectie
+        document.querySelectorAll("#f11-table tr").forEach(el => el.style.backgroundColor = "");
+        let activeRow = document.getElementById(`row-f11-${f11Power}`);
+        if (activeRow) {
+            activeRow.style.backgroundColor = "rgba(250, 204, 21, 0.15)";
+            activeRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    function f11Step(dir) {
+        f11Power += dir;
+        if (f11Power < 0) f11Power = 20;
+        if (f11Power > 20) f11Power = 0;
+        updateF11Display();
+    }
+
+    function resetF11() {
+        if (autoF11Interval) {
+            clearInterval(autoF11Interval);
+            autoF11Interval = null;
+        }
+        f11Power = 0;
+        updateF11Display();
+    }
+
+    function toggleAutoF11() {
+        if (autoF11Interval) {
+            clearInterval(autoF11Interval);
+            autoF11Interval = null;
+            document.getElementById("f11-console").innerHTML = "> Auto-Tick gepauzeerd.";
+        } else {
+            document.getElementById("f11-console").innerHTML = "> Auto-Tick geactiveerd. De Modulo 11 klok scant systematisch alle knooppunten...";
+            autoF11Interval = setInterval(() => {
+                f11Step(1);
+            }, 1000);
+        }
+    }
+
+    window.onload = () => {
+        buildSvgNodes();
+        initF11Table();
+        updateF11Display();
+    };
+</script>
+
+</body>
+</html>
