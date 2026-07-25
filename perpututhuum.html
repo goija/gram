@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX - Maya Kosmische Teller & Modulo Architectuur</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #111827;
+            --card-border: #1f2937;
+            --accent-gold: #facc15;
+            --accent-green: #10b981;
+            --accent-blue: #3b82f6;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --btn-bg: #1f2937;
+            --btn-hover: #374151;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1, h2, h3 {
+            color: var(--accent-gold);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-box {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--card-border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .stat-value.gold { color: var(--accent-gold); }
+        
+        .badge {
+            display: inline-block;
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        button {
+            background-color: var(--btn-bg);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+            padding: 0.625rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        button:hover {
+            background-color: var(--btn-hover);
+            border-color: var(--text-muted);
+        }
+
+        button.outline-gold {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+
+        button.outline-gold:hover {
+            background-color: rgba(250, 204, 21, 0.1);
+        }
+
+        .console-screen {
+            background-color: rgba(0, 0, 0, 0.6);
+            border-left: 4px solid var(--accent-green);
+            padding: 1.25rem;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 1.25rem 0;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            color: var(--accent-green);
+            border-radius: 0 0.375rem 0.375rem 0;
+        }
+
+        .theory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .theory-item {
+            background: rgba(255, 255, 255, 0.02);
+            border-left: 3px solid var(--accent-blue);
+            padding: 1rem;
+            border-radius: 0 0.375rem 0.375rem 0;
+        }
+
+        .theory-item h4 {
+            color: var(--accent-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        blockquote {
+            font-style: italic;
+            color: var(--text-muted);
+            border-left: 3px solid var(--accent-gold);
+            padding-left: 1rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- Maya Kosmische Teller Card -->
+    <div class="card">
+        <h2>Maya Kosmische Teller (Base-0 Index)</h2>
+        
+        <div class="grid-4">
+            <div class="stat-box">
+                <div class="stat-label">Lange Telling</div>
+                <div class="stat-value" id="long-count-display">13.0.0.0.1</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Base-0 Index</div>
+                <div class="stat-value"><span class="badge" id="base-index-display">Index 0</span></div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Tzolk'in Dagnaam</div>
+                <div class="stat-value gold" id="tzolkin-name-display">Imix</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Betekenis</div>
+                <div class="stat-value" style="font-size: 1.1rem; color: var(--accent-green);" id="meaning-display">Krokodil / Waterlelie</div>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button onclick="updateKin(1)">+1 Kin (Dag)</button>
+            <button onclick="updateKin(20)">+20 (1 Uinal)</button>
+            <button onclick="updateKin(360)">+360 (1 Tun)</button>
+            <button onclick="updateKin(-1)">-1 Kin</button>
+            <button class="outline-gold" onclick="jumpToIndex(13)">Spring naar Index 13 (Ix)</button>
+        </div>
+    </div>
+
+    <!-- Hex Calculator Card -->
+    <div class="card">
+        <h2>Hex 11 min Hex 12 & Index 13 Calculator</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">
+            Deze module berekent het polaire en hexadecimale verschil tussen <strong>Hex 11</strong> (I Tjing: <em>Vrede/Hemel onder Aarde</em> / Hex <code>0x11</code> = 17) en <strong>Hex 12</strong> (I Tjing: <em>Stagnatie/Hemel boven Aarde</em> / Hex <code>0x12</code> = 18), en past dit via Modulo 20 toe op <strong>Index 13</strong>.
+        </p>
+
+        <div class="console-screen" id="calc-console">
+            Klik op een berekening hieronder om de stappen en modulaire verschuiving te zien...
+        </div>
+
+        <div class="btn-group">
+            <button onclick="calcStep1()">1. Bereken (Hex 11 - Hex 12)</button>
+            <button onclick="calcStep2()">2. Pas verschil toe op huidige Index</button>
+            <button class="outline-gold" onclick="calcStep3()">3. Synthese: (Hex 11 - Hex 12) + Index 13</button>
+        </div>
+    </div>
+
+    <!-- VORTEX Archief & Wiskundige Fundamenten -->
+    <div class="card">
+        <h2>De Gesloten Toruslus & Wiskundige Fundamenten</h2>
+        <p style="color: var(--text-muted); margin-bottom: 1rem;">
+            De 18 kolommen (representatief voor de Saros-cyclus) sturen de 234-punten matrix aan als de 'Slang van de Tijd' die in zijn eigen staart bijt — een gesloten cyclus waarin kinetische energie behouden blijft binnen een Base-0 architectuur.
+        </p>
+
+        <div class="theory-grid">
+            <div class="theory-item">
+                <h4>De Modulo-Involutie</h4>
+                <p style="font-size: 0.9rem;">Het kwadraat van 13 is 169. Omdat 169 precies één meer is dan 8 × 21 (168), blijft bij deling door 21 exact restwaarde 1 over ($169 \equiv 1 \pmod{21}$). Een operatie die via herhaling de basistoestand functioneert als zijn eigen inverse (involutie).</p>
+            </div>
+            <div class="theory-item">
+                <h4>Pythagoreïsche Schaling</h4>
+                <p style="font-size: 0.9rem;">De primitieve verhouding (5, 12, 13) vermenigvuldigd met schaalfactor 18 levert de zijden 90, 216 en 234 op. Dit borgt een perfect rechthoekige geometrie op grotere schaal binnen de matrix.</p>
+            </div>
+            <div class="theory-item">
+                <h4>Brongetal 1080</h4>
+                <p style="font-size: 0.9rem;">Het product van de basiswaarden is wiskundig sluitend: $18 \times 5 \times 12 = 1080$. Dit komt exact overeen met de som van de binnenhoeken van een gelijkzijdige achthoek ($6 \times 180^\circ$).</p>
+            </div>
+            <div class="theory-item">
+                <h4>Fibonacci & Gulden Snede</h4>
+                <p style="font-size: 0.9rem;">De schuine zijde 234 gedeeld door $\phi$ (1.618033) levert afgerond 144 op — het 12e getal uit de Fibonacci-reeks. Het restant van 90 wijst exact terug naar de kortste zijde van de driehoek.</p>
+            </div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--card-border); margin: 1.5rem 0;">
+
+        <blockquote>
+            "Baljuw van Hildernisse stuitte in een Leids Arabisch handschrift op de mythische feniks. Onbekend met de esoterische symboliek, vertaalde hij het fabeldier in alle eenvoud heerlijk nuchter als 'een groote vogel'."
+        </blockquote>
+    </div>
+
+</div>
+
+<script>
+    // Tzolk'in Base-0 Array (0 - 19)
+    const tzolkinDays = [
+        { name: "Imix", meaning: "Krokodil / Waterlelie" },
+        { name: "Ik'", meaning: "Wind / Adem" },
+        { name: "Ak'b'al", meaning: "Nacht / Duisternis" },
+        { name: "K'an", meaning: "Zaad / Maïs" },
+        { name: "Chikchan", meaning: "Slang / Levenskracht" },
+        { name: "Kimi", meaning: "Dood / Transformator" },
+        { name: "Manik'", meaning: "Hert / Hand" },
+        { name: "Lamat", meaning: "Ster / Venus" },
+        { name: "Muluk'", meaning: "Water / Offerande" },
+        { name: "Ok", meaning: "Hond / Trouw" },
+        { name: "Chuwen", meaning: "Aap / Wever" },
+        { name: "Eb'", meaning: "Gras / Weg" },
+        { name: "Ben", meaning: "Riet / Ruimte" },
+        { name: "Ix", meaning: "Jaguar / Magici" },
+        { name: "Men", meaning: "Adelaar / Visie" },
+        { name: "Kib'", meaning: "Krijger / Intelligentie" },
+        { name: "Kab'an", meaning: "Aarde / Navigatie" },
+        { name: "Etz'nab'", meaning: "Spiegel / Vuursteen" },
+        { name: "Kawak'", meaning: "Storm / Donder" },
+        { name: "Ajaw", meaning: "Zon / Heer (System Reset)" }
+    ];
+
+    // Startende Long Count: 13.0.0.0.1 (Index 0 - Imix)
+    let totalKin = (13 * 144000) + 1;
+
+    function updateDisplay() {
+        // Bereken Lange Telling componenten
+        let tempKin = totalKin;
+        const baktun = Math.floor(tempKin / 144000);
+        tempKin %= 144000;
+        const katun = Math.floor(tempKin / 7200);
+        tempKin %= 7200;
+        const tun = Math.floor(tempKin / 360);
+        tempKin %= 360;
+        const uinal = Math.floor(tempKin / 20);
+        const kin = tempKin % 20;
+
+        document.getElementById("long-count-display").innerText = `${baktun}.${katun}.${tun}.${uinal}.${kin}`;
+
+        // Base-0 Index logica (13.0.0.0.1 = Imix = Index 0)
+        // Correcte modulo voor negatieve getallen
+        const baseIndex = ((totalKin - 1) % 20 + 20) % 20;
+        const currentDay = tzolkinDays[baseIndex];
+
+        document.getElementById("base-index-display").innerText = `Index ${baseIndex}`;
+        document.getElementById("tzolkin-name-display").innerText = currentDay.name;
+        document.getElementById("meaning-display").innerText = currentDay.meaning;
+    }
+
+    function updateKin(delta) {
+        totalKin += delta;
+        updateDisplay();
+        logConsole(`Kalender verschoven met ${delta >= 0 ? '+' : ''}${delta} Kin. Huidige positie: Index ${((totalKin - 1) % 20 + 20) % 20} (${tzolkinDays[((totalKin - 1) % 20 + 20) % 20].name}).`);
+    }
+
+    function jumpToIndex(targetIndex) {
+        const currentIndex = ((totalKin - 1) % 20 + 20) % 20;
+        let diff = targetIndex - currentIndex;
+        totalKin += diff;
+        updateDisplay();
+        logConsole(`Directe sprong uitgevoerd naar Index ${targetIndex} (${tzolkinDays[targetIndex].name}).`);
+    }
+
+    function logConsole(text) {
+        document.getElementById("calc-console").innerHTML = `> ${text}`;
+    }
+
+    // Hex Calculator Functies
+    function calcStep1() {
+        // Hex 0x11 (17) - Hex 0x12 (18) = -1 ≡ 19 (mod 20)
+        logConsole("Berekening: Hex 0x11 (17) - Hex 0x12 (18) = -1. In Modulo 20 verhoudt -1 zich als restwaarde 19 (Index 19: Ajaw / System Reset).");
+    }
+
+    function calcStep2() {
+        // Pas -1 (of +19) toe op huidige index
+        updateKin(-1);
+        const newIndex = ((totalKin - 1) % 20 + 20) % 20;
+        logConsole(`Verschil (-1 Kin / Polaire Inversie) toegepast. Systeem verschoven naar Index ${newIndex} (${tzolkinDays[newIndex].name}).`);
+    }
+
+    function calcStep3() {
+        // (Hex 11 - Hex 12) + Index 13 => -1 + 13 = 12 (Index 12: Ben)
+        const target = (17 - 18 + 13 + 20) % 20; // 12
+        jumpToIndex(target);
+        logConsole(`Synthese: [Hex 0x11 (17) - Hex 0x12 (18)] + Index 13 = 12. Systeem verankerd op Index 12 (${tzolkinDays[12].name}: ${tzolkinDays[12].meaning}).`);
+    }
+
+    // Initieel laden
+    updateDisplay();
+</script>
+
+</body>
+</html>
