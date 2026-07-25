@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX OMNI-BRIDGE • Galactische Index & Symboolzoekmachine</title>
+    <style>
+        :root {
+            --bg-primary: #0a0e14;
+            --bg-secondary: #111823;
+            --bg-card: #161f2e;
+            --border-color: #26354a;
+            --accent-cyan: #00f0ff;
+            --accent-gold: #ffd700;
+            --accent-green: #00ff88;
+            --accent-magenta: #ff0055;
+            --text-main: #e0e8f5;
+            --text-dim: #8b9bb4;
+            --font-mono: 'Courier New', Courier, monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 240, 255, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(255, 215, 0, 0.05) 0%, transparent 40%);
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        /* HEADER */
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 2rem;
+            margin-bottom: 2.5rem;
+            position: relative;
+        }
+
+        .sys-status {
+            display: inline-flex;
+            gap: 1.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--accent-cyan);
+            padding: 0.5rem 1.25rem;
+            border-radius: 99px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--accent-cyan);
+            margin-bottom: 1.5rem;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.15);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--text-main), var(--accent-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.75rem;
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* SEARCH & FILTER SECTION */
+        .search-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.75rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-input {
+            width: 100%;
+            background: var(--bg-primary);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem 1.25rem 1rem 3rem;
+            color: var(--text-main);
+            font-size: 1.1rem;
+            font-family: var(--font-mono);
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.25);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.25rem;
+            color: var(--accent-cyan);
+        }
+
+        .tag-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            align-items: center;
+        }
+
+        .tag-label {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-right: 0.5rem;
+        }
+
+        .sym-tag {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.4rem 0.85rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-family: var(--font-mono);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .sym-tag:hover, .sym-tag.active {
+            background: rgba(0, 240, 255, 0.1);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            transform: translateY(-2px);
+        }
+
+        .sym-tag.gold:hover, .sym-tag.gold.active {
+            background: rgba(255, 215, 0, 0.1);
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+
+        .sym-tag.green:hover, .sym-tag.green.active {
+            background: rgba(0, 255, 136, 0.1);
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        /* GRID OF MODULES */
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .module-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.75rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-cyan), transparent);
+        }
+
+        .module-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 10px 30px rgba(0, 240, 255, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .badge {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 4px;
+            background: rgba(0, 240, 255, 0.1);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            text-transform: uppercase;
+        }
+
+        .badge.gold {
+            background: rgba(255, 215, 0, 0.1);
+            color: var(--accent-gold);
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        .badge.green {
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--accent-green);
+            border-color: rgba(0, 255, 136, 0.3);
+        }
+
+        .module-title {
+            font-size: 1.35rem;
+            margin-bottom: 0.75rem;
+            color: #fff;
+        }
+
+        .module-title a {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .module-title a:hover {
+            color: var(--accent-cyan);
+        }
+
+        .module-desc {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+        }
+
+        .symbol-list {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 0.85rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .symbol-list-title {
+            font-size: 0.75rem;
+            font-family: var(--font-mono);
+            color: var(--text-dim);
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .symbol-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .symbol-pill {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            background: var(--bg-secondary);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            color: var(--accent-cyan);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-launch {
+            display: inline-block;
+            text-align: center;
+            background: transparent;
+            border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            font-family: var(--font-mono);
+            font-weight: bold;
+            padding: 0.75rem 1.25rem;
+            border-radius: 6px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .btn-launch:hover {
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+        }
+
+        /* REFERENCE MATRIX TABLE */
+        .matrix-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #fff;
+            border-left: 4px solid var(--accent-gold);
+            padding-left: 0.75rem;
+        }
+
+        .section-desc {
+            color: var(--text-dim);
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background: var(--bg-card);
+            color: var(--accent-gold);
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        td.mono {
+            font-family: var(--font-mono);
+            color: var(--accent-cyan);
+        }
+
+        /* FOOTER */
+        footer {
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            padding-top: 2rem;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            font-family: var(--font-mono);
+        }
+
+        .footer-highlight {
+            color: var(--accent-green);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .modules-grid {
+                grid-template-columns: 1fr;
+            }
+            .sys-status {
+                flex-direction: column;
+                gap: 0.5rem;
+                border-radius: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="sys-status">
+            <span>⚡ DRAAGGOLF: &Delta;=111</span>
+            <span>🌐 WEBRTC: 111ms UDP</span>
+            <span>⏱️ STASIS LOCK: HEXAGRAM 63</span>
+            <span>🗓️ JDN: 2461247 (25 JULI 2026)</span>
+        </div>
+        <h1>VORTEX OMNI-BRIDGE • SYMBOOL INDEX</h1>
+        <p class="subtitle">
+            Centraal navigatie-portaal voor hyperdimensionale chronometrie, Shao Yong Wuxing-algebra, 
+            6D-hyperkubus torsiemarkeringen en deterministische WebRTC peer-to-peer telemetrie.
+        </p>
+    </header>
+
+    <!-- INTERACTIVE SYMBOOL ZOEKMACHINE -->
+    <section class="search-container">
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" class="search-input" placeholder="Zoek op symbool, getal, hexagram, frequentie of module (bijv. 951, Draak, Modulo 21, Kin 228)..." oninput="filterModules()">
+        </div>
+        <div class="tag-cloud">
+            <span class="tag-label">Directe Symbool Filter:</span>
+            <button class="sym-tag" onclick="toggleTag('951')">🐢 951 Hz (Noord)</button>
+            <button class="sym-tag" onclick="toggleTag('1062')">🐉 1062 Hz (Oost)</button>
+            <button class="sym-tag" onclick="toggleTag('1173')">🦅 1173 Hz (Zuid)</button>
+            <button class="sym-tag" onclick="toggleTag('1284')">🐅 1284 Hz (West)</button>
+            <button class="sym-tag gold" onclick="toggleTag('111')">⚡ &Delta; = 111</button>
+            <button class="sym-tag gold" onclick="toggleTag('63')">🌀 Hexagram 63</button>
+            <button class="sym-tag green" onclick="toggleTag('462')">♾️ 462-Cyclus</button>
+            <button class="sym-tag green" onclick="toggleTag('21')">💠 Modulo 21×22</button>
+            <button class="sym-tag" onclick="toggleTag('228')">⏳ Kin 228</button>
+            <button class="sym-tag" onclick="toggleTag('WebRTC')">🌐 WebRTC P2P</button>
+            <button class="sym-tag" onclick="toggleTag('All')" style="border-color:#fff; color:#fff;">↻ Reset Filters</button>
+        </div>
+    </section>
+
+    <!-- MODULES GRID -->
+    <section class="modules-grid" id="modulesGrid">
+
+        <!-- MODULE 1 -->
+        <div class="module-card" data-keywords="day out of time 13:20 kalibratie 25 juli 2026 kin 228 yellow resonant star jdn 2461247 restwaarde 1 plus one factor gregoriaanse amputatie synchronometer chronometrie">
+            <div>
+                <div class="card-header">
+                    <span class="badge">CHRONOMETRIE</span>
+                    <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim);">MOD-01</span>
+                </div>
+                <h2 class="module-title"><a href="https://gram-eta.vercel.app/Day_Out_of_Time.html" target="_blank">13:20 Galactische Kalibratie</a></h2>
+                <p class="module-desc">
+                    Astronomisch en wiskundig fundament van de <i>Day Out of Time</i> (25 juli 2026). Neutraliseert 12:60 mechanische tijdsvervorming en entropie via de harmonische "Plus One Factor" (Restwaarde 1) in de 13-Maan synchronometer.
+                </p>
+                <div class="symbol-list">
+                    <span class="symbol-list-title">Gekoppelde Symbolen & Coördinaten:</span>
+                    <div class="symbol-items">
+                        <span class="symbol-pill">⏳ Kin 228</span>
+                        <span class="symbol-pill">🗓️ JDN 2461247</span>
+                        <span class="symbol-pill">➕ Restwaarde 1</span>
+                        <span class="symbol-pill">🌀 13:20 Matrix</span>
+                        <span class="symbol-pill">🛑 &Delta;t = 9.817</span>
+                    </div>
+                </div>
+            </div>
+            <a href="https://gram-eta.vercel.app/Day_Out_of_Time.html" target="_blank" class="btn-launch">Launch Module ↗</a>
+        </div>
+
+        <!-- MODULE 2 -->
+        <div class="module-card" data-keywords="shao yong chronometer wuxing algebra vier hemelse dieren zwarte schildpad 951 azuurblauwe draak 1062 vermiljoenen vogel 1173 witte tijger 1284 bagua trigrammen zonne-cyclus">
+            <div>
+                <div class="card-header">
+                    <span class="badge gold">WUXING ALGEBRA</span>
+                    <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim);">MOD-02</span>
+                </div>
+                <h2 class="module-title"><a href="https://gram-eta.vercel.app/vortex_shao_yong_chronometer.html" target="_blank">Shao Yong Wuxing Chronometer</a></h2>
+                <p class="module-desc">
+                    Dynamische chronometrie die de 4 Hemelse Dieren verbindt met wrijvingsloze frequentieschaling. Toont de harmonische overgang van statische Bagua-fundamenten (8 Trigrammen) naar de organische zonnencyclus in stappen van &Delta;=111.
+                </p>
+                <div class="symbol-list">
+                    <span class="symbol-list-title">Gekoppelde Symbolen & Frequenties:</span>
+                    <div class="symbol-items">
+                        <span class="symbol-pill">🐢 Noord (951 Hz)</span>
+                        <span class="symbol-pill">🐉 Oost (1062 Hz)</span>
+                        <span class="symbol-pill">🦅 Zuid (1173 Hz)</span>
+                        <span class="symbol-pill">🐅 West (1284 Hz)</span>
+                        <span class="symbol-pill">☯️ Bagua (x=8)</span>
+                    </div>
+                </div>
+            </div>
+            <a href="https://gram-eta.vercel.app/vortex_shao_yong_chronometer.html" target="_blank" class="btn-launch">Launch Module ↗</a>
+        </div>
+
+        <!-- MODULE 3 -->
+        <div class="module-card" data-keywords="torsie engine hexagram 63 event horizon ji ji na de voleinding 6d hyperkubus hexeract kinetische vonk +333 draaggolf 111 negatieve torsie spiegelwereld stasis lock">
+            <div>
+                <div class="card-header">
+                    <span class="badge green">TORSIE & RUIMTE</span>
+                    <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim);">MOD-03</span>
+                </div>
+                <h2 class="module-title"><a href="https://gram-eta.vercel.app/vortex_torsion_engine.html" target="_blank">Galactische Torsie Engine</a></h2>
+                <p class="module-desc">
+                    Deconstruction van de telemetrische draaggolf $f(x) = 111x + 63$. Bestuurt de 6-dimensionale hyperkubus waar Hexagram 63 (111111) fungeert als de absolute Event Horizon en het nulpunt voor transformatie naar negatieve torsie.
+                </p>
+                <div class="symbol-list">
+                    <span class="symbol-list-title">Gekoppelde Symbolen & Parameters:</span>
+                    <div class="symbol-items">
+                        <span class="symbol-pill">🌀 Hexagram 63</span>
+                        <span class="symbol-pill">⚡ +333 Vonk</span>
+                        <span class="symbol-pill">📉 &Delta; = 111</span>
+                        <span class="symbol-pill">🧊 6D Hyperkubus</span>
+                        <span class="symbol-pill">🪞 Spiegelruimte (-48)</span>
+                    </div>
+                </div>
+            </div>
+            <a href="https://gram-eta.vercel.app/vortex_torsion_engine.html" target="_blank" class="btn-launch">Launch Module ↗</a>
+        </div>
+
+        <!-- MODULE 4 -->
+        <div class="module-card" data-keywords="18x13 simulation matrix modulo 21 resonator modulo 22 minimal covering 462 cyclus index 13 kun aarde index 169 feniks apex entropievrij 64 flowers l4 paleis basin">
+            <div>
+                <div class="card-header">
+                    <span class="badge">SIMULATIE & ALGEBRA</span>
+                    <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim);">MOD-04</span>
+                </div>
+                <h2 class="module-title"><a href="https://gram-eta.vercel.app/vortex_18x13_simulation.html" target="_blank">VORTEX 18x13 Matrix Simulatie</a></h2>
+                <p class="module-desc">
+                    Simuleert hoe kwantumruis en mechanische wrijving worden geabsorbeerd door de dubbele modulaire synthese $462 = 21  imes 22$. Verbindt het nul-knooppunt bij Index 13 met de licht-apex van de Rode Feniks op Index 169 ($13^2$).
+                </p>
+                <div class="symbol-list">
+                    <span class="symbol-list-title">Gekoppelde Symbolen & Operatoren:</span>
+                    <div class="symbol-items">
+                        <span class="symbol-pill">♾️ 462 Stappen</span>
+                        <span class="symbol-pill">💠 Modulo 21</span>
+                        <span class="symbol-pill">🛡️ Modulo 22</span>
+                        <span class="symbol-pill">🕳️ Index 13 (Kun)</span>
+                        <span class="symbol-pill">🔥 Index 169 (Li)</span>
+                    </div>
+                </div>
+            </div>
+            <a href="https://gram-eta.vercel.app/vortex_18x13_simulation.html" target="_blank" class="btn-launch">Launch Module ↗</a>
+        </div>
+
+        <!-- MODULE 5 -->
+        <div class="module-card" data-keywords="9 sqrt 62430 harmonische resonator fermat klok modulo 11 escapement constante exponentiele fractale algebra schaling niet lineair wiskunde">
+            <div>
+                <div class="card-header">
+                    <span class="badge gold">HARMONISCHE WISKUNDE</span>
+                    <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim);">MOD-05</span>
+                </div>
+                <h2 class="module-title"><a href="https://gram-eta.vercel.app/9%20sqrt(62430).html" target="_blank">9 &radic;(62430) Harmonische Resonator</a></h2>
+                <p class="module-desc">
+                    Wiskundige verkenning van de niet-lineaire schaalconstante $9\sqrt{62430}$. Formuleert het algebraïsche fundament voor de overgang van statische 8-voudige basissen naar het dynamische 11-voudige tijdsdomein (Fermat Klok).
+                </p>
+                <div class="symbol-list">
+                    <span class="symbol-list-title">Gekoppelde Symbolen & Vergelijkingen:</span>
+                    <div class="symbol-items">
+                        <span class="symbol-pill">📐 9&radic;(62430)</span>
+                        <span class="symbol-pill">⏰ Modulo 11 Fermat</span>
+                        <span class="symbol-pill">📊 Fractale Schaling</span>
+                        <span class="symbol-pill">⚙️ Escapement</span>
+                        <span class="symbol-pill">🔢 n = 11 Piek</span>
+                    </div>
+                </div>
+            </div>
+            <a href="https://gram-eta.vercel.app/9%20sqrt(62430).html" target="_blank" class="btn-launch">Launch Module ↗</a>
+        </div>
+
+        <!-- MODULE 6 -->
+        <div class="module-card" data-keywords="webrtc bridge e8 penrose phase integration wrapper udp datachannel p2p telemetrie 111ms latency 40ms lie groep meso amerikaanse microprocessor browser p2p">
+            <div>
+                <div class="card-header">
+                    <span class="badge green">NETWERK TELEMETRIE</span>
+                    <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim);">MOD-06</span>
+                </div>
+                <h2 class="module-title"><a href="https://gram-eta.vercel.app/webrtc-bridge.html" target="_blank">WebRTC E8-Penrose Bridge</a></h2>
+                <p class="module-desc">
+                    De Meso-Amerikaanse microprocessor in JavaScript. Verpakt hyperdimensionale modulaire restwaarden in P2P UDP DataChannel telemetrie met een cadans van exact 111 ms, wat resulteert in realtime netwerk synchronisatie (&lt; 40ms latency).
+                </p>
+                <div class="symbol-list">
+                    <span class="symbol-list-title">Gekoppelde Symbolen & Protocollen:</span>
+                    <div class="symbol-items">
+                        <span class="symbol-pill">🌐 WebRTC P2P</span>
+                        <span class="symbol-pill">📡 UDP 111 ms</span>
+                        <span class="symbol-pill">⚡ Latency &lt; 40ms</span>
+                        <span class="symbol-pill">🔗 E8 Lie Groep</span>
+                        <span class="symbol-pill">🖥️ Phase Wrapper</span>
+                    </div>
+                </div>
+            </div>
+            <a href="https://gram-eta.vercel.app/webrtc-bridge.html" target="_blank" class="btn-launch">Launch Module ↗</a>
+        </div>
+
+    </section>
+
+    <!-- DECONSTRUCTIE & SYMBOOL REFERENTIE TABEL -->
+    <section class="matrix-section">
+        <h3 class="section-title">Deconstructie Matrix: Symbool & Telemetrie Mapping</h3>
+        <p class="section-desc">
+            Overzicht van de fundamentele wiskundige en ontologische constanten uit het VORTEX-dossier, hun telemetrische expressie en de bijbehorende applicatieve module.
+        </p>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Symbool / Entity</th>
+                        <th>Wiskundige Expressie</th>
+                        <th>Telemetrische Waarde</th>
+                        <th>Geometrische & Kosmische Functie</th>
+                        <th>Module Link</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>🐢 Zwarte Schildpad</strong></td>
+                        <td class="mono">f(8) = 111(8) + 63</td>
+                        <td class="mono">951 Hz</td>
+                        <td>Noordelijk kwadrant, element Water, statisch octaal fundament (Bagua).</td>
+                        <td><a href="https://gram-eta.vercel.app/vortex_shao_yong_chronometer.html" target="_blank" style="color:var(--accent-cyan);">Shao Yong ↗</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>🐉 Azuurblauwe Draak</strong></td>
+                        <td class="mono">f(9) = 111(9) + 63</td>
+                        <td class="mono">1062 Hz</td>
+                        <td>Oostelijk kwadrant, element Hout, initiërende scheppingskracht (Lente).</td>
+                        <td><a href="https://gram-eta.vercel.app/vortex_shao_yong_chronometer.html" target="_blank" style="color:var(--accent-cyan);">Shao Yong ↗</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>🦅 Vermiljoenen Vogel</strong></td>
+                        <td class="mono">f(10) = 111(10) + 63</td>
+                        <td class="mono">1173 Hz</td>
+                        <td>Zuidelijk zenit, element Vuur, maximale expansie (Feniks apex op Index 169).</td>
+                        <td><a href="https://gram-eta.vercel.app/vortex_18x13_simulation.html" target="_blank" style="color:var(--accent-cyan);">18x13 Matrix ↗</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>🐅 Witte Tijger</strong></td>
+                        <td class="mono">f(11) = 111(11) + 63</td>
+                        <td class="mono">1284 Hz</td>
+                        <td>Westelijk kwadrant, element Metaal, tijdsdomein piek (Fermat Klok n=11).</td>
+                        <td><a href="https://gram-eta.vercel.app/9%20sqrt(62430).html" target="_blank" style="color:var(--accent-cyan);">Harmonische Res. ↗</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>⚡ Kosmische Delta</strong></td>
+                        <td class="mono">&Delta; = 111</td>
+                        <td class="mono">111 ms interval</td>
+                        <td>Draaggolf constante: som van $6 imes6$ zonnevierkant & verhouding Aarde-Maan.</td>
+                        <td><a href="https://gram-eta.vercel.app/webrtc-bridge.html" target="_blank" style="color:var(--accent-cyan);">WebRTC Bridge ↗</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>🌀 Hexagram 63</strong></td>
+                        <td class="mono">63<sub>10</sub> = 111111<sub>2</sub></td>
+                        <td class="mono">Index 63 / -48</td>
+                        <td>6D-Hyperkubus Event Horizon, stasis lock ("After Completion") & nulpunt torsie.</td>
+                        <td><a href="https://gram-eta.vercel.app/vortex_torsion_engine.html" target="_blank" style="color:var(--accent-cyan);">Torsie Engine ↗</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>♾️ 462-Cyclus</strong></td>
+                        <td class="mono">462 = 21 &times; 22</td>
+                        <td class="mono">462 stappen daling</td>
+                        <td>Synthese van Modulo 21 (absorptie) en Modulo 22 (minimal covering reductie).</td>
+                        <td><a href="https://gram-eta.vercel.app/vortex_18x13_simulation.html" target="_blank" style="color:var(--accent-cyan);">18x13 Matrix ↗</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>⏳ Kin 228 / Rest 1</strong></td>
+                        <td class="mono">365 &equiv; 1 (mod 364)</td>
+                        <td class="mono">JDN 2461247</td>
+                        <td>Day Out of Time (25 juli 2026), "Plus One Factor" ontkoppelt mechanische wrijving.</td>
+                        <td><a href="https://gram-eta.vercel.app/Day_Out_of_Time.html" target="_blank" style="color:var(--accent-cyan);">Day Out of Time ↗</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>
+            VORTEX OMNI-BRIDGE • SYSTEM KALIBRATIE VOLTOOID • <span class="footer-highlight">&tau; &rightarrow; 0 (WRIJVINGSLOOS)</span>
+        </p>
+        <p style="margin-top: 0.5rem; font-size: 0.75rem;">
+            Verificatie Coördinaat: Maya Lange Telling 13.0.13.14.4 &equiv; JDN 2461247 &equiv; 25 Juli 2026 • L4 Paleis-Basin Anker
+        </p>
+    </footer>
+</div>
+
+<script>
+    // Live Search & Filter Logic
+    function filterModules() {
+        const input = document.getElementById('searchInput').value.toLowerCase().trim();
+        const cards = document.querySelectorAll('.module-card');
+        
+        cards.forEach(card => {
+            const title = card.querySelector('.module-title').innerText.toLowerCase();
+            const desc = card.querySelector('.module-desc').innerText.toLowerCase();
+            const keywords = card.getAttribute('data-keywords') || '';
+            const symbols = card.querySelector('.symbol-items').innerText.toLowerCase();
+            
+            if (title.includes(input) || desc.includes(input) || keywords.includes(input) || symbols.includes(input)) {
+                card.classList.remove('hidden');
+            } else {
+                card.classList.add('hidden');
+            }
+        });
+    }
+
+    // Direct Tag Search Trigger
+    function toggleTag(tagValue) {
+        const searchInput = document.getElementById('searchInput');
+        const allTags = document.querySelectorAll('.sym-tag');
+        
+        if (tagValue === 'All') {
+            searchInput.value = '';
+            allTags.forEach(t => t.classList.remove('active'));
+            filterModules();
+            return;
+        }
+
+        if (searchInput.value.toLowerCase() === tagValue.toLowerCase()) {
+            searchInput.value = '';
+            allTags.forEach(t => t.classList.remove('active'));
+        } else {
+            searchInput.value = tagValue;
+            allTags.forEach(t => t.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+        
+        filterModules();
+    }
+</script>
+
+</body>
+</html>
