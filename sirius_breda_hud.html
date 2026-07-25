@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX // Breda & Sirius Telemetrie HUD</title>
+    <style>
+        :root {
+            --bg-deep: #050505;
+            --grid-subtle: rgba(0, 255, 204, 0.15);
+            --ui-cyan: #00ffcc;
+            --ui-gold: #ffeb3b;
+            --ui-amber: #ff9800;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--ui-cyan);
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .hud-container {
+            border: 2px solid var(--ui-cyan);
+            padding: 25px;
+            background: rgba(0, 0, 0, 0.95);
+            box-shadow: 0 0 30px rgba(0, 255, 204, 0.25);
+            max-width: 480px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: var(--ui-gold);
+        }
+
+        .live-clock {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--ui-gold);
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px rgba(255, 235, 59, 0.5);
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto 15px auto;
+            border: 1px solid var(--ui-cyan);
+            background-color: #000;
+        }
+
+        .telemetry-data {
+            text-align: left;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            border-top: 1px solid var(--grid-subtle);
+            padding-top: 12px;
+        }
+
+        .label-cyan { color: var(--ui-cyan); font-weight: bold; }
+        .label-gold { color: var(--ui-gold); font-weight: bold; }
+        .label-amber { color: var(--ui-amber); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="hud-container">
+        <h2>VORTEX // BREDA ASTRO-CHRONOMETER</h2>
+        <div id="liveClock" class="live-clock">00:00:00 UTC</div>
+        
+        <canvas id="radarCanvas" width="400" height="400"></canvas>
+
+        <div class="telemetry-data">
+            <div>TARGET: <span class="label-gold">Sirius (Alpha Canis Majoris)</span></div>
+            <div>COÖRDINATEN: <span class="label-cyan">RA 06h 45m | DEC -16° 43'</span></div>
+            <div>MAYA LONG COUNT: <span class="label-amber">13.0.13.14.4 (25 Juli 2026)</span></div>
+            <div>VORTEX MATRIX: <span class="label-gold">13 Rijen × 18 Kolommen (234 Pnt)</span></div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('radarCanvas');
+        const ctx = canvas.getContext('2d');
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const radius = 170;
+
+        let pulseRadius = 0;
+
+        // Real-time klokfunctie (Breda / Lokale tijd & UTC)
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toTimeString().split(' ')[0];
+            const utcString = now.toUTCString().split(' ')[4] + " (UTC)";
+            document.getElementById('liveClock').innerText = timeString + " / " + utcString;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function drawGrid() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Rasterlijnen
+            ctx.strokeStyle = "rgba(0, 255, 204, 0.2)";
+            ctx.lineWidth = 1;
+            const step = canvas.width / 8;
+            for (let i = 0; i <= 8; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * step, 0);
+                ctx.lineTo(i * step, canvas.height);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, i * step);
+                ctx.lineTo(canvas.width, i * step);
+                ctx.stroke();
+            }
+
+            // Concentrische Ringen
+            ctx.strokeStyle = "rgba(0, 255, 204, 0.4)";
+            for (let r = 1; r <= 3; r++) {
+                ctx.beginPath();
+                ctx.arc(cx, cy, (radius / 3) * r, 0, 2 * Math.PI);
+                ctx.stroke();
+            }
+
+            // Centrum / Nulpunt
+            ctx.fillStyle = "#ffffff";
+            ctx.beginPath();
+            ctx.arc(cx, cy, 4, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+
+        function drawVector(angle, color, label) {
+            const rad = (angle - 90) * (Math.PI / 180);
+            const x = cx + radius * Math.cos(rad);
+            const y = cy + radius * Math.sin(rad);
+
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, 2 * Math.PI);
+            ctx.fill();
+
+            ctx.font = "11px 'Courier New'";
+            ctx.fillStyle = color;
+            ctx.fillText(label, x + (x > cx ? 8 : -65), y + (y > cy ? 15 : -10));
+        }
+
+        function animate() {
+            drawGrid();
+
+            // Astronomische assen
+            drawVector(161.6, "#ffeb3b", "161.6° Gulden As");
+            drawVector(103.0, "#00ffcc", "Sirius 103°");
+            drawVector(50.0, "#ff9800", "Bovenas 50°");
+
+            // Condensator puls-effect
+            ctx.strokeStyle = `rgba(255, 235, 59, ${1 - pulseRadius / radius})`;
+            ctx.lineWidth = 2;
+            ctx.shadowColor = "#ffeb3b";
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.arc(cx, cy, pulseRadius, 0, 2 * Math.PI);
+            ctx.stroke();
+            ctx.shadowBlur = 0; 
+
+            pulseRadius += 1.5;
+            if (pulseRadius > radius) pulseRadius = 0;
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
