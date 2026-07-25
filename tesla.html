@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX OMNI-BRIDGE - Kinetische Toruslus & Stator Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #111827;
+            --card-border: #1f2937;
+            --accent-gold: #facc15;
+            --accent-green: #10b981;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --btn-bg: #1f2937;
+            --btn-hover: #374151;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        h1, h2, h3 {
+            color: var(--accent-gold);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+        }
+
+        .grid-3, .grid-4 {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .grid-3 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+        .grid-4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+
+        .stat-box {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--card-border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .stat-value.gold { color: var(--accent-gold); }
+        .stat-value.purple { color: var(--accent-purple); }
+        
+        .badge {
+            display: inline-block;
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        button {
+            background-color: var(--btn-bg);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+            padding: 0.625rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        button:hover {
+            background-color: var(--btn-hover);
+            border-color: var(--text-muted);
+        }
+
+        button.outline-gold {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+
+        button.outline-purple {
+            border-color: var(--accent-purple);
+            color: var(--accent-purple);
+        }
+
+        .console-screen {
+            background-color: rgba(0, 0, 0, 0.6);
+            border-left: 4px solid var(--accent-green);
+            padding: 1.25rem;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 1.25rem 0;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            color: var(--accent-green);
+            border-radius: 0 0.375rem 0.375rem 0;
+            word-break: break-all;
+        }
+
+        .vortex-visualizer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 0.5rem;
+            border: 1px dashed var(--card-border);
+        }
+
+        svg {
+            max-width: 300px;
+            height: auto;
+            overflow: visible;
+        }
+
+        .node-circle {
+            fill: var(--card-bg);
+            stroke: var(--text-muted);
+            stroke-width: 2;
+        }
+
+        .node-text {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 16px;
+            font-weight: bold;
+            fill: var(--text-main);
+            text-anchor: middle;
+            dominant-baseline: central;
+        }
+
+        .node-active .node-circle {
+            fill: var(--accent-gold);
+            stroke: #fff;
+            stroke-width: 4;
+            filter: drop-shadow(0 0 8px var(--accent-gold));
+        }
+
+        .node-active .node-text {
+            fill: #000;
+        }
+
+        .node-ethereal .node-circle {
+            stroke: var(--accent-purple);
+            stroke-dasharray: 4;
+        }
+
+        .node-ethereal .node-text {
+            fill: var(--accent-purple);
+        }
+
+        .vortex-path {
+            fill: none;
+            stroke: rgba(59, 130, 246, 0.3);
+            stroke-width: 2;
+        }
+
+        .table-container {
+            max-height: 220px;
+            overflow-y: auto;
+            margin-top: 1rem;
+            border: 1px solid var(--card-border);
+            border-radius: 0.375rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        th {
+            background-color: rgba(0, 0, 0, 0.5);
+            color: var(--accent-gold);
+            position: sticky;
+            top: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- Moduul 1: Maya Kosmische Teller -->
+    <div class="card">
+        <h2>Maya Kosmische Teller (Base-0 Index)</h2>
+        <div class="grid-4">
+            <div class="stat-box">
+                <div class="stat-label">Lange Telling</div>
+                <div class="stat-value" id="long-count-display">13.0.0.0.1</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Base-0 Index</div>
+                <div class="stat-value"><span class="badge" id="base-index-display">Index 0</span></div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Tzolk'in Dagnaam</div>
+                <div class="stat-value gold" id="tzolkin-name-display">Imix</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Betekenis</div>
+                <div class="stat-value" style="font-size: 1.1rem; color: var(--accent-green);" id="meaning-display">Krokodil / Waterlelie</div>
+            </div>
+        </div>
+        <div class="btn-group">
+            <button onclick="updateKin(1)">+1 Kin (Dag)</button>
+            <button onclick="updateKin(20)">+20 (1 Uinal)</button>
+            <button onclick="updateKin(360)">+360 (1 Tun)</button>
+            <button onclick="updateKin(-1)">-1 Kin</button>
+            <button class="outline-gold" onclick="jumpToIndex(13)">Spring naar Index 13 (Ix)</button>
+        </div>
+    </div>
+
+    <!-- Moduul 2: VORTEX 1-2-4-8-7-5 Resonator & Stator (9) -->
+    <div class="card">
+        <h2>VORTEX 1-2-4-8-7-5 Kinetische Resonator & Stator (9)</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;">
+            De machten van 2 genereren via digitale wortelsomming de actieve toruslus (1-2-4-8-7-5). Het Pythagoreïsche hardware-raster (90, 216, 234) reduceert via de negenproef consequent tot de vaste statorwaarde <strong>9</strong> als coherence basin.
+        </p>
+
+        <div class="grid-3">
+            <div class="stat-box">
+                <div class="stat-label">Macht van 2 ($2^n$)</div>
+                <div class="stat-value gold" id="power-display">2<sup>0</sup> = 1</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Digital Root (Mod 9)</div>
+                <div class="stat-value purple" id="root-display">1</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Stator Coherence (Raster)</div>
+                <div class="stat-value" style="color: var(--accent-green);">9 (Vast)</div>
+            </div>
+        </div>
+
+        <!-- SVG Toruslus -->
+        <div class="vortex-visualizer">
+            <svg viewBox="0 0 300 300">
+                <polygon class="vortex-path" points="150,20 262,85 262,215 150,280 38,215 38,85" />
+                <!-- Nodes -->
+                <g class="node-ethereal" transform="translate(150, 20)"><circle class="node-circle" r="18"/><text class="node-text">9</text></g>
+                <g id="node-1" transform="translate(214, 37)"><circle class="node-circle" r="18"/><text class="node-text">1</text></g>
+                <g id="node-2" transform="translate(262, 100)"><circle class="node-circle" r="18"/><text class="node-text">2</text></g>
+                <g class="node-ethereal" transform="translate(262, 180)"><circle class="node-circle" r="18"/><text class="node-text">3</text></g>
+                <g id="node-4" transform="translate(214, 243)"><circle class="node-circle" r="18"/><text class="node-text">4</text></g>
+                <g id="node-5" transform="translate(150, 265)"><circle class="node-circle" r="18"/><text class="node-text">5</text></g>
+                <g class="node-ethereal" transform="translate(86, 243)"><circle class="node-circle" r="18"/><text class="node-text">6</text></g>
+                <g id="node-7" transform="translate(38, 180)"><circle class="node-circle" r="18"/><text class="node-text">7</text></g>
+                <g id="node-8" transform="translate(38, 100)"><circle class="node-circle" r="18"/><text class="node-text">8</text></g>
+            </svg>
+        </div>
+
+        <div class="console-screen" id="vortex-console">
+            > Systeem gereed. Torus-circuit actief gekoppeld aan stator-raster...
+        </div>
+
+        <div class="btn-group">
+            <button class="outline-purple" onclick="stepVortex(-1)">Vorige Stap</button>
+            <button class="outline-gold" onclick="stepVortex(1)">Volgende Expansie ($2^{n+1}$)</button>
+            <button onclick="autoPlayVortex()">Auto-Pulse Loop</button>
+            <button onclick="resetVortex()">Reset ($2^0$)</button>
+        </div>
+
+        <!-- Tabel machten van 2 -->
+        <div class="table-container">
+            <table id="vortex-table">
+                <thead>
+                    <tr>
+                        <th>Macht ($n$)</th>
+                        <th>Waarde ($2^n$)</th>
+                        <th>Digitale Sommatie</th>
+                        <th>Digital Root</th>
+                    </tr>
+                </thead>
+                <tbody id="vortex-table-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Maya Base-0 Logica
+    const tzolkinDays = [
+        { name: "Imix", meaning: "Krokodil / Waterlelie" },
+        { name: "Ik'", meaning: "Wind / Adem" },
+        { name: "Ak'b'al", meaning: "Nacht / Duisternis" },
+        { name: "K'an", meaning: "Zaad / Maïs" },
+        { name: "Chikchan", meaning: "Slang / Levenskracht" },
+        { name: "Kimi", meaning: "Dood / Transformator" },
+        { name: "Manik'", meaning: "Hert / Hand" },
+        { name: "Lamat", meaning: "Ster / Venus" },
+        { name: "Muluk'", meaning: "Water / Offerande" },
+        { name: "Ok", meaning: "Hond / Trouw" },
+        { name: "Chuwen", meaning: "Aap / Wever" },
+        { name: "Eb'", meaning: "Gras / Weg" },
+        { name: "Ben", meaning: "Riet / Ruimte" },
+        { name: "Ix", meaning: "Jaguar / Magici" },
+        { name: "Men", meaning: "Adelaar / Visie" },
+        { name: "Kib'", meaning: "Krijger / Intelligentie" },
+        { name: "Kab'an", meaning: "Aarde / Navigatie" },
+        { name: "Etz'nab'", meaning: "Spiegel / Vuursteen" },
+        { name: "Kawak'", meaning: "Storm / Donder" },
+        { name: "Ajaw", meaning: "Zon / Heer (System Reset)" }
+    ];
+
+    let totalKin = (13 * 144000) + 1;
+
+    function updateDisplay() {
+        let tempKin = totalKin;
+        const baktun = Math.floor(tempKin / 144000);
+        tempKin %= 144000;
+        const katun = Math.floor(tempKin / 7200);
+        tempKin %= 7200;
+        const tun = Math.floor(tempKin / 360);
+        tempKin %= 360;
+        const uinal = Math.floor(tempKin / 20);
+        const kin = tempKin % 20;
+
+        document.getElementById("long-count-display").innerText = `${baktun}.${katun}.${tun}.${uinal}.${kin}`;
+        const baseIndex = ((totalKin - 1) % 20 + 20) % 20;
+        const currentDay = tzolkinDays[baseIndex];
+
+        document.getElementById("base-index-display").innerText = `Index ${baseIndex}`;
+        document.getElementById("tzolkin-name-display").innerText = currentDay.name;
+        document.getElementById("meaning-display").innerText = currentDay.meaning;
+    }
+
+    function updateKin(delta) {
+        totalKin += delta;
+        updateDisplay();
+    }
+
+    function jumpToIndex(targetIndex) {
+        const currentIndex = ((totalKin - 1) % 20 + 20) % 20;
+        totalKin += (targetIndex - currentIndex);
+        updateDisplay();
+    }
+
+    // Vortex Resonator Logica
+    let currentPower = 0;
+    let autoPlayInterval = null;
+
+    function getDigitalRoot(numStr) {
+        let currentStr = numStr;
+        let history = [currentStr];
+        while (currentStr.length > 1) {
+            let sum = 0;
+            for (let char of currentStr) sum += parseInt(char);
+            currentStr = sum.toString();
+            history.push(currentStr);
+        }
+        return { root: parseInt(currentStr), history: history.join(" → ") };
+    }
+
+    function initVortexTable() {
+        const tbody = document.getElementById("vortex-table-body");
+        tbody.innerHTML = "";
+        let val = 1n;
+        for (let i = 0; i <= 20; i++) {
+            let valStr = val.toString();
+            let calc = getDigitalRoot(valStr);
+            let tr = document.createElement("tr");
+            tr.id = `row-power-${i}`;
+            tr.innerHTML = `
+                <td>2<sup>${i}</sup></td>
+                <td style="color: var(--accent-gold);">${valStr}</td>
+                <td>${calc.history}</td>
+                <td style="font-weight: bold; color: var(--accent-purple);">${calc.root}</td>
+            `;
+            tbody.appendChild(tr);
+            val = val * 2n;
+        }
+    }
+
+    function updateVortexVisuals() {
+        let val = BigInt(2) ** BigInt(currentPower);
+        let valStr = val.toString();
+        let calc = getDigitalRoot(valStr);
+        let root = calc.root;
+
+        document.getElementById("power-display").innerHTML = `2<sup>${currentPower}</sup> = ${valStr.length > 8 ? valStr.substring(0, 6) + '...' : valStr}`;
+        document.getElementById("root-display").innerText = root;
+        document.getElementById("vortex-console").innerHTML = `> Macht 2^${currentPower} gereduceerd via digitale wortel: [ ${calc.history} ]. Stator-raster houdt stand op 9.`;
+
+        document.querySelectorAll(".node-active").forEach(el => el.classList.remove("node-active"));
+        let activeNode = document.getElementById(`node-${root}`);
+        if (activeNode) activeNode.classList.add("node-active");
+
+        document.querySelectorAll("#vortex-table tr").forEach(el => el.style.backgroundColor = "");
+        let activeRow = document.getElementById(`row-power-${currentPower}`);
+        if (activeRow) {
+            activeRow.style.backgroundColor = "rgba(250, 204, 21, 0.15)";
+            activeRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    function stepVortex(direction) {
+        currentPower += direction;
+        if (currentPower < 0) currentPower = 20;
+        if (currentPower > 20) currentPower = 0;
+        updateVortexVisuals();
+    }
+
+    function resetVortex() {
+        if (autoPlayInterval) clearInterval(autoPlayInterval);
+        currentPower = 0;
+        updateVortexVisuals();
+    }
+
+    function autoPlayVortex() {
+        if (autoPlayInterval) {
+            clearInterval(autoPlayInterval);
+            autoPlayInterval = null;
+        } else {
+            autoPlayInterval = setInterval(() => stepVortex(1), 1200);
+        }
+    }
+
+    window.onload = () => {
+        updateDisplay();
+        initVortexTable();
+        updateVortexVisuals();
+    };
+</script>
+
+</body>
+</html>
