@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX-169 & Modulo 21 Resonator</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --panel-bg: #131c2e;
+            --accent-green: #10b981;
+            --accent-cyan: #06b6d4;
+            --accent-gold: #f59e0b;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+            color: var(--accent-cyan);
+            letter-spacing: 2px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .card {
+            background-color: var(--panel-bg);
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 1.25rem;
+            color: var(--accent-gold);
+            border-bottom: 1px solid #1e293b;
+            padding-bottom: 10px;
+        }
+
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(13, 1fr);
+            gap: 3px;
+            background-color: #0f172a;
+            padding: 10px;
+            border-radius: 8px;
+            aspect-ratio: 1;
+        }
+
+        .cell {
+            background-color: #334155;
+            border-radius: 2px;
+            transition: background-color 0.3s;
+        }
+
+        .cell.triangle-lower {
+            background-color: var(--accent-green); /* 91 knooppunten (T13) */
+        }
+
+        .cell.triangle-upper {
+            background-color: var(--accent-cyan); /* 78 knooppunten (T12) */
+        }
+
+        .cell.diagonal {
+            background-color: var(--accent-gold);
+        }
+
+        .stats {
+            margin-top: 15px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .stats span {
+            font-weight: bold;
+            color: var(--accent-cyan);
+        }
+
+        .interactive-box {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        button {
+            background-color: var(--accent-cyan);
+            color: var(--bg-color);
+            border: none;
+            padding: 10px 15px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .output-display {
+            background-color: #0f172a;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            color: var(--accent-green);
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>VORTEX-169 ARCHITECTUUR</h1>
+        <p>Modulaire Ring, Pythogorische Stator en Theon-splitsing Dashboard</p>
+    </header>
+
+    <div class="container">
+        <!-- Kaart 1: Theon-splitsing (169 raster) -->
+        <div class="card">
+            <h2>1. Theon-splitsing (13² = 169)</h2>
+            <div class="matrix-grid" id="matrixGrid"></div>
+            <div class="stats">
+                <p>Resonante benedendriehoek ($T_{13}$): <span style="color:var(--accent-green)">91 cellen</span></p>
+                <p>Absorptiedriehoek ($T_{12}$): <span style="color:var(--accent-cyan)">78 cellen</span></p>
+                <p>Totaal raster: <span>169 knooppunten</span></p>
+            </div>
+        </div>
+
+        <!-- Kaart 2: Pythagoras Stator Schaling -->
+        <div class="card">
+            <h2>2. Stator & Raster Schaling (Factor 18)</h2>
+            <div class="stats">
+                <p>Primitieve Triple: <strong>5² + 12² = 13²</strong></p>
+                <hr style="border-color: #1e293b; margin: 15px 0;">
+                <p>Basis (X-as): 5 × 18 = <span id="valBase">90</span></p>
+                <p>Rechthoekszijde (Y-as): 12 × 18 = <span id="valHeight">216</span></p>
+                <p>Hypotenusa / Datapunten: 13 × 18 = <span id="valHypo">234</span></p>
+            </div>
+            <div class="interactive-box" style="margin-top: 20px;">
+                <label for="scaleFactor">Schalingsfactor aanpassen:</label>
+                <input type="range" id="scaleFactor" min="1" max="36" value="18" oninput="updateScaling(this.value)">
+                <p>Huidige factor: <span id="factorDisplay">18</span></p>
+            </div>
+        </div>
+
+        <!-- Kaart 3: Modulo 21 & Binaire Involutie -->
+        <div class="card">
+            <h2>3. Modulo 21 Scharnierpunt</h2>
+            <div class="interactive-box">
+                <p>Berekening van de ring-involutie:</p>
+                <div class="output-display">
+                    169 = 8 × 21 + 1<br>
+                    169 ≡ 1 (mod 21)
+                </div>
+                <p>Binaire Vorm (Palindroom):</p>
+                <div class="output-display">
+                    169₁₀ = 10101001₂
+                </div>
+                <button onclick="triggerResonance()">Activeer Viriditas Reset</button>
+                <p id="resetStatus" style="font-size: 0.9rem; color: var(--text-muted); min-height: 1.2em;"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Genereer het 13x13 raster voor de Theon-splitsing visualisatie
+        const gridContainer = document.getElementById('matrixGrid');
+        for (let row = 0; row < 13; row++) {
+            for (let col = 0; col < 13; col++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                if (row > col) {
+                    cell.classList.add('triangle-lower'); // 91
+                } else if (row < col) {
+                    cell.classList.add('triangle-upper'); // 78
+                } else {
+                    cell.classList.add('diagonal'); // Diagonaal
+                }
+                gridContainer.appendChild(cell);
+            }
+        }
+
+        // Dynamische schaling update
+        function updateScaling(factor) {
+            document.getElementById('factorDisplay').innerText = factor;
+            document.getElementById('valBase').innerText = 5 * factor;
+            document.getElementById('valHeight').innerText = 12 * factor;
+            document.getElementById('valHypo').innerText = 13 * factor;
+        }
+
+        // Interactieve knop actie
+        function triggerResonance() {
+            const status = document.getElementById('resetStatus');
+            status.style.color = 'var(--accent-green)';
+            status.innerText = "Systeem-involutie voltooid: Modulo 21 gereset naar 1. Viriditas herstart.";
+            setTimeout(() => {
+                status.innerText = "";
+            }, 4000);
+        }
+    </script>
+</body>
+</html>
