@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX • YI TORSION ENGINE & WUXING ALGEBRA</title>
+    <style>
+        :root {
+            --bg-base: #05070a;
+            --bg-panel: #0b0f19;
+            --bg-card: #121826;
+            --cyan-glow: #00f0ff;
+            --gold-glow: #ffd700;
+            --red-alert: #ff2a5f;
+            --green-wood: #2ecc71;
+            --blue-water: #3498db;
+            --text-main: #e0e6ed;
+            --text-dim: #7888a8;
+            --border: #1e293b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: 'Courier New', Courier, monospace;
+            padding: 15px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--bg-panel);
+            border: 1px solid var(--cyan-glow);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.15);
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px dashed var(--border);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        h1 { color: var(--gold-glow); font-size: 1.6em; letter-spacing: 2px; text-transform: uppercase; }
+        .subtitle { color: var(--cyan-glow); font-size: 0.85em; margin-top: 5px; }
+
+        .control-bar {
+            background: var(--bg-card);
+            border-left: 4px solid var(--gold-glow);
+            padding: 15px 20px;
+            border-radius: 6px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .control-group { display: flex; align-items: center; gap: 10px; }
+        label { color: var(--gold-glow); font-weight: bold; font-size: 0.9em; }
+        
+        select, button {
+            background: #05070a;
+            border: 1px solid var(--cyan-glow);
+            color: var(--cyan-glow);
+            padding: 8px 12px;
+            font-family: inherit;
+            font-size: 0.95em;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover, select:hover { background: var(--cyan-glow); color: #000; font-weight: bold; }
+
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 15px; margin-bottom: 20px; }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 15px;
+        }
+        .card h3 {
+            font-size: 0.8em;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 6px;
+            margin-bottom: 10px;
+        }
+
+        .val-main { font-size: 1.4em; font-weight: bold; color: var(--gold-glow); }
+        .val-sub { font-size: 0.85em; color: var(--cyan-glow); margin-top: 5px; }
+
+        /* TORSION BAR */
+        .torsion-wrapper { background: #000; border: 1px solid var(--border); padding: 15px; border-radius: 6px; text-align: center; margin-bottom: 20px; }
+        .torsion-meter { height: 20px; background: #1e293b; border-radius: 10px; margin: 10px 0; overflow: hidden; position: relative; display: flex; }
+        .t-fill { height: 100%; transition: width 0.4s ease, background 0.4s ease; }
+        .t-low { background: var(--green-wood); }
+        .t-med { background: var(--gold-glow); }
+        .t-high { background: var(--red-alert); }
+
+        /* YI LAYERS L0-L5 */
+        .layer-box { display: flex; flex-direction: column; gap: 8px; font-size: 0.8em; }
+        .layer-item { background: #07090e; border-left: 3px solid var(--cyan-glow); padding: 8px; border-radius: 2px; }
+        .l-title { color: var(--gold-glow); font-weight: bold; }
+
+        /* WUXING INTERACTION ALGEBRA */
+        .wuxing-flow { display: flex; justify-content: space-around; align-items: center; background: #07090e; padding: 12px; border-radius: 4px; border: 1px solid var(--border); margin-top: 10px; text-align: center; font-size: 0.85em; }
+        .w-node { padding: 6px 10px; border-radius: 4px; font-weight: bold; }
+        .n-wood { color: var(--green-wood); border: 1px solid var(--green-wood); }
+        .n-fire { color: var(--red-alert); border: 1px solid var(--red-alert); }
+        .n-earth { color: var(--gold-glow); border: 1px solid var(--gold-glow); }
+        .n-metal { color: #bdc3c7; border: 1px solid #bdc3c7; }
+        .n-water { color: var(--blue-water); border: 1px solid var(--blue-water); }
+
+        .status-box { background: #000; border-left: 4px solid var(--cyan-glow); padding: 15px; border-radius: 4px; font-size: 0.85em; margin-top: 15px; }
+        .hl-gold { color: var(--gold-glow); font-weight: bold; }
+        .hl-cyan { color: var(--cyan-glow); font-weight: bold; }
+        .hl-red { color: var(--red-alert); font-weight: bold; }
+        .hl-green { color: var(--green-wood); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>VORTEX • YI TORSION ALGEBRA ENGINE</h1>
+        <div class="subtitle">Wuxing Interaction Algebra & L0-L5 Multiscale Coherence Attractors (Shao Yong / 64 Flowers)</div>
+    </header>
+
+    <div class="control-bar">
+        <div class="control-group">
+            <label for="temporalState">Selecteer VORTEX Tijd-Fase:</label>
+            <select id="temporalState" onchange="updateEngine()">
+                <option value="gregorian">1. Gregoriaanse Kalendersprong (1582) [12:60 Mechanische Torsie]</option>
+                <option value="kinetic">2. 13-Maan Kinetische Opbouw (Maanhuis 25 / Feniks Expansie)</option>
+                <option value="dayout" selected>3. Day Out of Time (25 Juli) [Restwaarde 1 • Modulo 21 Absorptie]</option>
+                <option value="pegasus">4. 23:00 Uur van de Rat (Pegasus Uitlijning / Maanhuis 13)</option>
+                <option value="dragon">5. 24:00 Uur van de Draak (Galactisch Nieuwjaar / Nulpunt Reset)</option>
+            </select>
+        </div>
+        <button onclick="updateEngine()">Bereken Coherentie</button>
+    </div>
+
+    <!-- TORSION METER DASHBOARD -->
+    <div class="torsion-wrapper">
+        <div style="font-size: 0.9em; color: var(--text-dim); text-transform: uppercase;">Systeem Torsie-Veld (τ) & Coherentie Index (64 Flowers Manifold)</div>
+        <div class="torsion-meter">
+            <div id="torsionBar" class="t-fill t-low" style="width: 15%;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.8em;">
+            <span id="torsionValText" class="hl-green">τ = 0.15 (Lage Torsie / Hoog Coherent)</span>
+            <span id="coherenceValText" class="hl-cyan">Relatieve Sterkte: +0.55 (Sheng Genererend)</span>
+            <span id="flowerStateText" class="hl-gold">Manifold: Transport Coherent</span>
+        </div>
+    </div>
+
+    <div class="grid-2">
+        <!-- LEFT: WUXING INTERACTION ALGEBRA -->
+        <div class="card">
+            <h3>Wuxing Interaction Algebra & Transport Flow</h3>
+            <div class="val-main" id="wuxingTitle">Water ➔ Hout (Sheng Genererend)</div>
+            <div class="val-sub" id="wuxingDesc">Coherence-preserving transport manifold (Lower torsion preference)</div>
+            
+            <div class="wuxing-flow" id="flowNodes">
+                <div class="w-node n-water">WATER (水)<br><small>Nulpunt</small></div>
+                <div>──Sheng (生)──►</div>
+                <div class="w-node n-wood">HOUT (木)<br><small>Draak / Imix</small></div>
+                <div>──Sheng (生)──►</div>
+                <div class="w-node n-fire">VUUR (火)<br><small>Feniks Apex</small></div>
+            </div>
+
+            <div style="margin-top: 15px; font-size: 0.8em; color: var(--text-dim); line-height: 1.6;" id="algebraText">
+                Volgens de <i>64 Flowers</i> algebra is het transportpad van Water naar Hout (+0.21 net bias) en Hout naar Vuur (+0.18 net bias) uitzonderlijk coherentie-verhogend. Door de opgebouwde torsie op Index 13 te aarden in Water, wordt mechanische wrijving ($\tau$) geaborteerd.
+            </div>
+        </div>
+
+        <!-- RIGHT: YI PROCESS GEOMETRY LAYERS -->
+        <div class="card">
+            <h3>Yi Process Geometry (Multiscale Lagen L0 - L5)</h3>
+            <div class="layer-box">
+                <div class="layer-item">
+                    <span class="l-title">L5 - N² Deep Attractor:</span> <span id="valL5">Persistent Torsion-Coherence Condensation (Restwaarde 1)</span>
+                </div>
+                <div class="layer-item">
+                    <span class="l-title">L4 - Paleis Attractor Basin:</span> <span id="valL4">Kun (坤) • Receptive, absorbing (τ: nullifying)</span>
+                </div>
+                <div class="layer-item">
+                    <span class="l-title">L3 - Trigram Curvature:</span> <span id="valL3">Stable Curvature Mode • Earth over Earth</span>
+                </div>
+                <div class="layer-item">
+                    <span class="l-title">L0/L1 - 4-State Line Transport:</span> <span id="valL0">Old Yin (6) ➔ Young Yang (7) • Phase w_i = +1</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATUS & ANALYSIS -->
+    <div class="status-box" id="analysisBox">
+        <div style="font-weight: bold; color: var(--gold-glow); margin-bottom: 5px;" id="analysisTitle">ALGEBRAÏSCHE SYNTHESE: DE DAY OUT OF TIME</div>
+        <div id="analysisText" style="line-height: 1.6;">
+            Op de 365e dag van de 13-Maan synchronometer ($13 \times 28 = 364 + 1$) isoleert het VORTEX-model de kinetische restwaarde binnen het Modulo 21 filter. In plaats van een geforceerde <i>Ke</i>-controle (zoals bij de Gregoriaanse ingreep), treedt het L4 Paleis-basin van <b>Kun</b> in werking. Dit absorbeert de cumulatieve lineaire torsie ($\tau \approx 0.15$), waardoor het systeem wiskundig zuiver op nul reset.
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateEngine() {
+        const state = document.getElementById('temporalState').value;
+        const torsionBar = document.getElementById('torsionBar');
+        const torsionValText = document.getElementById('torsionValText');
+        const coherenceValText = document.getElementById('coherenceValText');
+        const flowerStateText = document.getElementById('flowerStateText');
+        
+        const wuxingTitle = document.getElementById('wuxingTitle');
+        const wuxingDesc = document.getElementById('wuxingDesc');
+        const flowNodes = document.getElementById('flowNodes');
+        const algebraText = document.getElementById('algebraText');
+
+        const valL5 = document.getElementById('valL5');
+        const valL4 = document.getElementById('valL4');
+        const valL3 = document.getElementById('valL3');
+        const valL0 = document.getElementById('valL0');
+
+        const analysisTitle = document.getElementById('analysisTitle');
+        const analysisText = document.getElementById('analysisText');
+
+        if (state === 'gregorian') {
+            torsionBar.style.width = "95%";
+            torsionBar.className = "t-fill t-high";
+            torsionValText.innerHTML = `<span class="hl-red">τ = 0.98 (Kritieke Lineaire Torsie / Systeem Breuk)</span>`;
+            coherenceValText.innerHTML = `<span class="hl-red">Relatieve Sterkte: -0.63 (Ke Destructief)</span>`;
+            flowerStateText.innerHTML = `<span class="hl-red">Manifold: Incompatible / Twisting</span>`;
+
+            wuxingTitle.innerHTML = `<span class="hl-red">Vuur ➔ Metaal ➔ Hout (Ke Destructieve Controle)</span>`;
+            wuxingDesc.innerText = "Forced mechanical amputation (1582 Calendar Leap • 10 days lost)";
+            flowNodes.innerHTML = `
+                <div class="w-node n-fire">VUUR (火)<br><small>12:60 Klok</small></div>
+                <div>──Ke (克)──►</div>
+                <div class="w-node n-metal">METAAL (金)<br><small>Amputatie</small></div>
+                <div>──Ke (克)──►</div>
+                <div class="w-node n-wood">HOUT (木)<br><small>Breuk</small></div>
+            `;
+            algebraText.innerHTML = `De Gregoriaanse ingreep forceerde tijd door een onregelmatige 12:60 matrix. In de Wuxing-algebra is dit een directe <i>Ke</i>-controle (Vuur smelt Metaal, Metaal kapt Hout). Dit accumuleert extreme torsie ($\tau \rightarrow 1.0$), wat leidt tot een permanente breuk in de natuurlijke tijdservaring.`;
+
+            valL5.innerText = "Systemic Torsion Overload • Attractor Collapse";
+            valL4.innerText = "No Basin Alignment • Uncontrolled Outward Rotation";
+            valL3.innerText = "Unstable Curvature • Mechanical Asymmetry (28/30/31 days)";
+            valL0.innerText = "Phase Conflict w_i = -1 (Incompatible Transport)";
+
+            analysisTitle.innerText = "ALGEBRAÏSCHE SYNTHESE: DE 1582 KALENDERSPRONG";
+            analysisText.innerHTML = `Paus Gregorius XIII amputeerde 10 dagen omdat zijn lineaire kalender de opgebouwde astronomische afwijking ($\Delta t = 9.817$ dagen) niet kon absorberen via een modulaire restwaarde. Zonder L4 Paleis-absorptie en zonder Modulo 21-resonator resulteert dit in een permanente mechanische torsie in het menselijk bewustzijn.`;
+        
+        } else if (state === 'kinetic') {
+            torsionBar.style.width = "60%";
+            torsionBar.className = "t-fill t-med";
+            torsionValText.innerHTML = `<span class="hl-gold">τ = 0.58 (Actieve Kinetische Torsie • Expansie)</span>`;
+            coherenceValText.innerHTML = `<span class="hl-gold">Relatieve Sterkte: +0.45 (Sheng Expansief)</span>`;
+            flowerStateText.innerHTML = `<span class="hl-gold">Manifold: High Energetic Transport</span>`;
+
+            wuxingTitle.innerHTML = `<span class="hl-green">Hout ➔ Vuur (Sheng Maximale Expansie)</span>`;
+            wuxingDesc.innerText = "13-Moon Synchronometer progression towards Index 169";
+            flowNodes.innerHTML = `
+                <div class="w-node n-wood">HOUT (木)<br><small>Maanhuis 1</small></div>
+                <div>──Sheng (生)──►</div>
+                <div class="w-node n-fire">VUUR (火)<br><small>Feniks Apex</small></div>
+                <div>──Sheng (生)──►</div>
+                <div class="w-node n-earth">AARDE (土)<br><small>Index 169</small></div>
+            `;
+            algebraText.innerHTML = `Tijdens de 364 dagen van de 13-Maan cyclus trekt het systeem kinetische energie aan via het pad <i>Hout $\rightarrow$ Vuur</i>. Dit is in de 64 Flowers een genererend pad (+0.18 net bias), waarmee de opwaartse vlucht van de Rode Feniks harmonisch wordt gevoed tot aan de apex.`;
+
+            valL5.innerText = "Dynamic Attractor Excitation • Kinetic Build-up";
+            valL4.innerText = "Li (离) • Radiating, dynamic (τ: outward-expansive)";
+            valL3.innerText = "Fire over Fire • Maximum Luminosity Curvature";
+            valL0.innerText = "Young Yang (7) ➔ Old Yang (9) • Phase w_i = +1";
+
+            analysisTitle.innerText = "ALGEBRAÏSCHE SYNTHESE: DE KINETISCHE OPBOUW";
+            analysisText.innerHTML = `De cyclus van 13 manen van 28 dagen ($13 \times 28 = 364$) gedraagt zich als een geometrische versneller. De Wuxing-stroom versterkt de expansie zonder destructieve wrijving, omdat de stroom strikt de genererende <i>Sheng</i>-pijlen volgt via de 18x13 matrix.`;
+        
+        } else if (state === 'dayout') {
+            torsionBar.style.width = "15%";
+            torsionBar.className = "t-fill t-low";
+            torsionValText.innerHTML = `<span class="hl-green">τ = 0.15 (Lage Torsie / Hoog Coherent)</span>`;
+            coherenceValText.innerHTML = `<span class="hl-cyan">Relatieve Sterkte: +0.55 (Sheng Genererend)</span>`;
+            flowerStateText.innerHTML = `<span class="hl-gold">Manifold: Transport Coherent</span>`;
+
+            wuxingTitle.innerHTML = `<span class="hl-cyan">Water ➔ Hout (Sheng Genererend & Absorberend)</span>`;
+            wuxingDesc.innerText = "Coherence-preserving transport manifold (Lower torsion preference)";
+            flowNodes.innerHTML = `
+                <div class="w-node n-water">WATER (水)<br><small>Nulpunt</small></div>
+                <div>──Sheng (生)──►</div>
+                <div class="w-node n-wood">HOUT (木)<br><small>Draak / Imix</small></div>
+                <div>──Sheng (生)──►</div>
+                <div class="w-node n-fire">VUUR (火)<br><small>Feniks Apex</small></div>
+            `;
+            algebraText.innerHTML = `Volgens de <i>64 Flowers</i> algebra is het transportpad van Water naar Hout (+0.21 net bias) en Hout naar Vuur (+0.18 net bias) uitzonderlijk coherentie-verhogend. Door de opgebouwde torsie op Index 13 te aarden in Water, wordt mechanische wrijving ($\tau$) geabsorbeerd.`;
+
+            valL5.innerText = "Persistent Torsion-Coherence Condensation (Restwaarde 1)";
+            valL4.innerText = "Kun (坤) • Receptive, absorbing (τ: nullifying)";
+            valL3.innerText = "Stable Curvature Mode • Earth over Earth";
+            valL0.innerText = "Old Yin (6) ➔ Young Yang (7) • Phase w_i = +1";
+
+            analysisTitle.innerText = "ALGEBRAÏSCHE SYNTHESE: DE DAY OUT OF TIME";
+            analysisText.innerHTML = `Op de 365e dag van de 13-Maan synchronometer ($13 \times 28 = 364 + 1$) isoleert het VORTEX-model de kinetische restwaarde binnen het Modulo 21 filter. In plaats van een geforceerde <i>Ke</i>-controle (zoals bij de Gregoriaanse ingreep), treedt het L4 Paleis-basin van <b>Kun</b> in werking. Dit absorbeert de cumulatieve lineaire torsie ($\tau \approx 0.15$), waardoor het systeem wiskundig zuiver op nul reset.`;
+
+        } else if (state === 'pegasus') {
+            torsionBar.style.width = "25%";
+            torsionBar.className = "t-fill t-low";
+            torsionValText.innerHTML = `<span class="hl-cyan">τ = 0.25 (Spinor Hinge Uitlijning • π/2 Rotatie)</span>`;
+            coherenceValText.innerHTML = `<span class="hl-cyan">Relatieve Sterkte: +0.30 (Water-Vuur Evenwicht)</span>`;
+            flowerStateText.innerHTML = `<span class="hl-cyan">Manifold: Phase-Lock Ready</span>`;
+
+            wuxingTitle.innerHTML = `<span class="hl-cyan">Water ➔ Vuur (Hexagram 63 Ji Ji Uitlijning)</span>`;
+            wuxingDesc.innerText = "Spatial anchoring via Pegasus (Markab & Scheat / Moon House 13)";
+            flowNodes.innerHTML = `
+                <div class="w-node n-water">WATER (水)<br><small>Pegasus</small></div>
+                <div>──Hinge (π/2)──►</div>
+                <div class="w-node n-fire">VUUR (火)<br><small>Oosten 23:00</small></div>
+                <div>──Lock──►</div>
+                <div class="w-node n-metal">METAAL (金)<br><small>Matrix Axis</small></div>
+            `;
+            algebraText.innerHTML = `Om 23:00 treedt de SLD Spinor Hinge in werking. Water over Vuur (Hexagram 63) vormt de brug tussen de statische absorptietijd en de opwaartse rotatie. De torsie stijgt licht tot $\tau = 0.25$ om het geometrische frame 90 graden te kantelen richting het Oosten.`;
+
+            valL5.innerText = "Spinor Double-Cover Transition • Sheet (-) to Sheet (+)";
+            valL4.innerText = "Kan/Li Interlock • Harmonizing, balancing";
+            valL3.innerText = "Water over Fire • Perfect Dynamic Equilibrium";
+            valL0.innerText = "Phase Memory Marker Triggered • Vector Ready";
+
+            analysisTitle.innerText = "ALGEBRAÏSCHE SYNTHESE: 23:00 PEGASUS ANKERING";
+            analysisText.innerHTML = `De sterren Markab en Scheat verankeren de ruimtelijke as van de 18x13 matrix op Index 13. Dit is het geometrische scharnierpunt waarop de <i>double-cover</i> ($4\pi$ rotatie) van het Shao Yong-model zich voorbereidt om het binaire teken te flippen voor de herstart.`;
+
+        } else if (state === 'dragon') {
+            torsionBar.style.width = "5%";
+            torsionBar.className = "t-fill t-low";
+            torsionValText.innerHTML = `<span class="hl-gold">τ = 0.05 (Absolute Zero Torsion / Zuivere Kinetiek)</span>`;
+            coherenceValText.innerHTML = `<span class="hl-gold">Relatieve Sterkte: +1.00 (Max Sheng Genererend)</span>`;
+            flowerStateText.innerHTML = `<span class="hl-gold">Manifold: Infinite Expansion (New Octave)</span>`;
+
+            wuxingTitle.innerHTML = `<span class="hl-gold">Water ➔ Hout (Azuurblauwe Draak • Hexagram 1 Qian)</span>`;
+            wuxingDesc.innerText = "Galactic New Year (26 July) • Complete System Reset & Launch";
+            flowNodes.innerHTML = `
+                <div class="w-node n-water">WATER (水)<br><small>Nulpunt 00:00</small></div>
+                <div>──Max Sheng──►</div>
+                <div class="w-node n-wood" style="border-width: 2px; box-shadow: 0 0 10px var(--green-wood);">HOUT (木)<br><small>Draak / Imix</small></div>
+                <div>──Max Sheng──►</div>
+                <div class="w-node n-fire">VUUR (火)<br><small>Nieuwe Cyclus</small></div>
+            `;
+            algebraText.innerHTML = `Exact om middernacht ontlaadt de matrix de absorptie in een zuivere opwaartse vector. Hout (De Draak) ontstijgt aan Water zonder enige wrijving ($\tau \approx 0.05$). De <i>64 Flowers</i> noteren hier de hoogst mogelijke genererende coherentie (+1.00).`;
+
+            valL5.innerText = "Zero-Point Singularity • Pure Coherence Launch";
+            valL4.innerText = "Qian (乾) • Outward-expansive, generative (τ: radiating)";
+            valL3.innerText = "Heaven over Heaven • Pure Kinetic Yang Energy";
+            valL0.innerText = "All Lines Yang (9) • Maximum Forward Vector w_i = +1";
+
+            analysisTitle.innerText = "ALGEBRAÏSCHE SYNTHESE: HET UUR VAN DE DRAAK";
+            analysisText.innerHTML = `Waar de Gregoriaanse kalender na een schrikkel- of correctiesprong mechanisch doorhinkt, start het VORTEX 13:20 systeem op 26 juli op een volstrekt wrijvingsloos nulpunt. De Azuurblauwe Draak levert het Hout-element om de nieuwe cyclus van 365 dagen in volmaakte harmonie met het tropische jaar te initiëren!`;
+        }
+    }
+
+    // Initialize
+    updateEngine();
+</script>
+
+</body>
+</html>
