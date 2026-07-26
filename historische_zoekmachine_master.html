@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Zoekmachine: Archief, Dynastieën & Clandestiene Netwerken</title>
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-blue: #3b82f6;
+            --accent-cyan: #0ea5e9;
+            --accent-gold: #f59e0b;
+            --accent-red: #ef4444;
+            --border-color: #334155;
+            --tag-bg: #334155;
+            --hover-bg: #475569;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-main); color: var(--text-primary); line-height: 1.6; padding: 20px; }
+        
+        header { max-width: 1400px; margin: 0 auto 20px auto; background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); color: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); border-bottom: 4px solid var(--accent-gold); border-top: 1px solid var(--border-color); }
+        header h1 { font-size: 2.2rem; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; color: var(--accent-gold); }
+        header p { font-size: 1rem; color: #cbd5e1; max-width: 1000px; }
+
+        main { max-width: 1400px; margin: 0 auto; }
+
+        .controls-panel { background: var(--bg-card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); margin-bottom: 25px; border: 1px solid var(--border-color); position: sticky; top: 10px; z-index: 100; }
+        .search-row { display: flex; gap: 15px; margin-bottom: 15px; }
+        #searchInput { flex-grow: 1; padding: 14px 18px; font-size: 1.05rem; border: 2px solid var(--border-color); border-radius: 8px; transition: all 0.2s; background: #0b1120; color: var(--text-primary); }
+        #searchInput::placeholder { color: #64748b; }
+        #searchInput:focus { outline: none; border-color: var(--accent-gold); background: #0f172a; box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15); }
+
+        .filter-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .filter-label { font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-right: 5px; }
+        .filter-btn { background: #0f172a; border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; }
+        .filter-btn:hover { background: var(--hover-bg); color: white; border-color: #64748b; }
+        .filter-btn.active { background: var(--accent-gold); color: #000000; border-color: var(--accent-gold); font-weight: 700; }
+
+        .stats-bar { margin-top: 15px; padding-top: 12px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-secondary); font-weight: 500; }
+
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(460px, 1fr)); gap: 25px; }
+        @media (max-width: 768px) { .grid-container { grid-template-columns: 1fr; } .search-row { flex-direction: column; } }
+
+        .card { background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s, box-shadow 0.2s; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 12px 20px rgba(0,0,0,0.4); border-color: #64748b; }
+
+        .card-header { padding: 20px; border-bottom: 1px solid var(--border-color); background: linear-gradient(to right, #1e293b, #0f172a); position: relative; }
+        .category-tag { position: absolute; top: 20px; right: 20px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; letter-spacing: 0.05em; }
+
+        .cat-dynastie { background: #451a03; color: #fcd34d; border: 1px solid #b45309; }
+        .cat-netwerk { background: #450a0a; color: #fca5a5; border: 1px solid #b91c1c; }
+        .cat-faculteit { background: #1e1b4b; color: #c7d2fe; border: 1px solid #4338ca; }
+        .cat-literatuur { background: #3b0764; color: #ddd6fe; border: 1px solid #6b21a8; }
+        .cat-historie { background: #0f172a; color: #94a3b8; border: 1px solid #334155; }
+        .cat-moderne_politiek { background: #064e3b; color: #6ee7b7; border: 1px solid #059669; }
+        .cat-nationale_unie { background: #713f12; color: #fde047; border: 1px solid #ca8a04; }
+        .cat-nsb { background: #7f1d1d; color: #fecaca; border: 1px solid #dc2626; }
+
+        .echte-naam { font-size: 1.3rem; font-weight: 800; color: var(--accent-gold); margin-right: 140px; line-height: 1.25; }
+        .alias-wrapper { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+        .alias-badge { background: #0f172a; color: #38bdf8; padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; border: 1px solid #0284c7; display: inline-flex; align-items: center; gap: 4px; }
+
+        .card-body { padding: 20px; flex-grow: 1; }
+        .context-text { font-size: 0.9rem; color: #cbd5e1; margin-bottom: 15px; }
+        
+        .archief-box { background: #0f172a; border: 1px dashed var(--border-color); padding: 12px 15px; border-radius: 8px; font-size: 0.8rem; margin-bottom: 15px; color: #94a3b8; }
+        .archief-box strong { color: #f8fafc; display: block; margin-bottom: 4px; font-size: 0.85rem; }
+
+        .netwerk-links { font-size: 0.8rem; color: var(--text-secondary); background: rgba(255,255,255,0.02); padding: 10px 15px; border-radius: 6px; border-left: 3px solid var(--accent-gold); }
+        .netwerk-links strong { color: #f8fafc; }
+
+        .card-actions { background: #0b1120; padding: 15px 20px; border-top: 1px solid var(--border-color); }
+        .action-title { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 10px; letter-spacing: 0.05em; display: flex; justify-content: space-between; }
+        .button-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        
+        .btn { background: #1e293b; border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; color: #f8fafc; cursor: pointer; transition: all 0.15s; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+        .btn:hover { background: var(--hover-bg); border-color: #64748b; color: white; }
+        .btn-copy { background: var(--accent-gold); color: #000000; border-color: var(--accent-gold); font-weight: 700; }
+        .btn-copy:hover { background: #d97706; color: #000000; }
+
+        #toast { visibility: hidden; min-width: 300px; background-color: var(--accent-gold); color: #000000; text-align: center; border-radius: 8px; padding: 14px 20px; position: fixed; z-index: 1000; bottom: 30px; left: 50%; transform: translateX(-50%); font-size: 0.95rem; font-weight: 800; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid #000000; }
+        #toast.show { visibility: visible; animation: fadein 0.3s, fadeout 0.3s 2.7s; }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🕵️‍♂️ Archief- & Netwerkonderzoek Zoekmachine</h1>
+        <p>Volledig geïntegreerde OSINT-masterdatabase. Doorzoek historische netwerken van de Nationale Unie en NSB, verbindingen binnen de Shell/BPM-oligarchie, de Utrechtse Olie-faculteit en hedendaagse politieke partijleiders (2026).</p>
+    </header>
+
+    <main>
+        <section class="controls-panel">
+            <div class="search-row">
+                <input type="text" id="searchInput" placeholder="Zoek op naam, partij, alias, archiefnummer (bijv. 'Mussert', 'Baudet', 'Shell', 'Minerva', '2.21.246', 'Omtzigt')..." autocomplete="off">
+            </div>
+            <div class="filter-row">
+                <span class="filter-label">Filter:</span>
+                <button class="filter-btn active" data-filter="all">ALLES</button>
+                <button class="filter-btn" data-filter="nationale_unie">🛡️ Nationale Unie (1925-1934)</button>
+                <button class="filter-btn" data-filter="nsb">⚡ NSB & Collaboratie</button>
+                <button class="filter-btn" data-filter="moderne_politiek">🏛️ Huidige Politiek (2026)</button>
+                <button class="filter-btn" data-filter="dynastie">👑 Dynastieën & Bedrijfselite</button>
+                <button class="filter-btn" data-filter="netwerk">🕸️ Clandestien & Symboliek</button>
+                <button class="filter-btn" data-filter="faculteit">🎓 Koloniaal & Adatrecht</button>
+                <button class="filter-btn" data-filter="literatuur">✒️ Literatuur & Pseudoniemen</button>
+                <button class="filter-btn" data-filter="historie">📜 Vroegmodern & Middeleeuwen</button>
+            </div>
+            <div class="stats-bar">
+                <span id="resultCount">Laden van dossiers...</span>
+                <span>⚡ Tip: Klik op de Dork-knoppen om samengestelde Booleaanse zoekqueries direct in Google, Delpher of Archieven te laden.</span>
+            </div>
+        </section>
+
+        <section class="grid-container" id="resultsGrid"></section>
+    </main>
+
+    <div id="toast">✅ Dork succesvol gekopieerd naar klembord!</div>
+
+    <script>
+        // VOLLEDIGE GEÏNTEGREERDE DATASET
+        const dataset = [
+            // --- NATIONALE UNIE (1925-1934) ---
+            {
+                "echte_naam": "Prof. dr. F.C. (Carel) Gerretson",
+                "alias": "Voorzitter Nationale Unie / Geerten Gossaert / Geheimrat / Ruwaard van het staatsrecht",
+                "categorie": "nationale_unie",
+                "context": "Medeoprichter en voorzitter van de autoritaire Nationale Unie (1925). Tegelijkertijd directiesecretaris bij Shell/BPM, historicus, dichter en senator voor de CHU. Zocht gezagsherstel, wrijving met massademocratie en streefde naar een elitaire intellectuele bestuursorde over het Nederlandse imperium.",
+                "archief_ref": "Nationaal Archief (Den Haag) — Toegang 2.21.246. Rubrieken B4d (Groot-Nederland), BPM-periodes, literaire correspondentie en notities over schimmenspelen.",
+                "netwerk_links": "Nationale Unie, BPM/Shell, CHU, LSV Minerva, Robert Groeninx van Zoelen, Hendrik Colijn.",
+                "bronnen": ["NA 2.21.246", "DNPP", "The Minerva Contingency"]
+            },
+            {
+                "echte_naam": "Robert Frédéric Groeninx van Zoelen",
+                "alias": "Breyster / Secretaris Nationale Unie / Inlichtingenman",
+                "categorie": "nationale_unie",
+                "context": "Medeoprichter en secretaris van de Nationale Unie. Opererend onder de codenaam 'Breyster' onderhield hij diepe connecties met diplomatieke kringen, inlichtingendiensten en de reactionaire regentenelite die het gezag in Nederlands-Indië wilden handhaven.",
+                "archief_ref": "Collectie Nationale Unie & inlichtingennetwerken in het Nationaal Archief en NIOD. Familie-archief Groeninx van Zoelen.",
+                "netwerk_links": "F.C. Gerretson, Inlichtingenkringen, Haagsche Regentenelite.",
+                "bronnen": ["NIOD", "NA", "DNPP"]
+            },
+            {
+                "echte_naam": "H.J. (Erich) van der Rijn",  
+                "alias": "Radicale Voorzitter Nationale Unie / Corporatieve Concentratie",
+                "categorie": "nationale_unie",
+                "context": "Voorzitter in de latere, radicalere fase van de Nationale Unie toen de beweging openlijker aansluiting zocht bij het Italiaanse fascisme en het corporatisme, en uiteindelijk opging in de Corporatieve Concentratie.",
+                "archief_ref": "NIOD Collectie interbellum-partijen en fascistische groeperingen in Nederland.",
+                "netwerk_links": "Corporatieve Concentratie, Jan Baars (ANFB), F.C. Gerretson.",
+                "bronnen": ["NIOD", "Historisch Nieuwsblad"]
+            },
+            {
+                "echte_naam": "Carel Paul (C.P.) van Rossem",
+                "alias": "Hoofdredacteur De Fascist / De Vuurslag / Schrijver",
+                "categorie": "nationale_unie",
+                "context": "Gevierd toneelschrijver, journalist en de ideologische propagandist van de Nationale Unie als hoofdredacteur van de partijorganen 'De Fascist' en 'De Vuurslag'. Formuleerde de anti-parlementaire doctrine.",
+                "archief_ref": "Delpher historisch krantenarchief (volledige reeksen De Vuurslag / De Fascist). AMVC-Letterenhuis.",
+                "netwerk_links": "Nationale Unie, Literaire kringen interbellum.",
+                "bronnen": ["Delpher", "DBNL", "NIOD"]
+            },
+
+            // --- NSB & COLLABORATIE (1931-1945) ---
+            {
+                "echte_naam": "Ir. Anton Mussert",
+                "alias": "Germaans Leider / Oprichter NSB / 'De Leider'",
+                "categorie": "nsb",
+                "context": "Oprichter en leider van de Nationaal-Socialistische Beweging (NSB). Koesterde de mislukte ambitie om van Nederland een zelfstandige Germaanse staat te maken. Legde in 1941 een persoonlijke eed van trouw af aan Adolf Hitler.",
+                "archief_ref": "NIOD — Toegang 111 (Archief NSB). Nationaal Archief — CABR strafdossier en verhoorprotocollen. Geëxecuteerd Waalsdorpervlakte (1946).",
+                "netwerk_links": "NSB Hoofdkwartier Maliebaan, Arthur Seyss-Inquart, Rost van Tonningen.",  
+                "bronnen": ["NIOD Archief 111", "CABR NA", "Oorlog voor de Rechter"]
+            },
+            {
+                "echte_naam": "Mr. M.M. Rost van Tonningen",
+                "alias": "President Nederlandsche Bank / SS-Voorman / 2e Leider NSB",
+                "categorie": "nsb",
+                "context": "Radicale en ambitieuze tweede plaatsvervangend leider van de NSB. Overtuigd SS-ideoloog die streefde naar volledige opheffing van Nederland in het Groot-Duitse Rijk. Tijdens de bezetting president van de Nederlandsche Bank en waarnemend secretaris-generaal van Financiën.",
+                "archief_ref": "NIOD Collectie Rost van Tonningen. Archief DNB (Oorlogsperiode). CABR strafdossiers in het Nationaal Archief.",
+                "netwerk_links": "Heinrich Himmler, Germaanse SS, J.H. Feldmeijer, Anton Mussert (machtsstrijd).",
+                "bronnen": ["NIOD", "CABR", "BWN"]
+            },
+            {
+                "echte_naam": "J.H. Feldmeijer",
+                "alias": "Voorman Nederlandsche SS / SS-Standartenführer / Johannes Hendrik",
+                "categorie": "nsb",
+                "context": "Voorman van de Germaanse/Nederlandsche SS in Nederland. Werkte direct samen met de Duitse politiechef Hanns Albin Rauter, minachtte de in zijn ogen te gematigde Mussert en ijverde voor rücksichtslose nazi-integratie en terreur tegen het verzet.",
+                "archief_ref": "NIOD — Archief Germaansche SS in Nederland. Oorlogsbronnen en CABR-dossiers. In 1945 getroffen door geallieerd vuur nabij Raalte.",
+                "netwerk_links": "Hanns Albin Rauter, Germaanse SS, Rost van Tonningen.",
+                "bronnen": ["NIOD", "Oorlogsbronnen.nl"]
+            },
+            {
+                "echte_naam": "Dr. Tobie Goedewaagen",
+                "alias": "Rotkar / Theodor Meursen / De Torenwachter / Ter Gouwe / Tom Kinderwagen",
+                "categorie": "nsb",
+                "context": "Filosoof en bankierszoon. Secretaris-generaal van Volksvoorlichting en Kunsten en grondlegger van de gehate Kultuurkamer. Kreeg de spotnaam 'Rotkar'. Publiceerde na de oorlog clandestien in Duitsland onder het pseudoniem 'Theodor Meursen' om nazificatie-verleden en censuur te omzeilen.",
+                "archief_ref": "CABR-dossiers Nationaal Archief. NIOD Collectie Departement DVK. Onthulling pseudoniem door Henri Wielek (Vrij Nederland 1981).",
+                "netwerk_links": "NSB Top, Kultuurkamer, Incasso-Bank (neef Kees Goedewaagen).",
+                "bronnen": ["NIOD", "CABR", "Vrij Nederland"]
+            },
+            {
+                "echte_naam": "Max Blokzijl",
+                "alias": "Radiopropagandist / Hoofd Afdeling Perswezen / Brandende Kwesties",
+                "categorie": "nsb",
+                "context": "De belangrijkste, wekelijks beluisterde radiopropagandist van de bezetter en de NSB via zijn rubriek 'Brandende Kwesties'. Tevens hoofd perswezen bij het departement van Volksvoorlichting.",
+                "archief_ref": "Beeld- en Geluidarchief (Hilversum) — audiocollectie Brandende Kwesties. NIOD dossiers persgelijkschakeling. CABR (geëxecuteerd 1946).",
+                "netwerk_links": "Tobie Goedewaagen, NSB Propagandadienst, Ernst Voorhoeve.",
+                "bronnen": ["NIOD", "Beeld en Geluid", "Delpher"]
+            },
+            {
+                "echte_naam": "Ernst Voorhoeve & E.J. Roskam & H.J. Woudenberg",
+                "alias": "Propagandaleider / Boerenleider / Leider Nederlands Arbeidsfront (NAF)",
+                "categorie": "nsb",
+                "context": "Kopstukken belast met de gelijkschakeling van de Nederlandse maatschappij: Voorhoeve leidde de propaganda en stuurde de knokploegen van de WA aan; Roskam leidde de Boerenlandstand; Woudenberg verbood vakbonden (NVV/CNV/RKWV) in het Arbeidsfront.",
+                "archief_ref": "NIOD Toegang 111 (NSB sub-archieven WA, Landstand en NAF). Delpher krantenarchief 1940-1945.",
+                "netwerk_links": "NSB Hoofdkwartier, Anton Mussert, Weerbaarheidsafdeling (WA).",
+                "bronnen": ["NIOD", "Delpher"]
+            },
+            {
+                "echte_naam": "Mr. Adriaan Meerkamp van Embden",
+                "alias": "NSB-Burgemeester Middelburg & Zwolle / Rijksarchivaris Zeeland",
+                "categorie": "nsb",
+                "context": "Wereldvreemde kamergeleerde en decennialang Zeeuws rijksarchivaris. Blinde angst voor het communisme bracht hem in 1941 in de NSB. Werd waarnemend burgemeester van Middelburg en Zwolle. Tragisch voorbeeld van hoe retrospectieve historische kennis faalt als moreel kompas in actuele crises.",
+                "archief_ref": "Zeeuws Archief (Middelburg) — archieven KZGW. NIOD burgemeestersdossiers. CABR-strafdossier naoorlogse zuivering.",
+                "netwerk_links": "Zeeuwsch Genootschap der Wetenschappen, NSB Bestuurlijk apparaat.",
+                "bronnen": ["Zeeuws Archief", "CABR", "Historiografie Zeeland"]
+            },
+
+            // --- HUIDIGE POLITIEKE LEIDERS (2026) ---
+            {
+                "echte_naam": "Dr. Thierry Baudet (FvD)",
+                "alias": "Forum voor Democratie / Uil van Minerva retoriek / Boreale wereld / Oikofobie",
+                "categorie": "moderne_politiek",
+                "context": "Partijleider FvD (2026). Bedient zich van intellectuele, filosofische en elitaire taal om een anti-establishment- en cultuurkritische boodschap te verpakken. Zelfgekozen referenties aan Hegels 'Uil van Minerva', de 'boreale wereld' en Roger Scrutons 'oikofobie' vertonen sterke stilistische parallellen met het vroege anti-parlementarisme en de Minerva-symboliek van het interbellum.",
+                "archief_ref": "Handelingen Tweede Kamer der Staten-Generaal (vanaf 2017). Overwinningsspeech Provinciale Statenverkiezingen (maart 2019). Publicaties en essays FvD / Prometheus.",
+                "netwerk_links": "Forum voor Democratie, JFVD, Conservatief-filosofische lobbykringen.",
+                "bronnen": ["Parlement.com", "VRT NWS (2019)", "Handelingen Tweede Kamer"]
+            },
+            {
+                "echte_naam": "Geert Wilders (PVV)",
+                "alias": "Partij voor de Vrijheid / Fractievoorzitter / Anti-establishment",
+                "categorie": "moderne_politiek",
+                "context": "Oprichter en leider van de PVV, de grootste rechts-nationalistische fractie van Nederland (2026). Focus op strikte immigratiestop, anti-islamwetgeving en de-juridisering van Europees en supranationaal verdragenrecht ter bescherming van nationale soevereiniteit.",
+                "archief_ref": "Parlementaire archieven en verkiezingsprogramma's PVV (2006-2026). Handelingen Tweede Kamer.",
+                "netwerk_links": "PVV, Rechts-nationalistische Europese coalities (ID/Patriotten).",
+                "bronnen": ["Parlement.com", "Tweede Kamer"]
+            },
+            {
+                "echte_naam": "Henri Bontenbal (CDA)",
+                "alias": "Christen-Democratisch Appèl / Fractievoorzitter / Erfgenaam CHU & ARP",
+                "categorie": "moderne_politiek",
+                "context": "Leider van het CDA (2026). Het CDA is de directe institutionele fusie-opvolger van de vooroorlogse CHU (de partij van F.C. Gerretson) en de ARP (de partij van premier Hendrik Colijn). Pleit voor maatschappelijk gezagsherstel en communitarisme vanuit traditioneel christendemocratisch erfgoed.",
+                "archief_ref": "Documentatiecentrum Nederlandse Politieke Partijen (DNPP) — archieven CDA, CHU en ARP.",
+                "netwerk_links": "CDA, Wetenschappelijk Instituut voor het CDA, EVP (Europa).",
+                "bronnen": ["DNPP", "Parlement.com"]
+            },
+            {
+                "echte_naam": "Pieter Omtzigt & Nicolien van Vroonhoven (NSC)",
+                "alias": "Nieuw Sociaal Contract / Bestuurlijke Hervorming / Gezagsherstel",
+                "categorie": "moderne_politiek",
+                "context": "Leiders van Nieuw Sociaal Contract (2026). Centrum-conservatieve beweging met een zware constitutionele focus op goed bestuur, de-juridisering van het overheidsapparaat, bescherming van burgerrechten en herstel van het checks-and-balances gezag in de democratische rechtsstaat.",
+                "archief_ref": "Handelingen Tweede Kamer (Toeslagenenquête, grondwettelijke debatten). Oprichtingsmanifest NSC (2023).",
+                "netwerk_links": "NSC, Constitutionele en juridische hervormingsdenkers.",
+                "bronnen": ["Parlement.com", "NSC Manifest"]
+            },
+            {
+                "echte_naam": "Dilan Yeşilgöz (VVD)",
+                "alias": "Volkspartij voor Vrijheid en Democratie / Fractievoorzitter / Rechts-liberaal",
+                "categorie": "moderne_politiek",
+                "context": "Leider van de rechts-liberale VVD in 2026. Focus op veiligheid, justitieel gezagsherstel, economisch liberalisme en een strikt migratiebeleid.",
+                "archief_ref": "DNPP — Archieven VVD. Handelingen Tweede Kamer.",
+                "netwerk_links": "VVD, TeldersStichting, Renew Europe.",
+                "bronnen": ["Parlement.com", "DNPP"]
+            },
+            {
+                "echte_naam": "Caroline van der Plas (BBB)",
+                "alias": "BoerBurgerBeweging / Regiotrots / Agrarisch populisme",
+                "categorie": "moderne_politiek",
+                "context": "Leider van de BoerBurgerBeweging (2026). Zet zich af tegen de stedelijke en technocratische Haagse bestuurscultuur. Pleit voor traditionele agrarische belangen en de bescherming van het platteland en regio-erfgoed.",
+                "archief_ref": "Handelingen Tweede Kamer (vanaf 2021). Verkiezingsmanifesten BBB.",
+                "netwerk_links": "BBB, Agrarische belangenorganisaties, Regio-parlementen.",
+                "bronnen": ["Parlement.com", "BBB Archieven"]
+            },
+            {
+                "echte_naam": "Frans Timmermans (GroenLinks-PvdA)",
+                "alias": "Links-Progressief Blok / Oppositieleider / Sociaaldemocratie",
+                "categorie": "moderne_politiek",
+                "context": "Leider van de gezamenlijke fractie GroenLinks-PvdA in de Tweede Kamer (2026). Vormt de primaire links-progressieve oppositie tegen het rechtse gezags- en coalitiebeleid. Focus op klimaattransitie, Europese integratie en herverdeling van welvaart.",
+                "archief_ref": "DNPP — Archieven PvdA en GroenLinks. Europese Commissie-archieven (Green Deal).",
+                "netwerk_links": "GroenLinks-PvdA, Europese Sociaaldemocraten (S&D), Vakbeweging FNV.",
+                "bronnen": ["Parlement.com", "DNPP"]
+            },
+            {
+                "echte_naam": "Dick Schoof",
+                "alias": "Minister-President / Partijloos / Technocratisch Gezag (2024-2026)",
+                "categorie": "moderne_politiek",
+                "context": "Partijloos Minister-President van Nederland (sinds 2024). Voormalig topambtenaar en hoofd van de inlichtingen- en veiligheidsdiensten (AIVD, NCTV). Geeft leiding aan een rechts-programmatisch kabinet in een tijdvak gekenmerkt door felle ideologische debatten over instituties en nationale soevereiniteit.",
+                "archief_ref": "Ministerie van Algemene Zaken — Kabinetsstukken en persconferenties (2024-2026). Voormalig archief AIVD/NCTV.",
+                "netwerk_links": "Kabinet-Schoof, Rijksoverheid Topstructuur, Nationale Veiligheidsraad.",
+                "bronnen": ["Rijksoverheid.nl", "Parlement.com"]
+            },
+            {
+                "echte_naam": "Chris Stoffer & Joost Eerdmans & Rob Jetten",
+                "alias": "SGP (Theocratisch) / JA21 (Conservatief-liberaal) / D66 (Sociaal-liberaal)",
+                "categorie": "moderne_politiek",
+                "context": "Overige fractieleiders in 2026: Stoffer leidt de SGP (oudste partij uit 1918, staat voor klassiek-gereformeerde theocratie); Eerdmans leidt JA21 (rechts-conservatieve economie); Jetten leidt de progressieve fractie D66.",
+                "archief_ref": "DNPP en Handelingen Tweede Kamer.",
+                "netwerk_links": "SGP, JA21, D66 parlementaire fracties.",
+                "bronnen": ["Parlement.com"]
+            },
+
+            // --- DYNASTIEËN & BEDRIJFSELITE ---
+            {
+                "echte_naam": "Loudon-familie (Schots-Nederlandse Dynastie)",
+                "alias": "Clan Campbell tak / James, John, Hugo & John Hugo Loudon / Voorlinden",
+                "categorie": "dynastie",
+                "context": "Invloedrijk regenten- en industriëlen-geslacht afkomstig uit Schotland (11e eeuw). Leverde ministers van Koloniën, Gouverneurs-Generaal van Nederlands-Indië, topdiplomaten (WWI) en decennialang de absolute bestuurlijke leiding over Royal Dutch Shell en het Wereld Natuur Fonds (WWF).",
+                "archief_ref": "Landgoed Voorlinden (Wassenaar, gekocht 1912). Familie-archieven verspreid over NA en particuliere collecties. Portret Lydia Eustis door Philip de László (1920).",
+                "netwerk_links": "Royal Dutch Shell, Familie De Stuers, Familie Van Marken, Museum Voorlinden.",
+                "bronnen": ["Nederland's Adelsboek", "The Peerage", "Adel in Nederland", "Geni.com"]
+            },
+            {
+                "echte_naam": "Henri Wilhelm August Deterding",
+                "alias": "The Napoleon of Oil / KBE / Algemeen Directeur Royal Dutch",
+                "categorie": "dynastie",
+                "context": "Decennialang alleenheerser en algemeen directeur van Royal Dutch / Koninklijke Olie (1900-1936). Onderhield in de jaren '30 nauwe en omstreden contacten met het Duitse nazi-regime in zijn strijd tegen het bolsjewisme (inbeslagname Bakoe-olievelden).",
+                "archief_ref": "Overleden St. Moritz (1939). Oorspronkelijk met nazieer begraven op Landgoed Dobbin (Mecklenburg), in 1968 geräuschlos herbegraven in Liechtenstein bij dochter Henriette Deterding.",
+                "netwerk_links": "Bataafsche Petroleum Maatschappij (BPM), Hugo Loudon, F.C. Gerretson, Hendrik Colijn.",
+                "bronnen": ["BWN I", "Jonker & Van Zanden (2007)", "Find A Grave"]
+            },
+            {
+                "echte_naam": "Hendrikus (Hendrik) Colijn",
+                "alias": "De roerganger / De schildwacht / Premier / Directeur BPM",
+                "categorie": "dynastie",
+                "context": "Vijfmaal Minister-President van Nederland, KNIL-officier (Lombok/Atjeh) en tussen zijn politieke ambtstermijnen door directielid van de Bataafsche Petroleum Maatschappij (BPM). Stond voor de harde ARP-staatskoers, de Gouden Standaard en het gezag over Nederlands-Indië.",
+                "archief_ref": "Overleden in Duitse ballingschap (Ilmenau, 1944). Herbegraven in Schelluinen. Oorspronkelijke grafzerk bewaard in het Historisch Documentatiecentrum (HDC) aan de Vrije Universiteit Amsterdam.",
+                "netwerk_links": "ARP, BPM/Shell, F.C. Gerretson, Anton Colijn (alpinist), Jan Colijn.",
+                "bronnen": ["HDC VU", "BWN II", "Parlement.com", "DNPP"]
+            },
+            {
+                "echte_naam": "Wouter Basson",
+                "alias": "Dr. Basson / Project Coast / Dr. Philip Mijburgh / Slang van Zyl",
+                "categorie": "netwerk",
+                "context": "Cardioloog en hoofduitvoerder van 'Project Coast', het uiterst geheim chemisch en biologisch moordprogramma van het Zuid-Afrikaanse apartheidsregime (jaren '80). Opereerde internationaal onder valse paspoorten als zakenman om westerse sancties te ontduiken en vergiften in te kopen.",
+                "archief_ref": "UNIDIR rapporten ('Project Coast: Apartheid's Chemical and Biological Warfare Programme'). Dossiers van de Zuid-Afrikaanse Waarheids- en Verzoeningscommissie (TRC).",
+                "netwerk_links": "Magnus Malan (minister van Defensie), Roodeplaat Research Laboratories, CCB.",
+                "bronnen": ["UNIDIR", "TRC Reports", "OSINT Project Coast"]
+            },
+
+            // --- CLANDESTIENE NETWERKEN & SYMBOLIEK ---
+            {
+                "echte_naam": "LSV Minerva & 'Gelouterd herrijst'",
+                "alias": "De Minerva Contingency / Totem van de Schaduwstaat",
+                "categorie": "netwerk",
+                "context": "Het Leidsch Studenten Corps (Minerva) diende als institutioneel hoofdkwartier voor sociale reproductie van de Nederlandse regenten- en bedrijfselite. Na WWOII heropende de sociëteit met het motto 'Gelouterd herrijst'. Binnen de Groep-Gerretson fungeerde dit als reactionaire code: zuivering van progressieve elementen in het staatsapparaat ter behoud van het rijk.",
+                "archief_ref": "Archieven LSV Minerva (Erfgoed Leiden en Omstreken). Corpsalmanakken en reünistenlijsten (1839-1950). Dossier 'The Minerva Contingency'.",
+                "netwerk_links": "Groep-Gerretson, Daniël Tulleken, Ministerie van Koloniën, Rechterlijke Macht.",
+                "bronnen": ["Erfgoed Leiden", "Corpsgeschiedenis LSC", "OSINT Netwerkdossier"]
+            },
+            {
+                "echte_naam": "Daniël Tulleken (Ambachtsheer)",
+                "alias": "Toparcha Meliskerke & Mariekerke / Ex-Libris Minerva",
+                "categorie": "netwerk",
+                "context": "18e-eeuwse burgemeester van Middelburg en bewindhebber van de VOC. Voerde een beroemd ex-libris met de godin Minerva en de Latijnse titel 'Toparcha' (Heer van). Dit historisch symbool diende in de 20e eeuw voor het netwerk van Gerretson als baken van continuïteit: hoe koloniale macht en privaat kapitaal eeuwenlang binnen dezelfde regentenlijnen werden gehouden.",
+                "archief_ref": "Zeeuws Archief — Collectie Zelandia Illustrata en Heerlijkheidsarchieven Walcheren (Meliskerke/Mariekerke).",
+                "netwerk_links": "VOC, Regentengenootschap Middelburg, Groep-Gerretson (symbolische adoptie).",
+                "bronnen": ["Zeeuws Archief", "KZGW", "Heemkundige Kring Walcheren"]
+            },
+
+            // --- ACADEMISCH KOLONIAAL & ADATRECHT ---
+            {
+                "echte_naam": "Utrechtse Indologische Faculteit",
+                "alias": "De Olie-faculteit / Suiker-faculteit / Petroleum-faculteit",
+                "categorie": "faculteit",
+                "context": "Opgericht in 1925 via het 'Fonds ten behoeve van Indologische Studiën' door M.W.F. Treub (Ondernemersraad) en de BPM/Shell. Functioneerde als conservatief-zakelijk bolwerk tegen de progressieve, ethische Leidse adatrecht-school van prof. C. van Vollenhoven. Leidde loyale bestuursambtenaren op voor de kolonie.",
+                "archief_ref": "Universiteitsbibliotheek Utrecht & Het Utrechts Archief. Boekonderzoek Henk van Rinsum (2023): 'Universiteit Utrecht en Koloniale Kennis' (verstrengeling kapitaal, imperium en superioriteitsdenken).",
+                "netwerk_links": "F.C. Gerretson, J.Ph. Suijling (ontslagen 1946), H.Th. Fischer, J. Gonda, BPM/Shell.",
+                "bronnen": ["Van Rinsum (2023)", "Tijdschrift Oud-Utrecht", "De Gids (1925: 'De aanslag op Leiden')"]
+            },
+            {
+                "echte_naam": "Masdoelhak Nasoetion",
+                "alias": "De Ironische Promovendus / Indonesische delegatiesekretaris",
+                "categorie": "faculteit",
+                "context": "Indonesisch intellectueel die in 1943 aan de Utrechtse 'Olie-faculteit' promoveerde bij antropoloog H.Th. Fischer. Waar de faculteit was opgericht om het Nederlands koloniaal gezag te beschermen, koos Nasoetion voor de Indonesische onafhankelijkheidsstrijd. Hij werd in december 1948 tijdens de Tweede Politionele Actie in Kaliurang geëxecuteerd door Nederlandse commando's.",
+                "archief_ref": "Promotiedossiers Universiteit Utrecht (1943). Kabinetsarchieven Nederlands-Indië / Indonesische Kwestie in het Nationaal Archief.",
+                "netwerk_links": "Mohammad Hatta, H.Th. Fischer, Adriana van der Have (echtgenote), Republiek Indonesië.",
+                "bronnen": ["UU Promotie-archief", "Van Rinsum (2023)", "Naoorlogse Enquêtecommissies"]
+            },
+            {
+                "echte_naam": "Cornelis van Vollenhoven & Christiaan Snouck Hurgronje",
+                "alias": "Kampioen van het Adatrecht / Vader van de adat / Haji Abdul Ghaffar",
+                "categorie": "faculteit",
+                "context": "De gezichtsbepalende professoren van de Leidse Ethische richting. Van Vollenhoven definieerde en verdedigde het inheemse Indonesische adatrecht tegen westerse eenvormigheid. Snouck Hurgronje was islamoloog die onder de schuilnaam Haji Abdul Ghaffar Mekka binnendrong om spionagewerk te verrichten voor het koloniale bestuur.",
+                "archief_ref": "Universiteitsbibliotheek Leiden — Bijzondere Collecties. Archieven Snouck Hurgronje en Van Vollenhoven.",
+                "netwerk_links": "Leidse Indologenschool, Koloniaal Bestuur, Ethische Richting.",
+                "bronnen": ["UB Leiden", "BWN", "Historiografie Koloniaal Recht"]
+            },
+
+            // --- LITERATUUR & PSEUDONIEMEN ---
+            {
+                "echte_naam": "Louis Paul Boon",
+                "alias": "Boontje / Willem de Verraderlijke / Magister Nivardus Wilhelmus / Willem l’Arpenteur",
+                "categorie": "literatuur",
+                "context": "Vlaams romanschrijver en kroniekschrijver ('De Kapellekensbaan'). Als redactiesecretaris bij het linkse weekblad 'Front' (1946-1947) voelde hij zich beknot door communistische partijcensuur. Om felle maatschappijkritiek te uiten (op monarchie en kerk), bediende hij zich van een woud aan Reinaert de Vos-achtige pseudoniemen.",
+                "archief_ref": "Archieven van het Reynaertgenootschap (Tiecelijn). Literaire nalatenschap Louis Paul Boon (AMVC-Letterenhuis, Antwerpen). Publicaties in weekblad 'Front'.",
+                "netwerk_links": "Gérard van Moerkerke ('Pater Hooizolder'), Robert Dubois ('Kapitein Eenoog'), De Roode Vaan.",
+                "bronnen": ["Reynaertgenootschap", "AMVC-Letterenhuis", "DBNL"]
+            },
+            {
+                "echte_naam": "Raymond Jean Marie de Kremer",
+                "alias": "Jean Ray / John Flanders",
+                "categorie": "literatuur",
+                "context": "Beroemd Gents meester van de fantastische en griezellektuur ('Malpertuis'). Publiceerde zijn duistere, literair hoogstaande Franstalige werk als 'Jean Ray', maar schreef tegelijkertijd honderden Nederlandstalige jeugdverhalen en Vlaamse pulpreeksen onder de naam 'John Flanders' (o.a. voor uitgeverij Averbode).",
+                "archief_ref": "Archief Jean Ray / John Flanders in de Universiteitsbibliotheek Gent en het AMVC-Letterenhuis Antwerpen.",
+                "netwerk_links": "Uitgeverij Averbode, Vlaamse School, Edward Anseele ('Oom Kwansuys').",
+                "bronnen": ["AMVC-Letterenhuis", "UGent Archief", "Tiecelijn"]
+            },
+            {
+                "echte_naam": "Philip Alexius de László",
+                "alias": "Laub / Laub Fülöp / László de Lombos",
+                "categorie": "literatuur",
+                "context": "Van oorsprong Hongaars-Joodse schilder (geboren als Fülöp Laub) die uitgroeide tot de meest gevierde society-portrettist van de Europese aristocratie en diplomatieke elite in het interbellum. Werd in 1912 door keizer Frans Jozef I in de adelstand verheven en voerde kort de titel 'de Lombos'.",
+                "archief_ref": "The de Laszlo Archive Trust (Londen). Catalogus raisonné. Schilderij 'Madame Lydia Eustis Loudon' (1920) in de collectie van Museum Voorlinden / Familie Loudon.",
+                "netwerk_links": "Loudon-dynastie, Britse en Midden-Europese Aristocratie, John Loudon (diplomaat).",
+                "bronnen": ["De Laszlo Archive Trust", "Museum Voorlinden", "Adel in Nederland"]
+            },
+
+            // --- MIDDELEEUWEN & VROEGE HISTORIE ---
+            {
+                "echte_naam": "Willem van Hildegaersberch",
+                "alias": "Meester Willem van Hillegairtsberge / Michter / Grote sprookspreker",
+                "categorie": "historie",
+                "context": "Gevierd 14e-eeuws sprookspreker aan het Haagse hof van de graven van Holland (ca. 1383-1408). Stond bekend om zijn vermanende, maatschappijkritische en morele spotversjes. Hij noemde zichzelf nadrukkelijk 'michter' om zich te onderscheiden van gewone minstrelen en hofnarren.",
+                "archief_ref": "Materiële representatie aan het Haagse hof 1345-1425 (UvA DARE / Nationaal Archief). Grafelijkheidsrekeningen Holland en Henegouwen.",
+                "netwerk_links": "Albrecht van Beieren (Ruwaard), Willem VI van Holland, Dirc van den Rijn ('die Commelduer').",
+                "bronnen": ["UvA DARE", "Theo Meder (Sprooksprekers)", "DBNL"]
+            },
+            {
+                "echte_naam": "Claes Heynenzoon",
+                "alias": "Heraut Beieren / Heraut Gelre / Beyer den heraut",
+                "categorie": "historie",
+                "context": "Belangrijkste heraldisch ambtenaar, kroniekschrijver en samensteller van wapenboeken in de Noordelijke Nederlanden tijdens de late Middeleeuwen. Diende eerst hertog Willem I van Gelre en trad later in dienst van het Beierse gravenhuis in Holland (Willem VI).",
+                "archief_ref": "Wapenboek Beyeren (Koninklijke Bibliotheek Den Haag). Grafelijkheidsarchieven in het Nationaal Archief (Toegang 3.01.01).",
+                "netwerk_links": "Hertogdom Gelre, Graafschap Holland, Willem van Oostervant, Jan van Beieren.",
+                "bronnen": ["KB Den Haag", "UvA DARE", "Nationaal Archief"]
+            },
+            {
+                "echte_naam": "Albrecht van Beieren & Jan van Beieren",
+                "alias": "Ruwaard (gubernator) / Jan zonder Genade / Zoon van Holland",
+                "categorie": "historie",
+                "context": "Graven en heersers over Holland, Zeeland en Henegouwen tijdens de Hoekse en Kabeljauwse twisten. Albrecht regeerde lang als 'Ruwaard' voor zijn krankzinnige broer Willem V. Zoon Jan verwierf de bijnaam 'Zonder Genade' na het meedogenloos neerslaan van de Luikse gildenopstand (1408).",
+                "archief_ref": "Nationaal Archief — Archief van de Graven van Holland (Toegang 3.01.01). Charters, rekeningen en leenregisters.",
+                "netwerk_links": "Haagse Hof, Jacoba van Beieren, Jan van Eyck ('Johannes de schilder'), Willem van Hildegaersberch.",
+                "bronnen": ["UvA DARE", "Nationaal Archief", "DBNL"]
+            },
+            {
+                "echte_naam": "Willem Barendsz. & Willem Pennincsac",
+                "alias": "Warenar / Gierighe Geeraert / Willem Geldsak",
+                "categorie": "historie",
+                "context": "Bekende, rijke en hoogzuinig levende Amsterdamse en Delftse burgers uit de zeventiende eeuw. Barendsz. diende als historisch en spotmatig model voor P.C. Hoofts personage 'Warenar' en Bredero's 'Gierighe Geeraert' in de Spaanschen Brabander.",
+                "archief_ref": "Gemeentearchief Amsterdam & Stadsarchief Delft. Toneelbibliotheek DBNL.",
+                "netwerk_links": "P.C. Hooft, Gerbrand Adriaensz. Bredero, 17e-eeuwse burgercultuur.",
+                "bronnen": ["Golfgeschiedenis.nl", "DBNL", "Toneelhistorie"]
+            }
+        ];
+
+        const searchInput = document.getElementById('searchInput');
+        const resultsGrid = document.getElementById('resultsGrid');
+        const resultCount = document.getElementById('resultCount');
+        const toast = document.getElementById('toast');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+
+        let currentFilter = 'all';
+
+        // Booleaanse Dork Generator
+        function createDorkQuery(echteNaam, alias) {
+            const cleanStr = str => str.replace(/Clan Campbell tak|\/|&|\(|\)/g, ' ').replace(/\s+/g, ' ').trim();
+            
+            const formatPart = (str) => {
+                return cleanStr(str).split(' ')
+                          .filter(s => s.length > 2)
+                          .slice(0, 3) 
+                          .map(s => `"${s}"`)
+                          .join(' OR ');
+            };
+
+            const naamPart = formatPart(echteNaam);
+            const aliasPart = formatPart(alias);
+
+            return `(${naamPart}) AND (${aliasPart})`;
+        }
+
+        // Render kaarten in het Web-Grid
+        function renderCards() {
+            resultsGrid.innerHTML = '';
+            const query = searchInput.value.toLowerCase().trim();
+
+            const filteredData = dataset.filter(item => {
+                const matchesSearch = item.echte_naam.toLowerCase().includes(query) ||
+                                      item.alias.toLowerCase().includes(query) ||
+                                      item.context.toLowerCase().includes(query) ||
+                                      item.archief_ref.toLowerCase().includes(query) ||
+                                      item.netwerk_links.toLowerCase().includes(query);
+                
+                const matchesCategory = currentFilter === 'all' || item.categorie === currentFilter;
+
+                return matchesSearch && matchesCategory;
+            });
+
+            if (filteredData.length === 0) {
+                resultsGrid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #64748b; padding: 50px; font-size: 1.1rem;">Geen dossiers gevonden die voldoen aan de zoekterm en/of het actieve filter.</p>`;
+                resultCount.textContent = `0 resultaten`;
+                return;
+            }
+
+            resultCount.textContent = `${filteredData.length} van ${dataset.length} dossiers getoond`;
+
+            filteredData.forEach(item => {
+                const card = document.createElement('article');
+                card.className = 'card';
+
+                const dorkQuery = createDorkQuery(item.echte_naam, item.alias);
+                const delpherUrl = `https://www.delpher.nl/nl/kranten/resultaten?query=${encodeURIComponent(dorkQuery)}&coll=ddd`;
+                const archiefUrl = `https://www.google.com/search?q=${encodeURIComponent(dorkQuery + ' (site:nationaalarchief.nl OR site:niod.nl OR site:openarchief.nl)')}`;
+                const pdfUrl = `https://www.google.com/search?q=${encodeURIComponent(dorkQuery + ' filetype:pdf')}`;
+
+                let catLabel = 'Algemeen';
+                if(item.categorie === 'dynastie') catLabel = '👑 Dynastie';
+                if(item.categorie === 'netwerk') catLabel = '🕸️ Clandestien';
+                if(item.categorie === 'faculteit') catLabel = '🎓 Academisch';
+                if(item.categorie === 'literatuur') catLabel = '✒️ Literair';
+                if(item.categorie === 'historie') catLabel = '📜 Historisch';
+                if(item.categorie === 'nationale_unie') catLabel = '🛡️ Nat. Unie';
+                if(item.categorie === 'nsb') catLabel = '⚡ NSB Top';
+                if(item.categorie === 'moderne_politiek') catLabel = '🏛️ Politiek 2026';
+
+                // Split aliassen als nette badges
+                const aliasBadges = item.alias.split('/').map(a => `<span class="alias-badge">🏷️ ${a.trim()}</span>`).join('');
+
+                card.innerHTML = `
+                    <div>
+                        <div class="card-header">
+                            <span class="category-tag cat-${item.categorie}">${catLabel}</span>
+                            <div class="echte-naam">${item.echte_naam}</div>
+                            <div class="alias-wrapper">${aliasBadges}</div>
+                        </div>
+                        <div class="card-body">
+                            <p class="context-text">${item.context}</p>
+                            <div class="archief-box">
+                                <strong>🗄️ Archivalische Vindplaats & Verwijzing:</strong>
+                                ${item.archief_ref}
+                            </div>
+                            <div class="netwerk-links">
+                                <strong>🔗 Netwerk & Verbindingen:</strong> ${item.netwerk_links}<br>
+                                <span style="font-size:0.75rem; color:#64748b; margin-top:4px; display:inline-block;">📚 Bronnen: ${item.bronnen.join(' • ')}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <div class="action-title">⚡ OSINT & Archief Dork Generator</div>
+                        <div class="button-group">
+                            <button class="btn btn-copy" onclick="copyToClipboard('${dorkQuery.replace(/'/g, "\\'")}')">
+                                📋 Kopieer Dork
+                            </button>
+                            <a href="${delpherUrl}" target="_blank" class="btn" title="Zoek direct in historische kranten op Delpher">
+                                📰 Delpher
+                            </a>
+                            <a href="${archiefUrl}" target="_blank" class="btn" title="Zoek in het Nationaal Archief en het NIOD">
+                                🏛️ NA / NIOD
+                            </a>
+                            <a href="${pdfUrl}" target="_blank" class="btn" title="Zoek via Google specifiek naar wetenschappelijke PDF's en inventarissen">
+                                📄 Google PDF
+                            </a>
+                        </div>
+                    </div>
+                `;
+
+                resultsGrid.appendChild(card);
+            });
+        }
+
+        // Kopiëren naar klembord
+        window.copyToClipboard = function(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                toast.textContent = `📋 Gekopieerd: ${text}`;
+                toast.className = "show";
+                setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+            }).catch(err => {
+                console.error('Kopiëren mislukt: ', err);
+            });
+        };
+
+        // Event Listeners
+        searchInput.addEventListener('input', renderCards);
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                currentFilter = e.target.getAttribute('data-filter');
+                renderCards();
+            });
+        });
+
+        // Initiële Render
+        renderCards();
+    </script>
+</body>
+</html>
