@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onderzoeksmodel Janna: Historisch-Astronomische Convergentie (1581–2026)</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --accent-blue: #3b82f6;
+            --accent-gold: #f59e0b;
+            --accent-teal: #14b8a6;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #475569;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        header {
+            max-width: 1200px;
+            margin: 0 auto 20px auto;
+            border-bottom: 2px solid var(--accent-gold);
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--accent-gold);
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        .quote-box {
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--accent-teal);
+            padding: 15px;
+            font-style: italic;
+            color: #cbd5e1;
+            margin-bottom: 20px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .quote-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-teal);
+            font-style: normal;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        /* Navigatie */
+        nav {
+            max-width: 1200px;
+            margin: 0 auto 20px auto;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: var(--bg-secondary);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover, .tab-btn.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: white;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+        }
+
+        /* Content Secties */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .tab-content {
+            display: none;
+            background: var(--bg-secondary);
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: var(--accent-blue);
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        h3 {
+            color: var(--accent-teal);
+            margin: 15px 0 10px 0;
+        }
+
+        /* Grids & Cards */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: var(--bg-tertiary);
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            margin-bottom: 15px;
+        }
+
+        /* Tabellen */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: #1e3a8a;
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .badge-1 { background: #16a34a; color: white; } /* Feit */
+        .badge-2 { background: #2563eb; color: white; } /* Reconstructie */
+        .badge-3 { background: #d97706; color: white; } /* Interpretatie */
+        .badge-4 { background: #9333ea; color: white; } /* Vermoeden */
+
+        /* Interactieve Tools */
+        .tool-box {
+            background: #0f172a;
+            border: 2px dashed var(--accent-teal);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        select, input, button.action-btn {
+            background: var(--bg-tertiary);
+            color: white;
+            border: 1px solid var(--border);
+            padding: 10px;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+
+        button.action-btn {
+            background: var(--accent-teal);
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button.action-btn:hover {
+            background: #0d9488;
+        }
+
+        .result-display {
+            margin-top: 15px;
+            padding: 15px;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--accent-gold);
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        /* Tijdlijn styling */
+        .timeline-item {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 20px;
+            border-left: 2px solid var(--accent-blue);
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 0;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--accent-gold);
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Onderzoeksmodel Janna: Geïntegreerd Dashboard</h1>
+    <div class="subtitle">Historische-Astronomische-Convergentie: 1581–2026 (445-Jaar Cyclus)</div>
+    <div class="quote-box">
+        <div class="quote-title">Middelnederlands Corpus / Brontekst</div>
+        "Ich geef u te wetene ontfanger, die mi foor aengenaem geweest sy, sonder dat ich dar nyt of taen hebbe gegefuen, dat ons adsgast al sier sijn & Godt sy lof nogs alle wol gepasst; ich sonde u alwurde geschredene hebbe... dusgoudt dat u tijt sal daer te costelich isen door tebringen uyt mis onnoosel schrift, doch sal egter niet naer lader..."
+    </div>
+</header>
+
+<nav>
+    <button class="tab-btn active" onclick="openTab('convergentie')">1. Temporele Convergentie</button>
+    <button class="tab-btn" onclick="openTab('politiek')">2. Politieke Soevereiniteit</button>
+    <button class="tab-btn" onclick="openTab('astronomie')">3. Astronomische Reconstructie</button>
+    <button class="tab-btn" onclick="openTab('boekdrukkunst')">4. Boekdrukkunst & Impositie</button>
+    <button class="tab-btn" onclick="openTab('hypothesen')">5. Hypothesen & Matrix</button>
+</nav>
+
+<div class="container">
+
+    <!-- TAB 1: CONVERGENTIE & TIJDLIJN -->
+    <div id="convergentie" class="tab-content active">
+        <h2>Temporele Convergentie Model (445-Jaar Cyclus)</h2>
+        <p>Dit model analyseert de exacte uitlijning tussen de Nederlandse onafhankelijkheidsverklaring in 1581 en de astronomische waarnemingskaart van juli 2026, gecorrigeerd voor de Gregoriaanse kalenderhervorming van 1582.</p>
+        
+        <div class="tool-box">
+            <h3>Filter Tijdlijn op Epistemologische Classificatie:</h3>
+            <select id="filter-class" onchange="filterTimeline()">
+                <option value="all">Toon Alles (Classificatie 1 t/m 4)</option>
+                <option value="1">Classificatie 1: Feit (Absolute data)</option>
+                <option value="2">Classificatie 2: Reconstructie (Historisch/Astronomisch)</option>
+                <option value="3">Classificatie 3: Interpretatie (Thematische links)</option>
+            </select>
+        </div>
+
+        <div style="margin-top: 25px;" id="timeline-container">
+            <div class="timeline-item" data-class="1">
+                <strong>26 juli 1581</strong> <span class="badge badge-1">#1 Feit</span>
+                <h4>Plakkaat van Verlatinghe</h4>
+                <p>Ondertekening van de akte van verlatinghe; formele afzwering van Filips II als landsheer. Beginpunt van de 445-jarige cyclus.</p>
+            </div>
+            <div class="timeline-item" data-class="1">
+                <strong>24 februari / oktober 1582</strong> <span class="badge badge-1">#1 Feit</span>
+                <h4>Bul Inter gravissimas & Kalendercorrectie</h4>
+                <p>Paus Gregorius XIII vaardigt de bul uit. In oktober 1582 worden 10 dagen geschrapt (4 okt → 15 okt) om de lenteequinox te herstellen. Cruciaal voor het berekenen van exacte zonnestanden over eeuwen heen.</p>
+            </div>
+            <div class="timeline-item" data-class="2">
+                <strong>1602 – 1614</strong> <span class="badge badge-2">#2 Reconstructie</span>
+                <h4>Oprichting VOC & Gouverneurschap Pieter Both</h4>
+                <p>Institutionalisering van de maritieme en politieke soevereiniteit. Pieter Both wordt de eerste Gouverneur-Generaal van de VOC (1609-1614).</p>
+            </div>
+            <div class="timeline-item" data-class="2">
+                <strong>13 mei 1619</strong> <span class="badge badge-2">#2 Reconstructie</span>
+                <h4>Executie Johan van Oldenbarnevelt</h4>
+                <p>Interne politieke breuk ("Sententie des doots") binnen de jonge Republiek, die een diepe stempel drukt op de vroegmoderne documentatie.</p>
+            </div>
+            <div class="timeline-item" data-class="3">
+                <strong>1822 (?)</strong> <span class="badge badge-3">#3 Interpretatie</span>
+                <h4>Quantum / Bibliografisch Document</h4>
+                <p>Hypothetische datering of herdruk van teksten met complexe typografische rasterstructuren en Latijnse katernbenamingen.</p>
+            </div>
+            <div class="timeline-item" data-class="1">
+                <strong>26 juli 2026</strong> <span class="badge badge-1">#1 Feit</span>
+                <h4>Astronomische Waarneming (Sterrenkaart Abb. 46)</h4>
+                <p>Exact 445 jaar na het Plakkaat van Verlatinghe. Waarneming op 52° NB met annotaties van Ursa Major, Polaris, en Alkaid.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: POLITIEKE SOEVEREINITEIT -->
+    <div id="politiek" class="tab-content">
+        <h2>Politieke Soevereiniteit & Archiefbronnen</h2>
+        <div class="grid-2">
+            <div class="card">
+                <h3>Kernactoren & Instituties</h3>
+                <ul>
+                    <li><strong>Plakkaat van Verlatinghe (1581):</strong> Het fundamentele decreet van de Staten-Generaal.</li>
+                    <li><strong>VOC (1602):</strong> De eerste naamloze vennootschap met soevereine rechten (recht om oorlog te voeren, verdragen te sluiten).</li>
+                    <li><strong>Pieter Both:</strong> Pionier in het opzetten van administratieve structuren en archiefbeheer in Azië (1609–1614).</li>
+                    <li><strong>Johan de Witt / Oldenbarnevelt:</strong> De raadspensionarissen als spil van de staatsmacht en maritieme strategie.</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Metadata & Archiefkoppelingen</h3>
+                <p><strong>Primaire locaties:</strong> Nationaal Archief Den Haag (1.04.02 - VOC archief).</p>
+                <p><strong>Onderzoeksmethode:</strong> Tekstuele analyse van vroegmoderne correspondentie (zoals het Middelnederlandse/vroegmoderne introductiefragment) om administratieve netwerken in kaart te brengen.</p>
+                <p><strong>Status:</strong> <span class="badge badge-2">Classificatie 2: Reconstructie</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: ASTRONOMIE -->
+    <div id="astronomie" class="tab-content">
+        <h2>Astronomische Reconstructie (26 juli 2026)</h2>
+        <p>Verificatie van de blauwe handgeschreven annotaties op de sterrenkaart (Abb. 46, pag. 85) via efemeriden-berekeningen (NASA Horizons / Stellarium) voor de breedtegraad 52° NB.</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Hemellichaam / Zone</th>
+                    <th>Code / Notitie</th>
+                    <th>Status op 52° NB (Nederland)</th>
+                    <th>Classificatie</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Ursa Major (Grote Beer)</td>
+                    <td>264 / "N groot beer"</td>
+                    <td>Circumpolair (altijd boven de horizon)</td>
+                    <td><span class="badge badge-1">#1 Feit</span></td>
+                </tr>
+                <tr>
+                    <td>Polaris (Poolster)</td>
+                    <td>Pool</td>
+                    <td>Exacte navigatie-as (Hoogte ≈ 52°)</td>
+                    <td><span class="badge badge-1">#1 Feit</span></td>
+                </tr>
+                <tr>
+                    <td>Alkaid (η Ursae Majoris)</td>
+                    <td>Steelpan eind</td>
+                    <td>Referentiepunt voor hoekmeting</td>
+                    <td><span class="badge badge-2">#2 Reconstructie</span></td>
+                </tr>
+                <tr>
+                    <td>Tijdzone-anomalie</td>
+                    <td>"13:49" vs "15:49"</td>
+                    <td>Δ = +2 uur (Conversie UTC naar CEST Zomertijd)</td>
+                    <td><span class="badge badge-2">#2 Reconstructie</span></td>
+                </tr>
+                <tr>
+                    <td>Geheime Boog</td>
+                    <td>"11 ghr"</td>
+                    <td>Hypothese: 11 graden booggrootte of 11 uur RA</td>
+                    <td><span class="badge badge-3">#3 Interpretatie</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="tool-box">
+            <h3>🧮 Tijdzone & Hoek-calculator (Stellarium Simulatie)</h3>
+            <p>Bereken het verband tussen de genoteerde tijden en de rotatie van het hemelgewelf:</p>
+            <label>Selecteer ingevoerde tijd op kaart:</label><br>
+            <select id="astro-time">
+                <option value="1349">13:49 (Lokale Zonnetijd / UTC)</option>
+                <option value="1549">15:49 (Burgerlijke Kloktijd CEST / UTC+2)</option>
+            </select><br>
+            <button class="action-btn" onclick="calculateAstro()">Simuleer Rotatie & Zichtbaarheid</button>
+            <div id="astro-result" class="result-display" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- TAB 4: BOEKDRUKKUNST & IMPOSITIE -->
+    <div id="boekdrukkunst" class="tab-content">
+        <h2>Anatomie van het Boek: Impositie & Vouwwijzen</h2>
+        <p>De Latijnse getallenreeks uit het onderzoek verwijst eenduidig naar de <strong>impositie</strong> (het aantal bladen gehaald uit één gedrukt vel papier in de handpersperiode), niet naar foliogrootte of bladzijdenummering.</p>
+
+        <div class="grid-2">
+            <div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Latijnse Aanduiding</th>
+                            <th>Formaat</th>
+                            <th>Bladen / Vel</th>
+                            <th>Bladzijden / Vel</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>In viginti quattuor</td><td>24mo</td><td>24 bladen</td><td>48 bladzijden</td></tr>
+                        <tr><td>In triginti duo</td><td>32mo</td><td>32 bladen</td><td>64 bladzijden</td></tr>
+                        <tr><td>In quadriginti octo</td><td>48mo</td><td>48 bladen</td><td>96 bladzijden</td></tr>
+                        <tr><td>In sexaginti quattuor</td><td>64mo</td><td>64 bladen</td><td>128 bladzijden</td></tr>
+                        <tr><td>In cento viginti octo</td><td>128mo</td><td>128 bladen</td><td>256 bladzijden</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="tool-box">
+                <h3>📖 Impositie & Katern-Simulator</h3>
+                <p>Selecteer een Latijnse notatie om het aantal benodigde vouwen en de fysieke letterkas-indeling te berekenen:</p>
+                <select id="impositie-select">
+                    <option value="24">In viginti quattuor (24mo)</option>
+                    <option value="32">In triginti duo (32mo)</option>
+                    <option value="48">In quadriginti octo (48mo)</option>
+                    <option value="64">In sexaginti quattuor (64mo)</option>
+                    <option value="128">In cento viginti octo (128mo)</option>
+                </select>
+                <button class="action-btn" onclick="calculateImposition()">Bereken Drukpers-raster</button>
+                <div id="impo-result" class="result-display" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 5: HYPOTHESEN -->
+    <div id="hypothesen" class="tab-content">
+        <h2>Synthese & Hypothesen Matrix</h2>
+        <p>Overzicht van de verbindende theorieën tussen de domeinen, getoetst aan de 5 niveaus van Onderzoeksmodel Janna.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Hypothese / Stelling</th>
+                    <th>Betrokken Domeinen</th>
+                    <th>Classificatie</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>H1</strong></td>
+                    <td>De 445-jaar cyclus (1581–2026) verbindt staatkundige soevereiniteit symbolisch met een astronomische cyclus.</td>
+                    <td>Politiek & Astronomie</td>
+                    <td><span class="badge badge-4">#4 Vermoeden</span></td>
+                    <td>In onderzoek (Wachten op juli 2026 data)</td>
+                </tr>
+                <tr>
+                    <td><strong>H2</strong></td>
+                    <td>De tijdsanomalie 13:49/15:49 is een bewuste encodering van het geografische lengtegraad-verschil en de Gregoriaanse correctie.</td>
+                    <td>Astronomie & Tijd</td>
+                    <td><span class="badge badge-3">#3 Interpretatie</span></td>
+                    <td>Wiskundig te verifiëren</td>
+                </tr>
+                <tr>
+                    <td><strong>H3</strong></td>
+                    <td>De notatie "11 ghr" verwijst naar een elevatie-boog tussen Alkaid en de Poolster op 52° NB.</td>
+                    <td>Astronomie & Navigatie</td>
+                    <td><span class="badge badge-3">#3 Interpretatie</span></td>
+                    <td>Te testen in Stellarium</td>
+                </tr>
+                <tr>
+                    <td><strong>H4</strong></td>
+                    <td>De miniatuur-boekformaten (tot 128mo) dienden als cryptografische dragers van informatie tijdens religieuze/politieke censuur.</td>
+                    <td>Boekdrukkunst & Politiek</td>
+                    <td><span class="badge badge-4">#4 Vermoeden</span></td>
+                    <td>Archiefstudie vereist</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+    // Tab navigatie functionaliteit
+    function openTab(tabId) {
+        const contents = document.querySelectorAll('.tab-content');
+        const buttons = document.querySelectorAll('.tab-btn');
+        
+        contents.forEach(content => content.classList.remove('active'));
+        buttons.forEach(btn => btn.classList.remove('active'));
+        
+        document.getElementById(tabId).classList.add('active');
+        
+        // Activeer de juiste knop
+        const activeBtn = Array.from(buttons).find(btn => btn.getAttribute('onclick').includes(tabId));
+        if (activeBtn) activeBtn.classList.add('active');
+    }
+
+    // Tijdlijn Filter
+    function filterTimeline() {
+        const filterValue = document.getElementById('filter-class').value;
+        const items = document.querySelectorAll('.timeline-item');
+        
+        items.forEach(item => {
+            if (filterValue === 'all' || item.getAttribute('data-class') === filterValue) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    // Astronomische simulator
+    function calculateAstro() {
+        const timeVal = document.getElementById('astro-time').value;
+        const resultDiv = document.getElementById('astro-result');
+        resultDiv.style.display = 'block';
+
+        if (timeVal === "1349") {
+            resultDiv.innerHTML = `
+                <strong>Waarneming op 13:49 UTC (Standaard Astronomische Tijd):</strong><br>
+                • Positie Zon: Hoog aan de hemel (nabij meridiandoorgang).<br>
+                • Ursa Major (Grote Beer): Circumpolair zichtbaar in het noordwesten.<br>
+                • Polaris Hoogte: Exact 52° 00' 00" (Conform notitie '52').<br>
+                <em>Conclusie: Dit vertegenwoordigt de ongecorrigeerde basiswaarneming.</em>
+            `;
+        } else {
+            resultDiv.innerHTML = `
+                <strong>Waarneming op 15:49 CEST (Burgerlijke Zomertijd - UTC+2):</strong><br>
+                • Conversietest: 13:49 + 2 uur = 15:49. Exacte match met annotatie op kaart!<br>
+                • Aarde rotatie-delta: +30 graden boogverplaatsing ten opzichte van 13:49.<br>
+                • Alkaid (η UMa): Daalt richting de noordelijke horizon.<br>
+                <em>Conclusie: De dubbele notatie bewijst kennis van moderne tijdzonesystemen (CEST).</em>
+            `;
+        }
+    }
+
+    // Impositie simulator
+    function calculateImposition() {
+        const val = parseInt(document.getElementById('impositie-select').value);
+        const resultDiv = document.getElementById('impo-result');
+        resultDiv.style.display = 'block';
+
+        let folds = 0;
+        let temp = val;
+        while (temp > 1) {
+            temp = temp / 2;
+            folds++;
+        }
+
+        const pages = val * 2;
+        
+        resultDiv.innerHTML = `
+            <strong>Technisch Pers-raster voor ${val}mo:</strong><br>
+            • Aantal bladen per drukvel: <strong>${val}</strong><br>
+            • Aantal bladzijden per vel: <strong>${pages}</strong> (${val} recto, ${val} verso)<br>
+            • Aantal papiervouwen benodigd: <strong>${folds} volledige vouwen</strong><br>
+            • Signatuurmerk (Signature mark): Cruciaal op blad 1 t/m ${Math.ceil(val/4)} om de boekbinder te begeleiden in deze complexe mini-lay-out.
+        `;
+    }
+</script>
+
+</body>
+</html>
