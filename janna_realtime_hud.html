@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onderzoeksmodel Janna: Realtime Codex & Starmap HUD</title>
+    <style>
+        :root {
+            --bg-primary: #060913;
+            --bg-secondary: #0d1326;
+            --bg-tertiary: #161f3d;
+            --accent-cyan: #00f0ff;
+            --accent-gold: #f59e0b;
+            --accent-blue: #3b82f6;
+            --accent-teal: #14b8a6;
+            --accent-red: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #23315e;
+            --font-mono: 'Courier New', Courier, monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            padding: 15px;
+            overflow-x: hidden;
+        }
+
+        /* HUD Header & Telemetry Bar */
+        header {
+            border: 1px solid var(--accent-cyan);
+            background: rgba(13, 19, 38, 0.8);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.15);
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .hud-title h1 { color: var(--accent-gold); font-size: 1.6rem; letter-spacing: 1px; text-transform: uppercase; }
+        .hud-title .sub { color: var(--accent-cyan); font-family: var(--font-mono); font-size: 0.85rem; }
+
+        .telemetry-bar {
+            display: flex;
+            gap: 20px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            background: var(--bg-primary);
+            padding: 8px 15px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+
+        .tel-item span { color: var(--accent-gold); font-weight: bold; }
+
+        /* Main Split-Screen Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 1100px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+        .hud-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 18px;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .hud-panel::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 8px; height: 8px;
+            border-top: 2px solid var(--accent-cyan); border-left: 2px solid var(--accent-cyan);
+        }
+        .hud-panel::after {
+            content: ''; position: absolute; top: 0; right: 0; width: 8px; height: 8px;
+            border-top: 2px solid var(--accent-cyan); border-right: 2px solid var(--accent-cyan);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .panel-title { font-size: 1.1rem; color: var(--accent-cyan); font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Canvas Starmap */
+        .canvas-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: radial-gradient(circle at center, #0a1128 0%, #03050c 100%);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 10px;
+            position: relative;
+        }
+
+        #starmapCanvas {
+            width: 100%;
+            max-width: 500px;
+            height: auto;
+            aspect-ratio: 1 / 1;
+            cursor: crosshair;
+        }
+
+        /* Codex & Matrix UI */
+        .controls-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        select, button {
+            background: var(--bg-tertiary);
+            color: var(--text-main);
+            border: 1px solid var(--accent-cyan);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover, select:hover { background: var(--accent-cyan); color: #000; font-weight: bold; }
+        button.active { background: var(--accent-gold); border-color: var(--accent-gold); color: #000; font-weight: bold; }
+
+        /* Typografisch Pers-raster */
+        .matrix-grid {
+            display: grid;
+            gap: 4px;
+            margin-top: 15px;
+            background: var(--bg-primary);
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        .page-cell {
+            background: var(--bg-tertiary);
+            border: 1px solid #2a3d6e;
+            padding: 8px 4px;
+            text-align: center;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            position: relative;
+            border-radius: 2px;
+            transition: transform 0.1s;
+        }
+
+        .page-cell:hover { transform: scale(1.05); border-color: var(--accent-cyan); z-index: 2; }
+        .page-cell.sig-mark { border-color: var(--accent-gold); background: rgba(245, 158, 11, 0.15); }
+        .page-cell .page-num { font-weight: bold; color: var(--text-main); }
+        .page-cell .sig-label { font-size: 0.65rem; color: var(--accent-gold); display: block; margin-top: 2px; }
+
+        /* Paleografisch Tekstvenster */
+        .corpus-box {
+            background: var(--bg-primary);
+            border-left: 3px solid var(--accent-teal);
+            padding: 12px;
+            font-family: 'Georgia', serif;
+            font-style: italic;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-top: 15px;
+            color: #e2e8f0;
+        }
+
+        .word-highlight {
+            border-bottom: 1px dashed var(--accent-gold);
+            cursor: help;
+            font-style: normal;
+            font-weight: bold;
+            color: var(--accent-gold);
+        }
+
+        /* Log Console */
+        .console-log {
+            margin-top: 20px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 12px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--accent-cyan);
+            height: 120px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="hud-title">
+        <h1>Onderzoeksmodel Janna: Realtime Omni-Bridge</h1>
+        <div class="sub">CHRONOMETRISCHE STARMAP & TYPOGRAFISCHE CODEX MATRIX</div>
+    </div>
+    <div class="telemetry-bar">
+        <div class="tel-item">LOCATIE: <span>52.00° NB / 5.20° OL</span></div>
+        <div class="tel-item">UTC: <span id="clock-utc">--:--:--</span></div>
+        <div class="tel-item">CEST: <span id="clock-cest">--:--:--</span></div>
+        <div class="tel-item">LST (Sterrentijd): <span id="clock-lst">--:--:--</span></div>
+    </div>
+</header>
+
+<div class="dashboard-grid">
+    
+    <!-- LINKER PANEL: REALTIME ASTRONOMISCHE STARMAP -->
+    <div class="hud-panel">
+        <div class="panel-header">
+            <div class="panel-title">⭐ Realtime Starmap HUD (52° NB Navigatie-as)</div>
+            <div class="controls-group" style="margin:0;">
+                <button id="btn-live" class="active" onclick="setStarmapMode('live')">Live Tijd</button>
+                <button id="btn-epoch" onclick="setStarmapMode('epoch')">Epoch J2026.5 (13:49 UTC)</button>
+            </div>
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="starmapCanvas" width="600" height="600"></canvas>
+            <div style="position: absolute; bottom: 15px; left: 15px; font-family: var(--font-mono); font-size: 0.75rem; background: rgba(6,9,19,0.8); padding: 6px 10px; border: 1px solid var(--border);">
+                <span style="color:var(--accent-gold);">●</span> Polaris (Poolster)<br>
+                <span style="color:var(--accent-cyan);">●</span> Alkaid (13:49 RA Match)<br>
+                <span style="color:var(--accent-red); font-weight:bold;">◠</span> 11 ghr RA Boog ($\Delta \approx 11^\text{h}$)
+            </div>
+        </div>
+
+        <div style="margin-top: 12px; font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted);">
+            • <strong>Wiskundige verificatie:</strong> Het rode segment markeert de 11 getelde uren in Rechte Klimming tussen Polaris ($02^\text{h} 51^\text{m}$) en Alkaid ($13^\text{h} 48^\text{m} 46^\text{s} \rightarrow \mathbf{13:49}$).
+        </div>
+    </div>
+
+    <!-- RECHTER PANEL: REALTIME CODEX & MATRIX GENERATOR -->
+    <div class="hud-panel">
+        <div class="panel-header">
+            <div class="panel-title">📖 Typografische Codex & Impositie-matrix</div>
+            <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-gold);">Handpersperiode</span>
+        </div>
+
+        <div class="controls-group">
+            <select id="impo-select" onchange="generateMatrix()">
+                <option value="24">In viginti quattuor (24mo - 24 bladen / 48 pag.)</option>
+                <option value="32">In triginti duo (32mo - 32 bladen / 64 pag.)</option>
+                <option value="48">In quadriginti octo (48mo - 48 bladen / 96 pag.)</option>
+                <option value="64">In sexaginti quattuor (64mo - 64 bladen / 128 pag.)</option>
+                <option value="128" selected>In cento viginti octo (128mo - 128 bladen / 256 pag.)</option>
+            </select>
+            <button onclick="toggleVerso()">Wissel Recto / Verso</button>
+        </div>
+
+        <!-- Matrix weergave van het drukvel -->
+        <div id="matrix-container" class="matrix-grid" style="grid-template-columns: repeat(8, 1fr);">
+            <!-- Direct gegenereerd via JS -->
+        </div>
+
+        <!-- Paleografische analyse -->
+        <div class="panel-title" style="margin-top: 20px; font-size: 0.95rem;">Paleografische Corpus-analyse (Middelnederlands)</div>
+        <div class="corpus-box">
+            "Ich geef u te wetene <span class="word-highlight" title="Ontvanger / Geadresseerde van de ambtelijke correspondentie">ontfanger</span>, die mi foor aengenaem geweest sy, sonder dat ich dar nyt of taen hebbe gegefuen, dat ons <span class="word-highlight" title="Huisgenoten / Gasten binnen de nederzetting">adsgast</span> al sier sijn & Godt sy lof nogs alle wol <span class="word-highlight" title="Wel te pas / In goede gezondheid verkerend">gepasst</span>; ich sonde u alwurde geschredene hebbe... dusgoudt dat u tijt sal daer te <span class="word-highlight" title="Kostbaar / Waardevol">costelich</span> isen door tebringen uyt mis <span class="word-highlight" title="Eenvoudig / Bescheiden schrift (formuliermotief)">onnoosel schrift</span>, doch sal egter niet naer lader..."
+        </div>
+    </div>
+
+</div>
+
+<!-- LOG CONSOLE -->
+<div class="console-log" id="telemetry-console">
+[SYSTEM INITIALIZED] Janna Realtime Omni-Bridge v2.026 opgetuigd.
+[ASTRONOMY] 52° NB waarnemingsas actief. Alkaid RA = 13h 48m 46s gesynchroniseerd met kaartnotatie '13:49'.
+[CODEX] Impositie-engine gereed voor miniatuurformaten (24mo - 128mo).
+</div>
+
+<script>
+    // ============================================================================
+    // 1. GLOBALE TELEMETRIE & KLOK SYNC
+    // ============================================================================
+    let starmapMode = 'live'; // 'live' of 'epoch' (26 juli 2026, 13:49 UTC)
+    let currentVerso = false;
+    
+    function updateClocks() {
+        const now = new Date();
+        
+        // UTC
+        const utcH = String(now.getUTCHours()).padStart(2, '0');
+        const utcM = String(now.getUTCMinutes()).padStart(2, '0');
+        const utcS = String(now.getUTCSeconds()).padStart(2, '0');
+        document.getElementById('clock-utc').innerText = `${utcH}:${utcM}:${utcS}`;
+
+        // CEST (UTC+2)
+        const cestH = String((now.getUTCHours() + 2) % 24).padStart(2, '0');
+        document.getElementById('clock-cest').innerText = `${cestH}:${utcM}:${utcS}`;
+
+        // LST (Lokale Sterrentijd op 5.2° OL)
+        const d = (now / 86400000) - 10957.5; // Dagen sinds J2000
+        let gmst = 18.697374558 + 24.06570982441908 * d;
+        let lst = (gmst + (5.2000 / 15.0)) % 24;
+        if (lst < 0) lst += 24;
+        
+        const lstH = String(Math.floor(lst)).padStart(2, '0');
+        const lstM = String(Math.floor((lst % 1) * 60)).padStart(2, '0');
+        const lstS = String(Math.floor(((lst % 1) * 60 % 1) * 60)).padStart(2, '0');
+        document.getElementById('clock-lst').innerText = `${lstH}:${lstM}:${lstS}`;
+    }
+    setInterval(updateClocks, 1000);
+    updateClocks();
+
+    function logConsole(msg) {
+        const cons = document.getElementById('telemetry-console');
+        const time = new Date().toLocaleTimeString('nl-NL');
+        cons.innerHTML += `\n[${time}] ${msg}`;
+        cons.scrollTop = cons.scrollHeight;
+    }
+
+    // ============================================================================
+    // 2. REALTIME STARMAP ENGINE (HTML5 CANVAS)
+    // ============================================================================
+    const canvas = document.getElementById('starmapCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Ursa Major coördinaten (RA in uren, Dec in graden)
+    const URSA_MAJOR = [
+        { name: "Dubhe", ra: 11.06, dec: 61.75 },
+        { name: "Merak", ra: 11.03, dec: 56.38 },
+        { name: "Phecda", ra: 11.90, dec: 53.69 },
+        { name: "Megrez", ra: 12.25, dec: 57.03 },
+        { name: "Alioth", ra: 12.90, dec: 55.96 },
+        { name: "Mizar", ra: 13.40, dec: 54.92 },
+        { name: "Alkaid", ra: 13.8128, dec: 49.283, highlight: true } // 13:49 Match!
+    ];
+    const POLARIS = { name: "Polaris", ra: 2.855, dec: 89.365 };
+
+    function setStarmapMode(mode) {
+        starmapMode = mode;
+        document.getElementById('btn-live').classList.toggle('active', mode === 'live');
+        document.getElementById('btn-epoch').classList.toggle('active', mode === 'epoch');
+        logConsole(`Starmap rotatie-as gewijzigd naar: ${mode === 'live' ? 'LIVE SYSEM CLOCK' : 'EPOCH J2026.5 (13:49 UTC)'}`);
+    }
+
+    function getActiveLST() {
+        if (starmapMode === 'epoch') {
+            // Vaste LST voor 26 juli 2026 om 13:49 UTC
+            return 10.3542; 
+        }
+        const now = new Date();
+        const d = (now / 86400000) - 10957.5;
+        let lst = (18.697374558 + 24.06570982441908 * d + (5.2000 / 15.0)) % 24;
+        return lst < 0 ? lst + 24 : lst;
+    }
+
+    function drawStarmap() {
+        const width = canvas.width;
+        const height = canvas.height;
+        const cx = width / 2;
+        const cy = height / 2;
+        const maxRadius = (width / 2) - 30; // Correspondend met Dec 40°
+        
+        ctx.clearRect(0, 0, width, height);
+
+        // A. Teken Declinatiecirkels & RA Spaaklijnen
+        ctx.strokeStyle = "rgba(35, 49, 94, 0.4)";
+        ctx.lineWidth = 1;
+        
+        [80, 70, 60, 50, 40].forEach(dec => {
+            const r = ((90 - dec) / 50) * maxRadius;
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Label
+            ctx.fillStyle = "rgba(148, 163, 184, 0.5)";
+            ctx.font = "10px Courier New";
+            ctx.fillText(`${dec}°`, cx + 4, cy - r - 2);
+        });
+
+        // 12 RA spaaklijnen (elke 2 uur)
+        for (let h = 0; h < 24; h += 2) {
+            const angle = ((h - getActiveLST()) * 15 - 90) * (Math.PI / 180);
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(cx + Math.cos(angle) * maxRadius, cy + Math.sin(angle) * maxRadius);
+            ctx.stroke();
+        }
+
+        // B. Hulpfunctie: Coördinaat naar Canvas (Polaris als centrum)
+        function toCanvasCoords(ra, dec) {
+            const r = ((90 - dec) / 50) * maxRadius;
+            const angleDeg = (ra - getActiveLST()) * 15 - 90; // Top is Noord (0° Azimut)
+            const angleRad = angleDeg * (Math.PI / 180);
+            return {
+                x: cx + r * Math.cos(angleRad),
+                y: cy + r * Math.sin(angleRad),
+                angleRad: angleRad,
+                radius: r
+            };
+        }
+
+        // C. Teken de "11 ghr" Boog (Tussen Polaris RA en Alkaid RA)
+        const lst = getActiveLST();
+        const startAngle = ((POLARIS.ra - lst) * 15 - 90) * (Math.PI / 180);
+        const endAngle = ((URSA_MAJOR[6].ra - lst) * 15 - 90) * (Math.PI / 180);
+        const arcRadius = ((90 - 49.283) / 50) * maxRadius; // Straal van Alkaid
+        
+        ctx.beginPath();
+        ctx.arc(cx, cy, arcRadius, startAngle, endAngle, false);
+        ctx.strokeStyle = "rgba(239, 68, 68, 0.7)"; // Rood gloeiend
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // Label op de boog
+        ctx.fillStyle = "#ef4444";
+        ctx.font = "bold 11px Courier New";
+        const labelAngle = (startAngle + endAngle) / 2;
+        ctx.fillText("11 ghr RA Boog", cx + (arcRadius - 35) * Math.cos(labelAngle), cy + (arcRadius - 35) * Math.sin(labelAngle));
+
+        // D. Teken Ursa Major (Steelpan verbindingslijnen)
+        ctx.strokeStyle = "rgba(0, 240, 255, 0.6)";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        URSA_MAJOR.forEach((star, idx) => {
+            const pos = toCanvasCoords(star.ra, star.dec);
+            if (idx === 0) ctx.moveTo(pos.x, pos.y);
+            else ctx.lineTo(pos.x, pos.y);
+        });
+        // Sluit de pan (Megrez naar Dubhe)
+        const dubhePos = toCanvasCoords(URSA_MAJOR[0].ra, URSA_MAJOR[0].dec);
+        const megrezPos = toCanvasCoords(URSA_MAJOR[3].ra, URSA_MAJOR[3].dec);
+        ctx.moveTo(megrezPos.x, megrezPos.y);
+        ctx.lineTo(dubhePos.x, dubhePos.y);
+        ctx.stroke();
+
+        // E. Teken de individuele sterren
+        // Polaris
+        const polPos = toCanvasCoords(POLARIS.ra, POLARIS.dec);
+        ctx.beginPath();
+        ctx.arc(polPos.x, polPos.y, 5, 0, Math.PI * 2);
+        ctx.fillStyle = "#f59e0b"; // Goud
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = "#f59e0b";
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "#f59e0b";
+        ctx.font = "bold 11px Courier New";
+        ctx.fillText("Polaris (52° NB)", polPos.x + 8, polPos.y + 4);
+
+        // Ursa Major sterren
+        URSA_MAJOR.forEach(star => {
+            const pos = toCanvasCoords(star.ra, star.dec);
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, star.highlight ? 6 : 3, 0, Math.PI * 2);
+            ctx.fillStyle = star.highlight ? "#00f0ff" : "#ffffff";
+            if (star.highlight) {
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = "#00f0ff";
+            }
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            if (star.highlight) {
+                ctx.fillStyle = "#00f0ff";
+                ctx.font = "bold 12px Courier New";
+                ctx.fillText("Alkaid (13:49)", pos.x + 10, pos.y + 4);
+            }
+        });
+
+        requestAnimationFrame(drawStarmap);
+    }
+    requestAnimationFrame(drawStarmap);
+
+    // ============================================================================
+    // 3. TYPOGRAFISCHE CODEX & IMPOSITIE MATRIX GENERATOR
+    // ============================================================================
+    function toggleVerso() {
+        currentVerso = !currentVerso;
+        generateMatrix();
+        logConsole(`Impositie-weergave gewijzigd naar: ${currentVerso ? 'VERSO (Achterzijde drukvel)' : 'RECTO (Voorzijde drukvel)'}`);
+    }
+
+    function generateMatrix() {
+        const leaves = parseInt(document.getElementById('impo-select').value);
+        const container = document.getElementById('matrix-container');
+        container.innerHTML = '';
+
+        // Bepaal rasterkolommen op basis van formaat
+        let cols = 8;
+        if (leaves === 24) cols = 6;
+        else if (leaves === 32) cols = 8;
+        else if (leaves === 48) cols = 8;
+        else if (leaves === 64) cols = 8;
+        else if (leaves === 128) cols = 8; // 8x16 matrix voor 128mo
+
+        container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+        // In de handpersperiode kreeg de eerste helft (of het eerste kwart) van een katern
+        // een signatuurmerk (bijv. A, A2, A3...) voor de boekbinder.
+        const sigCount = Math.ceil(leaves / 4);
+        const sigLetter = "A";
+
+        for (let i = 1; i <= leaves; i++) {
+            const pageNum = currentVerso ? (i * 2) : (i * 2 - 1);
+            const isSigMark = (!currentVerso && i <= sigCount);
+
+            const cell = document.createElement('div');
+            cell.className = `page-cell ${isSigMark ? 'sig-mark' : ''}`;
+            
+            let html = `<span class="page-num">${pageNum}</span>`;
+            if (isSigMark) {
+                const sigIndex = i === 1 ? "" : i;
+                html += `<span class="sig-label">§ ${sigLetter}${sigIndex}</span>`;
+            }
+
+            cell.innerHTML = html;
+            cell.title = `Blad ${i} (${currentVerso ? 'Verso' : 'Recto'}) | Pagina ${pageNum}`;
+            container.appendChild(cell);
+        }
+    }
+    
+    // Initialiseer matrix bij start
+    generateMatrix();
+</script>
+
+</body>
+</html>
