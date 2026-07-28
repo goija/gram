@@ -1,0 +1,36 @@
+<div class="osint-dork-panel">
+    <h3>🔍 Autonomous OSINT Engine: WebRTC DataChannel Dorks</h3>
+    <div id="dorkList"></div>
+</div>
+
+<script>
+    const DATACHANNEL_DORKS = [
+        { name: "GitHub DataChannel Codebases", query: 'site:github.com "RTCPeerConnection" "createDataChannel"' },
+        { name: "Exposed STUN/TURN Credentials", query: 'site:github.com "iceServers" ("stun:" OR "turn:") "credential"' },
+        { name: "Vercel / Netlify P2P Deployments", query: '(site:vercel.app OR site:netlify.app) "RTCPeerConnection" "DataChannel"' },
+        { name: "Target Repo Search (goija)", query: 'site:github.com/goija ("webrtc" OR "datachannel" OR "matrix")' },
+        { name: "18x13 Grid Telemetry Bridges", query: 'site:github.com "18x13" OR "234 nodes" "datachannel"' }
+    ];
+
+    const dorkContainer = document.getElementById('dorkList');
+
+    DATACHANNEL_DORKS.forEach(dork => {
+        const item = document.createElement('div');
+        item.style.cssText = "margin: 8px 0; padding: 8px; background: #111827; border: 1px solid #1f2937; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;";
+        
+        item.innerHTML = `
+            <div>
+                <strong style="color: #00ffcc; font-size: 0.85rem;">${dork.name}</strong><br>
+                <code style="color: #f59e0b; font-size: 0.75rem;">${dork.query}</code>
+            </div>
+            <button onclick="executeDork('${encodeURIComponent(dork.query)}')" style="background: transparent; border: 1px solid #00ffcc; color: #00ffcc; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-weight: bold;">Launch 🌐</button>
+        `;
+        dorkContainer.appendChild(item);
+    });
+
+    function executeDork(encodedQuery) {
+        const targetUrl = `https://www.google.com/search?q=${encodedQuery}`;
+        window.open(targetUrl, '_blank');
+        console.log(`[OSINT ENGINE] Executed Dork: ${decodeURIComponent(encodedQuery)}`);
+    }
+</script>
