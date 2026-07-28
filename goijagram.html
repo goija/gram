@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX OMNI-BRIDGE — Vercel Deployments & WebRTC Telemetrie</title>
+    <style>
+        :root {
+            --bg: #090c10;
+            --panel: #111827;
+            --border: #1f2937;
+            --primary: #00ffcc;
+            --primary-dim: rgba(0, 255, 204, 0.1);
+            --gold: #f59e0b;
+            --gold-dim: rgba(245, 158, 11, 0.15);
+            --text: #e5e7eb;
+            --muted: #6b7280;
+            --deployed: #10b981;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
+
+        header {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        h1 { margin: 0; font-size: 1.5rem; color: #fff; display: flex; align-items: center; gap: 10px; }
+        h1::before { content: "⚡"; color: var(--primary); }
+        .production-url { color: var(--primary); font-size: 0.85rem; text-decoration: none; border: 1px solid var(--primary); padding: 4px 8px; border-radius: 4px; }
+        .production-url:hover { background: var(--primary); color: #000; }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 1100px) { .layout { grid-template-columns: 1fr; } }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-title {
+            font-size: 0.95rem;
+            color: #fff;
+            margin: 0 0 12px 0;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+            text-transform: uppercase;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Deployments Table / List */
+        .deploy-list {
+            max-height: 380px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding-right: 4px;
+        }
+
+        .deploy-item {
+            background: #0d1117;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .deploy-item:hover { border-color: var(--primary); background: #161f30; }
+        .deploy-info { display: flex; flex-direction: column; gap: 4px; }
+        .deploy-title { font-size: 0.85rem; font-weight: bold; color: #fff; }
+        .deploy-meta { font-size: 0.72rem; color: var(--muted); display: flex; gap: 10px; }
+        .deploy-hash { color: var(--gold); font-family: monospace; }
+        .status-badge { font-size: 0.65rem; background: rgba(16, 185, 129, 0.1); color: var(--deployed); border: 1px solid var(--deployed); padding: 2px 6px; border-radius: 12px; }
+
+        button {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-family: inherit;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover:not(:disabled) { background: var(--primary); color: #000; box-shadow: 0 0 8px var(--primary-dim); }
+        button:disabled { border-color: var(--border); color: var(--muted); cursor: not-allowed; }
+        .btn-sm { padding: 4px 8px; font-size: 0.72rem; }
+
+        /* 18x13 Matrix Grid */
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(18, 1fr);
+            gap: 3px;
+            background: #05070c;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px inset var(--border);
+            margin-bottom: 15px;
+        }
+
+        .node {
+            aspect-ratio: 1;
+            background: #1f2937;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            color: #4b5563;
+            transition: all 0.15s;
+        }
+
+        .node.active { background: var(--primary); color: #000; font-weight: bold; transform: scale(1.1); box-shadow: 0 0 5px var(--primary); }
+        .node.gold { background: var(--gold); color: #000; font-weight: bold; transform: scale(1.2); box-shadow: 0 0 8px var(--gold); }
+        .node.hash-node { background: #8b5cf6; color: #fff; font-weight: bold; transform: scale(1.15); }
+
+        .controls { display: flex; gap: 10px; flex-wrap: wrap; margin-top: auto; }
+        
+        /* Log en Dorks */
+        .log-box {
+            background: #05070c;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 0.75rem;
+            color: #a7f3d0;
+            height: 180px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin-bottom: 15px;
+        }
+
+        .dork-section { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
+        .dork-item { display: flex; justify-content: space-between; align-items: center; background: #0d1117; padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border); font-size: 0.75rem; }
+        .dork-code { color: var(--gold); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div>
+            <h1>VORTEX 18×13 WebRTC Telemetrie & Vercel Hub</h1>
+            <div style="color: var(--muted); font-size: 0.8rem; margin-top: 4px;">Project: <code>goija/gram</code> — 42 Deployments (Toont laatste 25 live producties)</div>
+        </div>
+        <a class="production-url" href="https://gram-daer6zisn-goija1.vercel.app" target="_blank">🌐 Production URL: vercel.app</a>
+    </header>
+
+    <div class="layout">
+        
+        <!-- LINKS: Vercel Deployments Hub -->
+        <div class="panel">
+            <div class="panel-title">
+                <span>📦 Vercel Productie Deployments</span>
+                <button class="btn-sm" onclick="streamAllDeployments()" id="btnStreamAll" disabled>📡 Stream Alle 25 naar Grid</button>
+            </div>
+            
+            <div class="deploy-list" id="deployList">
+                <!-- Deployments worden dynamisch ingeladen via JavaScript -->
+            </div>
+        </div>
+
+        <!-- RECHTS: 18x13 Matrix, WebRTC Controls & Dorks -->
+        <div class="panel">
+            <div class="panel-title">
+                <span>⚡ 18×13 DataChannel Grid (234 Nodes)</span>
+                <span id="rtcStatus" style="font-size: 0.75rem; color: #ef4444;">● DataChannel: GESLOTEN</span>
+            </div>
+
+            <div class="matrix-grid" id="gridContainer"></div>
+
+            <div class="controls">
+                <button id="btnInit" style="flex: 1;">🔌 1. Open RTCPeerConnection</button>
+                <button id="btnHarmonic" disabled style="flex: 1;">✨ 2. Verzend Som-35 Reeks</button>
+                <button id="btnResetGrid" style="flex: 0 0 auto;" onclick="resetGrid()">↺ Reset</button>
+            </div>
+
+            <div class="panel-title" style="margin-top: 20px;">📡 Telemetrie Log</div>
+            <div class="log-box" id="telemetryLog">> [Systeem] VORTEX Vercel-hub gereed. Open de DataChannel om deployments te streamen...\n</div>
+
+            <div class="panel-title">🔍 Gerichte GitHub & Vercel Dorks</div>
+            <div class="dork-section">
+                <div class="dork-item">
+                    <span class="dork-code">site:github.com/goija/gram "VORTEX_Bridge" OR "Tzolkin"</span>
+                    <button class="btn-sm" onclick="openDork('site:github.com/goija/gram &quot;VORTEX_Bridge&quot; OR &quot;Tzolkin&quot;')">Zoek Repo</button>
+                </div>
+                <div class="dork-item">
+                    <span class="dork-code">site:vercel.app inurl:goija "woordmatrix" OR "kin228"</span>
+                    <button class="btn-sm" onclick="openDork('site:vercel.app inurl:goija &quot;woordmatrix&quot; OR &quot;kin228&quot;')">Zoek Vercel</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+<script>
+    // --- 1. DATASET: ALLE 25 VERIFIED DEPLOYMENTS ---
+    const DEPLOYMENTS = [
+        { hash: "295af43a", commit: "Create woordmatrix.md", time: "2 hours ago", type: "matrix" },
+        { hash: "334e0f0f", commit: "Create VORTEX_Bridge_1080.py", time: "2 hours ago", type: "vortex" },
+        { hash: "df830ade", commit: "Update README.md", time: "2 hours ago", type: "doc" },
+        { hash: "365961a4", commit: "Update kin228.md", time: "3 hours ago", type: "tzolkin" },
+        { hash: "e451c6c1", commit: "Add Tzolkin calculation model for Kin 228", time: "3 hours ago", type: "tzolkin" },
+        { hash: "32798106", commit: "Create janna_realtime_hud.html", time: "14 hours ago", type: "hud" },
+        { hash: "7319f781", commit: "Update onderzoeksmodel_janna.html", time: "14 hours ago", type: "hud" },
+        { hash: "1d7aa049", commit: "Create onderzoeksmodel_janna.html", time: "14 hours ago", type: "hud" },
+        { hash: "27cdf15d", commit: "Update taalmodel.md", time: "2 days ago", type: "nlp" },
+        { hash: "4cc01b12", commit: "Change greeting from 'Hello' to 'Goodbye'", time: "2 days ago", type: "misc" },
+        { hash: "794a2ff6", commit: "Create deuil.html", time: "2 days ago", type: "html" },
+        { hash: "487ea0e7", commit: "Create zoeken-kleuren.html", time: "2 days ago", type: "html" },
+        { hash: "503984e5", commit: "Update Schuifkleurenladder.html", time: "2 days ago", type: "html" },
+        { hash: "706306df", commit: "Add initial HTML structure for Google Dork Generator", time: "2 days ago", type: "dork" },
+        { hash: "f64884f0", commit: "Update taalmodel.md", time: "2 days ago", type: "nlp" },
+        { hash: "20b1d9fc", commit: "Update taalmodel.md", time: "2 days ago", type: "nlp" },
+        { hash: "a77b0b4f", commit: "Create GOPHER_DORKEL_ENGINE.html", time: "2 days ago", type: "dork" },
+        { hash: "a575df3a", commit: "Add URL to taalmodel.md", time: "2 days ago", type: "nlp" },
+        { hash: "680cd3ee", commit: "Create index.html", time: "2 days ago", type: "html" },
+        { hash: "e206fa3fa", commit: "Create README.md", time: "2 days ago", type: "doc" },
+        { hash: "4c08ce7b", commit: "Update outoftime.md", time: "2 days ago", type: "time" },
+        { hash: "b1f9a89a", commit: "Add WebRTC DataChannel telemetry HTML page", time: "2 days ago", type: "webrtc" },
+        { hash: "3f2491b8", commit: "Update outoftime.md", time: "2 days ago", type: "time" },
+        { hash: "fff4ad0e", commit: "Update outoftime.md", time: "2 days ago", type: "time" },
+        { hash: "cef9c2ac", commit: "Add initial HTML structure for Vortex Omni-Bridge", time: "2 days ago", type: "vortex" }
+    ];
+
+    // --- 2. DOM INITIALISATIE (DEPLOYMENTS & MATRIX GRID) ---
+    const deployListEl = document.getElementById('deployList');
+    const gridEl = document.getElementById('gridContainer');
+    const logEl = document.getElementById('telemetryLog');
+    const statusEl = document.getElementById('rtcStatus');
+
+    // Genereer Deployment UI
+    DEPLOYMENTS.forEach((dep, idx) => {
+        const item = document.createElement('div');
+        item.className = 'deploy-item';
+        item.innerHTML = `
+            <div class="deploy-info">
+                <div class="deploy-title">${dep.commit}</div>
+                <div class="deploy-meta">
+                    <span class="deploy-hash">#${dep.hash}</span>
+                    <span>🕒 ${dep.time}</span>
+                    <span class="status-badge">● Deployed</span>
+                </div>
+            </div>
+            <button class="btn-sm" onclick="streamSingleDeployment(${idx})" id="btn-dep-${idx}" disabled>📡 Stream</button>
+        `;
+        deployListEl.appendChild(item);
+    });
+
+    // Genereer 18x13 Grid (234 nodes)
+    for (let i = 0; i < 234; i++) {
+        const node = document.createElement('div');
+        node.className = 'node';
+        node.id = `node-${i}`;
+        node.innerText = i + 1;
+        if (i + 1 === 35) node.classList.add('gold'); // Pythagoreïsche anker
+        gridEl.appendChild(node);
+    }
+
+    function log(msg, type = "INFO") {
+        const time = new Date().toLocaleTimeString('nl-NL');
+        logEl.innerText = `> [${time}] [${type}] ${msg}\n` + logEl.innerText;
+    }
+
+    function resetGrid() {
+        document.querySelectorAll('.node').forEach((n, i) => {
+            n.className = 'node';
+            if (i + 1 === 35) n.classList.add('gold');
+        });
+        log("Matrix rooster gereset naar basiswaarde (Anker #35 actief).", "GRID");
+    }
+
+    // --- 3. WEBRTC DATA CHANNEL SETUP ---
+    let localPC, remotePC, sendChannel;
+
+    document.getElementById('btnInit').addEventListener('click', async () => {
+        log("Initialiseren van lokaal RTCPeerConnection paar...", "ICE");
+        localPC = new RTCPeerConnection();
+        remotePC = new RTCPeerConnection();
+
+        localPC.onicecandidate = e => e.candidate && remotePC.addIceCandidate(e.candidate);
+        remotePC.onicecandidate = e => e.candidate && localPC.addIceCandidate(e.candidate);
+
+        sendChannel = localPC.createDataChannel("vercel-telemetry-bridge");
+
+        sendChannel.onopen = () => {
+            log("WebRTC DataChannel GEOPEND! Alle 25 deployments klaar voor transmissie.", "RTC");
+            statusEl.style.color = "#10b981";
+            statusEl.innerText = "● DataChannel: VERBONDEN";
+            
+            document.getElementById('btnInit').disabled = true;
+            document.getElementById('btnHarmonic').disabled = false;
+            document.getElementById('btnStreamAll').disabled = false;
+            DEPLOYMENTS.forEach((_, i) => document.getElementById(`btn-dep-${i}`).disabled = false);
+        };
+
+        remotePC.ondatachannel = e => {
+            e.channel.onmessage = event => handleIncomingTelemetry(event.data);
+        };
+
+        const offer = await localPC.createOffer();
+        await localPC.setLocalDescription(offer);
+        await remotePC.setRemoteDescription(offer);
+
+        const answer = await remotePC.createAnswer();
+        await remotePC.setLocalDescription(answer);
+        await localPC.setRemoteDescription(answer);
+    });
+
+    // --- 4. STREAMING & TELEMETRIE HANDLING ---
+
+    function streamSingleDeployment(index) {
+        if (!sendChannel || sendChannel.readyState !== "open") return;
+        const dep = DEPLOYMENTS[index];
+        
+        // Genereer een matrix-mapping op basis van de hash-tekenreeks
+        const hashVal = parseInt(dep.hash.substring(0, 4), 16);
+        const targetNode = (hashVal % 233) + 1; // Map naar node 1-234
+
+        const payload = {
+            protocol: "VERCEL_DEPLOYMENT_FRAME",
+            commit: dep.commit,
+            hash: dep.hash,
+            time: dep.time,
+            mapped_node: targetNode
+        };
+
+        sendChannel.send(JSON.stringify(payload));
+        log(`Verzonden deployment telemetrie: commit "${dep.commit}" (#${dep.hash}).`, "SEND");
+    }
+
+    function streamAllDeployments() {
+        if (!sendChannel || sendChannel.readyState !== "open") return;
+        
+        const payload = {
+            protocol: "VERCEL_BULK_SYNC",
+            total: DEPLOYMENTS.length,
+            hashes: DEPLOYMENTS.map(d => d.hash),
+            // Map alle 25 deployments uniek over de 234 matrix nodes
+            active_nodes: DEPLOYMENTS.map((d, i) => ((parseInt(d.hash.substring(0, 4), 16) + i * 7) % 233) + 1)
+        };
+
+        sendChannel.send(JSON.stringify(payload));
+        log(`Verstuurde bulk-synchronisatie frame voor alle ${DEPLOYMENTS.length} deployments.`, "SEND");
+    }
+
+    document.getElementById('btnHarmonic').addEventListener('click', () => {
+        if (!sendChannel || sendChannel.readyState !== "open") return;
+        sendChannel.send(JSON.stringify({
+            protocol: "HARMONIC_VERIFIED",
+            pythagorean: [12, 9, 8, 6],
+            sum: 35,
+            nodes: [1, 3, 6, 10, 15, 35]
+        }));
+        log("Harmonische reeks (12:9:8:6 = 35) verzonden via WebRTC.", "SEND");
+    });
+
+    function handleIncomingTelemetry(rawJson) {
+        try {
+            const data = JSON.parse(rawJson);
+
+            if (data.protocol === "VERCEL_DEPLOYMENT_FRAME") {
+                log(`[ONTVANGEN] Deployment data: "${data.commit}". Node #${data.mapped_node} licht op.`, "RECV");
+                const node = document.getElementById(`node-${data.mapped_node - 1}`);
+                if (node) {
+                    node.classList.add('hash-node');
+                    setTimeout(() => node.classList.remove('hash-node'), 3000);
+                }
+            } 
+            else if (data.protocol === "VERCEL_BULK_SYNC") {
+                log(`[ONTVANGEN] Bulk-sync van ${data.total} Vercel deployments. Grid geactiveerd!`, "RECV");
+                resetGrid();
+                data.active_nodes.forEach(num => {
+                    const node = document.getElementById(`node-${num - 1}`);
+                    if (node && num !== 35) node.classList.add('active');
+                });
+            }
+            else if (data.protocol === "HARMONIC_VERIFIED") {
+                log(`[ONTVANGEN] Harmonische controle voltooid. Som = ${data.sum}.`, "RECV");
+                resetGrid();
+                data.nodes.forEach(num => {
+                    const node = document.getElementById(`node-${num - 1}`);
+                    if (node) num === 35 ? node.classList.add('gold') : node.classList.add('active');
+                });
+            }
+        } catch (err) {
+            log(`Fout bij verwerken inkomende data: ${err.message}`, "ERR");
+        }
+    }
+
+    function openDork(dorkQuery) {
+        window.open(`https://www.google.com/search?q=${encodeURIComponent(dorkQuery)}`, '_blank');
+        log(`Google Dork geopend: "${dorkQuery}"`, "DORK");
+    }
+</script>
+</body>
+</html>
