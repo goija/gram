@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX WebRTC DataChannel Telemetrie (18×13 Matrix)</title>
+    <style>
+        :root {
+            --bg: #0b0f19;
+            --panel-bg: #111827;
+            --border: #1f2937;
+            --primary: #00ffcc;
+            --primary-dim: rgba(0, 255, 204, 0.1);
+            --gold: #f59e0b;
+            --text: #e5e7eb;
+            --text-muted: #6b7280;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            width: 100%;
+            max-width: 1100px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            color: #fff;
+            margin: 0 0 5px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h1::before {
+            content: "⚡";
+            color: var(--primary);
+        }
+
+        .subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-title {
+            font-size: 0.95rem;
+            color: #fff;
+            margin: 0 0 12px 0;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* 18x13 Matrix Grid */
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(18, 1fr);
+            gap: 4px;
+            background: #05070c;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px inset #1f2937;
+            margin-bottom: 15px;
+        }
+
+        .node {
+            aspect-ratio: 1;
+            background-color: #1f2937;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            color: #4b5563;
+            transition: all 0.15s ease-in-out;
+            user-select: none;
+        }
+
+        .node.active {
+            background-color: var(--primary);
+            color: #000;
+            font-weight: bold;
+            box-shadow: 0 0 6px var(--primary);
+            transform: scale(1.08);
+        }
+
+        .node.gold {
+            background-color: var(--gold);
+            color: #000;
+            font-weight: bold;
+            box-shadow: 0 0 8px var(--gold);
+            transform: scale(1.15);
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            flex: 1;
+            background-color: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            border-radius: 4px;
+            padding: 10px 14px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: var(--primary);
+            color: #000;
+            box-shadow: 0 0 10px var(--primary-dim);
+        }
+
+        button:disabled {
+            border-color: var(--border);
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        /* Status & Telemetry Log */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+            margin-bottom: 12px;
+            width: fit-content;
+        }
+
+        .status-badge.connected {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border-color: #10b981;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .log-box {
+            flex: 1;
+            background: #05070c;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 0.75rem;
+            color: #a7f3d0;
+            overflow-y: auto;
+            max-height: 400px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .log-entry {
+            margin-bottom: 6px;
+            border-bottom: 1px solid #111827;
+            padding-bottom: 4px;
+        }
+        .log-time { color: var(--text-muted); }
+        .log-type { color: var(--gold); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>VORTEX 18×13 WebRTC Telemetrie Bridge</h1>
+        <div class="subtitle">Peer-to-Peer DataChannel Loopback / 234-Node Rekenmatrix Transmissie</div>
+    </header>
+
+    <div class="container">
+        
+        <!-- Links: Grid & Interactieve Besturing -->
+        <div class="panel">
+            <div class="panel-title">Telemetrie Matrix (18 Kolommen × 13 Rijen)</div>
+            
+            <div class="matrix-grid" id="gridContainer"></div>
+
+            <div class="controls">
+                <button id="btnInit">
+                    <span>🔌</span> 1. Open DataChannel
+                </button>
+                <button id="btnStream" disabled>
+                    <span>📡</span> 2. Stream 18×13 Frame
+                </button>
+                <button id="btnHarmonic" disabled>
+                    <span>✨</span> 3. Verzend Som-35 Reeks
+                </button>
+            </div>
+        </div>
+
+        <!-- Rechts: Connectiestatus & Ruwe Data Log -->
+        <div class="panel">
+            <div class="panel-title">DataChannel Telemetrie Log</div>
+            
+            <div id="connectionStatus" class="status-badge">
+                <div class="status-dot"></div>
+                <span>DataChannel: GESLOTEN</span>
+            </div>
+
+            <div class="log-box" id="telemetryLog">
+                <div class="log-entry"><span class="log-time">[Systeem]</span> Wachten op RTCPeerConnection loopback initialisatie...</div>
+            </div>
+        </div>
+
+    </div>
+
+<script>
+    // --- 1. CONFIGURATIE & MATRIX INITIALISATIE ---
+    const COLS = 18;
+    const ROWS = 13;
+    const TOTAL_NODES = COLS * ROWS; // 234 eenheden
+    
+    const gridEl = document.getElementById('gridContainer');
+    const logEl = document.getElementById('telemetryLog');
+    const statusEl = document.getElementById('connectionStatus');
+    
+    const btnInit = document.getElementById('btnInit');
+    const btnStream = document.getElementById('btnStream');
+    const btnHarmonic = document.getElementById('btnHarmonic');
+
+    // Bouw de DOM grid
+    for (let i = 0; i < TOTAL_NODES; i++) {
+        const node = document.createElement('div');
+        node.className = 'node';
+        node.id = `node-${i}`;
+        node.innerText = i + 1;
+        gridEl.appendChild(node);
+    }
+
+    function log(msg, type = "SYS") {
+        const time = new Date().toLocaleTimeString('nl-NL', { hour12: false, hour: '2-digit', minute:'2-digit', second:'2-digit', fractionalSecondDigits: 2 });
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.innerHTML = `<span class="log-time">[${time}]</span> <span class="log-type">[${type}]</span> ${msg}`;
+        logEl.prepend(entry);
+    }
+
+    // --- 2. WEBRTC LOOPBACK SETUP ---
+    let localPC, remotePC, sendChannel, receiveChannel;
+
+    btnInit.addEventListener('click', async () => {
+        log("Initialiseren van lokaal RTCPeerConnection paar...", "ICE");
+        
+        localPC = new RTCPeerConnection();
+        remotePC = new RTCPeerConnection();
+
+        // ICE Candidate routing tussen lokale en remote peer
+        localPC.onicecandidate = e => e.candidate && remotePC.addIceCandidate(e.candidate);
+        remotePC.onicecandidate = e => e.candidate && localPC.addIceCandidate(e.candidate);
+
+        // Maak DataChannel aan de zender-kant
+        sendChannel = localPC.createDataChannel("vortex-telemetry-channel", {
+            ordered: true
+        });
+
+        sendChannel.onopen = () => {
+            log("WebRTC DataChannel SUCCESVOL GEOPEND!", "OPEN");
+            statusEl.className = "status-badge connected";
+            statusEl.innerHTML = `<div class="status-dot"></div><span>DataChannel: VERBONDEN</span>`;
+            
+            btnInit.disabled = true;
+            btnStream.disabled = false;
+            btnHarmonic.disabled = false;
+        };
+
+        sendChannel.onclose = () => {
+            log("DataChannel gesloten.", "CLOSE");
+            statusEl.className = "status-badge";
+            statusEl.innerHTML = `<div class="status-dot"></div><span>DataChannel: GESLOTEN</span>`;
+        };
+
+        // Luister naar inkomend kanaal aan de ontvanger-kant
+        remotePC.ondatachannel = (e) => {
+            receiveChannel = e.channel;
+            receiveChannel.onmessage = (event) => handleIncomingData(event.data);
+        };
+
+        // SDP Offer/Answer Handshake
+        try {
+            const offer = await localPC.createOffer();
+            await localPC.setLocalDescription(offer);
+            await remotePC.setRemoteDescription(offer);
+
+            const answer = await remotePC.createAnswer();
+            await remotePC.setLocalDescription(answer);
+            await localPC.setRemoteDescription(answer);
+            log("SDP Handshake (Offer/Answer) uitgewisseld.", "SDP");
+        } catch (err) {
+            log(`Fout tijdens WebRTC onderhandeling: ${err.message}`, "ERR");
+        }
+    });
+
+    // --- 3. PAYLOAD TRANSMISSIE (ZENDER) ---
+
+    // Stream 1: Willekeurige telemetrie data over het hele raster
+    btnStream.addEventListener('click', () => {
+        if (!sendChannel || sendChannel.readyState !== "open") return;
+
+        const frameData = {
+            protocol: "VORTEX_MATRIX",
+            dimensions: `${COLS}×${ROWS}`,
+            timestamp: Date.now(),
+            payload: Array.from({ length: TOTAL_NODES }, (_, i) => {
+                // Laat index 35 goud als ankerpunt
+                if (i + 1 === 35) return 2;
+                return Math.random() > 0.65 ? 1 : 0;
+            })
+        };
+
+        sendChannel.send(JSON.stringify(frameData));
+        log(`Verstuurde 18×13 frame (${TOTAL_NODES} bytes payload).`, "SEND");
+    });
+
+    // Stream 2: Specifieke wiskundige reeksen & harmonische controle
+    btnHarmonic.addEventListener('click', () => {
+        if (!sendChannel || sendChannel.readyState !== "open") return;
+
+        const harmonicData = {
+            protocol: "HARMONIC_VERIFIED",
+            timestamp: Date.now(),
+            pythagorean: [12, 9, 8, 6],
+            triangular: [1, 3, 6, 10, 15],
+            target_sum: 35,
+            active_indices: [1, 3, 6, 10, 15, 35] // Licht de corresponderende nodes op
+        };
+
+        sendChannel.send(JSON.stringify(harmonicData));
+        log("Verstuurde wiskundige verificatie-reeks (Som = 35).", "SEND");
+    });
+
+    // --- 4. PAYLOAD ONTVANGST & RENDERER (ONTVANGER) ---
+
+    function handleIncomingData(rawJson) {
+        try {
+            const data = JSON.parse(rawJson);
+
+            if (data.protocol === "VORTEX_MATRIX") {
+                log(`[ONTVANGEN] 18×13 Telemetrie frame verwerkt.`, "RECV");
+                
+                // Update UI Grid
+                data.payload.forEach((val, idx) => {
+                    const node = document.getElementById(`node-${idx}`);
+                    if (!node) return;
+                    
+                    node.className = 'node'; // Reset
+                    if (val === 1) node.classList.add('active');
+                    if (val === 2) node.classList.add('gold');
+                });
+            } 
+            else if (data.protocol === "HARMONIC_VERIFIED") {
+                log(`[ONTVANGEN] Harmonische reeks geverifieerd (Som: ${data.target_sum}).`, "RECV");
+                
+                // Reset raster
+                document.querySelectorAll('.node').forEach(n => n.className = 'node');
+                
+                // Activeer reeksen
+                data.active_indices.forEach(num => {
+                    const node = document.getElementById(`node-${num - 1}`);
+                    if (!node) return;
+                    if (num === 35) {
+                        node.classList.add('gold');
+                    } else {
+                        node.classList.add('active');
+                    }
+                });
+            }
+        } catch (err) {
+            log(`Ruwe data ontvangen of parse fout: ${rawJson}`, "RECV");
+        }
+    }
+</script>
+</body>
+</html>
