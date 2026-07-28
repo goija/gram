@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX — Dual-Mode Modulo (Mod 0 & Mod 365) WebRTC Bridge</title>
+    <style>
+        :root {
+            --bg: #090c10;
+            --panel: #111827;
+            --border: #1f2937;
+            --primary: #00ffcc;
+            --primary-dim: rgba(0, 255, 204, 0.1);
+            --gold: #f59e0b;
+            --gold-dim: rgba(245, 158, 11, 0.15);
+            --solar: #8b5cf6;
+            --solar-dim: rgba(139, 92, 246, 0.15);
+            --text: #e5e7eb;
+            --muted: #6b7280;
+            --success: #10b981;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
+
+        header {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        h1 { margin: 0; font-size: 1.4rem; color: #fff; display: flex; align-items: center; gap: 10px; }
+        h1::before { content: "☀️"; color: var(--gold); }
+        
+        .meta-tag { font-size: 0.75rem; background: #1f2937; color: var(--primary); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border); }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 1000px) { .layout { grid-template-columns: 1fr; } }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .panel-title {
+            font-size: 0.9rem;
+            color: #fff;
+            margin: 0;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Dual-Mode Rekenbox */
+        .calc-box {
+            background: #05070c;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .input-group { display: flex; gap: 8px; }
+        
+        input[type="number"] {
+            flex: 1;
+            background: #111827;
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 8px 10px;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+
+        input[type="number"]:focus { outline: none; border-color: var(--primary); }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 5px;
+        }
+
+        .stat-card {
+            background: #0d1117;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 8px;
+            font-size: 0.75rem;
+        }
+
+        .stat-card.solar { border-color: rgba(139, 92, 246, 0.4); background: var(--solar-dim); }
+        .stat-card.linear { border-color: rgba(0, 255, 204, 0.4); background: var(--primary-dim); }
+        
+        .stat-label { color: var(--muted); font-size: 0.65rem; text-transform: uppercase; }
+        .stat-val { font-size: 1.1rem; font-weight: bold; color: #fff; margin-top: 2px; }
+        .stat-sub { font-size: 0.65rem; color: var(--gold); margin-top: 2px; }
+
+        /* Knopen & Besturing */
+        button {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            border-radius: 4px;
+            padding: 9px 12px;
+            font-family: inherit;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        button:hover:not(:disabled) { background: var(--primary); color: #000; box-shadow: 0 0 10px var(--primary-dim); }
+        button:disabled { border-color: var(--border); color: var(--muted); cursor: not-allowed; }
+        button.btn-solar { color: var(--solar); border-color: var(--solar); }
+        button.btn-solar:hover:not(:disabled) { background: var(--solar); color: #fff; box-shadow: 0 0 10px var(--solar-dim); }
+        button.btn-gold { color: var(--gold); border-color: var(--gold); }
+        button.btn-gold:hover:not(:disabled) { background: var(--gold); color: #000; }
+
+        /* Vercel Shortcuts */
+        .preset-list { display: flex; flex-direction: column; gap: 6px; }
+        .preset-item {
+            background: #0d1117;
+            border: 1px solid var(--border);
+            padding: 8px 10px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+        }
+        .preset-item code { color: var(--gold); }
+
+        /* 18x13 Matrix Grid */
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(18, 1fr);
+            gap: 3px;
+            background: #05070c;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px inset var(--border);
+        }
+
+        .node {
+            aspect-ratio: 1;
+            background: #1f2937;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            color: #4b5563;
+            transition: all 0.15s;
+            user-select: none;
+        }
+
+        .node.active-linear { background: var(--primary); color: #000; font-weight: bold; transform: scale(1.15); box-shadow: 0 0 6px var(--primary); }
+        .node.active-solar { background: var(--solar); color: #fff; font-weight: bold; transform: scale(1.15); box-shadow: 0 0 8px var(--solar); }
+        .node.gold-anchor { background: var(--gold); color: #000; font-weight: bold; box-shadow: 0 0 6px var(--gold); }
+
+        /* Log */
+        .log-box {
+            background: #05070c;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 0.75rem;
+            color: #a7f3d0;
+            height: 160px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div>
+            <h1>VORTEX Dual-Mode Telemetrie Bridge</h1>
+            <div style="color: var(--muted); font-size: 0.8rem; margin-top: 4px;">
+                Mod 0 (Lineaire As) ↔ Mod 365 (Haab' Zonnejaar Ring) | 18×13 Matrix Sync
+            </div>
+        </div>
+        <div class="meta-tag">⚡ Protocol: VORTEX_DUAL_SYNC</div>
+    </header>
+
+    <div class="layout">
+        
+        <!-- LINKS: Dual-Mode Engine & Controls -->
+        <div class="panel">
+            <div class="panel-title">☀️ Modulo Rekenengine</div>
+            
+            <div class="calc-box">
+                <div style="font-size: 0.75rem; color: var(--muted);">Voer lineaire getalswaarde of tijd-index in:</div>
+                <div class="input-group">
+                    <input type="number" id="inputVal" value="234" placeholder="Bijv. 234 of 18980">
+                    <button onclick="evaluateInput()" style="padding: 8px 16px;">Bereken</button>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card linear">
+                        <div class="stat-label">Mod 0 (Lineaire As)</div>
+                        <div class="stat-val" id="outLinear">234</div>
+                        <div class="stat-sub">Volledige Identiteit</div>
+                    </div>
+                    <div class="stat-card solar">
+                        <div class="stat-label">Mod 365 (Zonne-Ring)</div>
+                        <div class="stat-val" id="outSolar">234</div>
+                        <div class="stat-sub" id="outCycles">0 Haab' cycli</div>
+                    </div>
+                </div>
+            </div>
+
+            <button id="btnStreamDual" onclick="streamCurrentEvaluation()" disabled class="btn-solar">
+                📡 Stream Dual-Payload via WebRTC
+            </button>
+
+            <div class="panel-title" style="margin-top: 5px;">📦 Vercel & Kalender Presets</div>
+            <div class="preset-list">
+                <div class="preset-item">
+                    <span>Grid Anker #234 (64.1% Zonnejaar)</span>
+                    <button class="btn-gold" style="padding: 4px 8px; font-size: 0.7rem;" onclick="loadPreset(234)">Test 234</button>
+                </div>
+                <div class="preset-item">
+                    <span>Kalenderronde (52 Haab' / 73 Tzolkin)</span>
+                    <button class="btn-gold" style="padding: 4px 8px; font-size: 0.7rem;" onclick="loadPreset(18980)">Test 18.980</button>
+                </div>
+                <div class="preset-item">
+                    <span>Commit <code>#334e0f0f</code> (VORTEX_Bridge.py)</span>
+                    <button style="padding: 4px 8px; font-size: 0.7rem;" onclick="loadPreset(860752655)">Stream Hash</button>
+                </div>
+                <div class="preset-item">
+                    <span>Dagen sinds UNIX Epoch (Live)</span>
+                    <button style="padding: 4px 8px; font-size: 0.7rem;" onclick="loadPreset(Math.floor(Date.now()/86400000))">Live Epoch</button>
+                </div>
+            </div>
+
+            <button id="btnInit" onclick="initWebRTC()">🔌 1. Open WebRTC DataChannel</button>
+        </div>
+
+        <!-- RECHTS: 18x13 Grid & Telemetry Log -->
+        <div class="panel">
+            <div class="panel-title">
+                <span>⚡ 18×13 Matrix Rooster (234 Nodes)</span>
+                <span id="rtcStatus" style="font-size: 0.75rem; color: #ef4444;">● DataChannel: GESLOTEN</span>
+            </div>
+
+            <div class="matrix-grid" id="gridContainer"></div>
+
+            <div style="display: flex; gap: 10px; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--muted);">
+                <div>
+                    <span style="color: var(--primary); font-weight: bold;">■</span> Lineair Signaal &nbsp;&nbsp;
+                    <span style="color: var(--solar); font-weight: bold;">■</span> Mod 365 Zonne-Index &nbsp;&nbsp;
+                    <span style="color: var(--gold); font-weight: bold;">■</span> Anker #35
+                </div>
+                <button onclick="resetGrid()" style="padding: 4px 10px; font-size: 0.7rem;">↺ Reset Grid</button>
+            </div>
+
+            <div class="panel-title" style="margin-top: 5px;">📡 WebRTC DataChannel Log</div>
+            <div class="log-box" id="telemetryLog">> [Systeem] Dual-Mode Modulo Engine gereed. Open het DataChannel om transmissies te starten...\n</div>
+        </div>
+
+    </div>
+
+<script>
+    // --- 1. DUAL-MODE MODULO ENGINE (MOD 0 & MOD 365) ---
+    class VortexDualModEngine {
+        constructor() {
+            this.SOLAR_MOD = 365;
+        }
+
+        evaluate(val) {
+            const num = Number(val);
+            
+            // Mod 0: Lineaire as (Passthrough identiteit)
+            const linearVal = num; 
+
+            // Mod 365: Cyclische ring (0 - 364)
+            const remainder = ((num % this.SOLAR_MOD) + this.SOLAR_MOD) % this.SOLAR_MOD;
+            const cycles = Math.floor(num / this.SOLAR_MOD);
+            const progress = (remainder / this.SOLAR_MOD) * 100;
+
+            return {
+                timestamp: Date.now(),
+                input_value: num,
+                linear_mod0: {
+                    mode: "MOD_0_LINEAR",
+                    index: linearVal,
+                    is_identity: true
+                },
+                solar_mod365: {
+                    mode: "MOD_365_CYCLIC",
+                    index: remainder,
+                    haab_cycles: cycles,
+                    ring_progress_pct: Number(progress.toFixed(2))
+                }
+            };
+        }
+
+        createPayload(val, sourceLabel = "MANUAL_EVAL") {
+            const evalData = this.evaluate(val);
+            return JSON.stringify({
+                protocol: "VORTEX_DUAL_SYNC",
+                source: sourceLabel,
+                data: evalData
+            });
+        }
+    }
+
+    const engine = new VortexDualModEngine();
+    let currentEval = null;
+
+    // --- 2. DOM INITIALISATIE (18x13 GRID) ---
+    const gridEl = document.getElementById('gridContainer');
+    const logEl = document.getElementById('telemetryLog');
+    const statusEl = document.getElementById('rtcStatus');
+    const TOTAL_NODES = 18 * 13; // 234
+
+    for (let i = 0; i < TOTAL_NODES; i++) {
+        const node = document.createElement('div');
+        node.className = 'node';
+        node.id = `node-${i}`;
+        node.innerText = i + 1;
+        if (i + 1 === 35) node.classList.add('gold-anchor'); // Pythagoreïsche harmonische anker
+        gridEl.appendChild(node);
+    }
+
+    function log(msg, type = "SYS") {
+        const time = new Date().toLocaleTimeString('nl-NL');
+        logEl.innerText = `> [${time}] [${type}] ${msg}\n` + logEl.innerText;
+    }
+
+    function resetGrid() {
+        document.querySelectorAll('.node').forEach((n, i) => {
+            n.className = 'node';
+            if (i + 1 === 35) n.classList.add('gold-anchor');
+        });
+        log("18×13 Grid gereset naar startpositie.", "GRID");
+    }
+
+    // --- 3. UI & BEREKENING INTERACTIE ---
+    function evaluateInput() {
+        const val = document.getElementById('inputVal').value;
+        currentEval = engine.evaluate(val);
+
+        document.getElementById('outLinear').innerText = currentEval.linear_mod0.index;
+        document.getElementById('outSolar').innerText = currentEval.solar_mod365.index;
+        document.getElementById('outCycles').innerText = `${currentEval.solar_mod365.haab_cycles} Haab' cycli (${currentEval.solar_mod365.ring_progress_pct}%)`;
+
+        log(`Geëvalueerd: Input ${val} → Mod 0: [${val}] | Mod 365: [Index ${currentEval.solar_mod365.index}, ${currentEval.solar_mod365.haab_cycles} cycli]`, "CALC");
+    }
+
+    function loadPreset(val) {
+        document.getElementById('inputVal').value = val;
+        evaluateInput();
+        if (sendChannel && sendChannel.readyState === "open") {
+            streamCurrentEvaluation(`PRESET_${val}`);
+        }
+    }
+
+    // Voer startberekening uit
+    evaluateInput();
+
+    // --- 4. WEBRTC DATACHANNEL LOOPBACK ---
+    let localPC, remotePC, sendChannel;
+
+    async function initWebRTC() {
+        log("Initialiseren van lokaal RTCPeerConnection paar...", "ICE");
+        localPC = new RTCPeerConnection();
+        remotePC = new RTCPeerConnection();
+
+        localPC.onicecandidate = e => e.candidate && remotePC.addIceCandidate(e.candidate);
+        remotePC.onicecandidate = e => e.candidate && localPC.addIceCandidate(e.candidate);
+
+        sendChannel = localPC.createDataChannel("vortex-dual-mod-channel");
+
+        sendChannel.onopen = () => {
+            log("WebRTC DataChannel SUCCESVOL GEOPEND!", "RTC");
+            statusEl.style.color = "#10b981";
+            statusEl.innerText = "● DataChannel: VERBONDEN";
+            
+            document.getElementById('btnInit').disabled = true;
+            document.getElementById('btnStreamDual').disabled = false;
+        };
+
+        remotePC.ondatachannel = e => {
+            e.channel.onmessage = event => handleIncomingTelemetry(event.data);
+        };
+
+        const offer = await localPC.createOffer();
+        await localPC.setLocalDescription(offer);
+        await remotePC.setRemoteDescription(offer);
+
+        const answer = await remotePC.createAnswer();
+        await remotePC.setLocalDescription(answer);
+        await localPC.setRemoteDescription(answer);
+    }
+
+    function streamCurrentEvaluation(source = "MANUAL_STREAM") {
+        if (!sendChannel || sendChannel.readyState !== "open") return;
+        
+        const val = document.getElementById('inputVal').value;
+        const payload = engine.createPayload(val, source);
+        
+        sendChannel.send(payload);
+        log(`Verzonden JSON-payload (${payload.length} bytes) via DataChannel.`, "SEND");
+    }
+
+    // --- 5. DATA ONTVANGST & ROOSTER PROJECTIE ---
+    function handleIncomingTelemetry(rawJson) {
+        try {
+            const parsed = JSON.parse(rawJson);
+
+            if (parsed.protocol === "VORTEX_DUAL_SYNC") {
+                const d = parsed.data;
+                log(`[ONTVANGEN] Sync van ${parsed.source}: Mod 0 [${d.linear_mod0.index}] | Mod 365 [Index ${d.solar_mod365.index}]`, "RECV");
+
+                resetGrid();
+
+                // 1. Map de Mod 365 zonne-index op het 234-grid (indien binnen bereik 1-234)
+                const solarIdx = d.solar_mod365.index;
+                if (solarIdx >= 1 && solarIdx <= TOTAL_NODES) {
+                    const nodeSolar = document.getElementById(`node-${solarIdx - 1}`);
+                    if (nodeSolar) {
+                        nodeSolar.classList.add('active-solar');
+                        nodeSolar.title = `Mod 365 Zonne-Index (${solarIdx})`;
+                    }
+                }
+
+                // 2. Map de lineaire Mod 0 index modulo 234 om een permanente relatieve grid-anker te tonen
+                const linearGridPos = ((d.linear_mod0.index - 1) % TOTAL_NODES + TOTAL_NODES) % TOTAL_NODES;
+                const nodeLinear = document.getElementById(`node-${linearGridPos}`);
+                if (nodeLinear) {
+                    nodeLinear.classList.add('active-linear');
+                    nodeLinear.title = `Mod 0 Lineaire Resonantie (${d.linear_mod0.index})`;
+                }
+
+                // Behoud het gouden anker op 35
+                const anchor35 = document.getElementById('node-34');
+                if (anchor35) anchor35.classList.add('gold-anchor');
+            }
+        } catch (err) {
+            log(`Fout bij verwerken inkomende payload: ${err.message}`, "ERR");
+        }
+    }
+</script>
+</body>
+</html>
