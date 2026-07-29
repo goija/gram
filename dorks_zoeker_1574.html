@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historische Google Dorks Zoekmachine - Zeeland 1574</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --primary-color: #1e293b;
+            --accent-color: #2563eb;
+            --accent-hover: #1d4ed8;
+            --text-color: #334155;
+            --border-color: #cbd5e1;
+            --tag-bg: #e2e8f0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 30px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        p.subtitle {
+            color: #64748b;
+            font-size: 1.1em;
+        }
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 15px;
+            font-size: 1.05em;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            outline: none;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        input[type="text"]:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        .filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        button.filter-btn {
+            background-color: #e2e8f0;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #475569;
+            transition: all 0.2s;
+        }
+        button.filter-btn.active, button.filter-btn:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        .results-count {
+            margin-bottom: 15px;
+            font-style: italic;
+            color: #64748b;
+        }
+        .dork-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-left: 5px solid var(--accent-color);
+            padding: 20px;
+            margin-bottom: 18px;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: transform 0.15s, box-shadow: 0.15s;
+        }
+        .dork-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .dork-category {
+            font-size: 0.8em;
+            font-weight: bold;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+        .dork-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+        .dork-query-box {
+            background: #f1f5f9;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.95em;
+            color: #0f172a;
+            margin-bottom: 12px;
+            word-break: break-all;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .search-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.2s;
+            white-space: nowrap;
+            margin-left: 10px;
+        }
+        .search-btn:hover {
+            background-color: var(--accent-hover);
+        }
+        .dork-desc {
+            font-size: 0.95em;
+            color: #475569;
+            line-height: 1.5;
+        }
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Historische Google Dorks Zoekmachine</h1>
+        <p class="subtitle">Gerichte zoekqueries voor archieven en bronverificatie rond Zeeland & Tholen (1574)</p>
+    </header>
+
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Zoek op trefwoord (bijv. ordonnantie, schouwgeld, Mookerheide, imposten)..." onkeyup="filterDorks()">
+    </div>
+
+    <div class="filters">
+        <button class="filter-btn active" onclick="setFilter('all', this)">Alle Dorks</button>
+        <button class="filter-btn" onclick="setFilter('Bestuur', this)">Bestuur & Raad</button>
+        <button class="filter-btn" onclick="setFilter('Financiën', this)">Financiën & Imposten</button>
+        <button class="filter-btn" onclick="setFilter('Militair', this)">Militaire Campagnes</button>
+        <button class="filter-btn" onclick="setFilter('Kerk', this)">Kerk & Lokale Context</button>
+    </div>
+
+    <div class="results-count" id="resultsCount">Aantal dorks: 0</div>
+    <div id="dorksContainer"></div>
+</div>
+
+<script>
+    // Uitgebreide dataset van Google Dorks gericht op de onderzoeksopzet van 1574
+    const dorksDatabase = [
+        {
+            category: "Bestuur",
+            title: "Regeringsordonnantie en Raad van Zeeland (2 maart 1574)",
+            query: "site:delpher.nl OR site:historici.nl \"ordonnantie\" \"Raad van Zeeland\" 1574",
+            description: "Zoekt in gedrukte historische plakkaatboeken en resoluties naar de officiële instelling van de Raad van Zeeland en de ordonnantie van maart 1574."
+        },
+        {
+            category: "Bestuur",
+            title: "Stadsrechten Arnemuiden (9 maart 1574)",
+            query: "site:archieven.nl OR site:delpher.nl \"Arnemuiden\" \"stadsrechten\" 1574 \"Oranje\"",
+            description: "Verifieert of en hoe de onttrekking van Arnemuiden aan de Middelburgse invloed en de verlening van stadsrechten in bronnen is vastgelegd."
+        },
+        {
+            category: "Bestuur",
+            title: "Eed van trouw te Middelburg (3 april 1574)",
+            query: "\"Middelburg\" \"eed van trouw\" 1574 \"Willem van Oranje\"",
+            description: "Speurt naar formuleringen en aktes waarin de Middelburgse burgerij de eed aflegt aan de prins na de overgave."
+        },
+        {
+            category: "Financiën",
+            title: "Zeeuws impostencomplex 'bij provisie' (mei 1574)",
+            query: "filetype:pdf \"impostencomplex\" OR \"impost\" Zeeland 1574 \"provisie\"",
+            description: "Richt zich op de specifieke economische regeling waarbij de Staten van Zeeland tijdelijk een eigen belastingstelsel invoerden los van Holland."
+        },
+        {
+            category: "Financiën",
+            title: "Invoering schouwgeld van 15 stuivers (7 augustus 1574)",
+            query: "\"schouwgeld\" \"haardstede\" Zeeland 1574 OR 1575 filetype:pdf",
+            description: "Zoekt naar de onderbouwing van de haardstedentaks van 15 stuivers per haardstede bestemd voor de oorlogsschepen."
+        },
+        {
+            category: "Financiën",
+            title: "Verpachting van gemaal en geslacht (september 1574)",
+            query: "\"impost\" \"gemaal\" \"geslacht\" Zeeland 1574 verpachting",
+            description: "Zoekt naar financiële ordonnanties en verpachtingsakten van meel- en vleesbelastingen in de herfst van 1574."
+        },
+        {
+            category: "Militair",
+            title: "Slag bij Reimerswaal (29 januari 1574)",
+            query: "\"Slag bij Reimerswaal\" 1574 \"Lodewijk van Boisot\" OR \"Joost de Moor\"",
+            description: "Verifieert de datum, vlootbewegingen en bevelhebbers van de cruciale zeeslag in de Scheldedelta."
+        },
+        {
+            category: "Militair",
+            title: "Capitulatie en overgave van Middelburg (februari 1574)",
+            query: "\"Mondragón\" Middelburg overgave februari 1574 filetype:pdf",
+            description: "Onderzoekt de precieze datums van de overgave van het Spaanse garnizoen onder leiding van Cristóbal de Mondragón."
+        },
+        {
+            category: "Militair",
+            title: "Slag op de Mookerheide (14 april 1574)",
+            query: "\"Mookerheide\" 14 april 1574 \"Lodewijk\" \"Hendrik van Nassau\"",
+            description: "Controleert de feiten rond de troepensamenstelling en het sneuvelen van de Nassaus."
+        },
+        {
+            category: "Kerk",
+            title: "Stichting eerste Waalse Kerk te Middelburg (1574)",
+            query: "site:archieven.nl \"Waalse kerk\" Middelburg 1574 OR 1575 vluchtelingen",
+            description: "Zoekt naar vroege kerkordeningen en archivalia over de Franstalige gereformeerde vluchtelingengemeente."
+        },
+        {
+            category: "Kerk",
+            title: "Scherpenisse kerkelijke goederen en armenbestuur in de 16e eeuw",
+            query: "\"Scherpenisse\" \"armen\" kerk 1574 OR 1576 filetype:pdf",
+            description: "Koppelt de macro-historische gebeurtenissen aan lokale kerkarchieven en erfmakingen (zoals die van Adriaan Willemsz)."
+        }
+    ];
+
+    let currentFilter = 'all';
+
+    function renderDorks(items) {
+        const container = document.getElementById('dorksContainer');
+        const countDisplay = document.getElementById('resultsCount');
+        
+        container.innerHTML = '';
+        countDisplay.innerText = `Aantal dorks: ${items.length}`;
+
+        if (items.length === 0) {
+            container.innerHTML = `<div class="no-results">Geen zoekopdrachten gevonden die aan je filter of trefwoord voldoen.</div>`;
+            return;
+        }
+
+        items.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'dork-card';
+            
+            // Bouw de Google search URL op basis van de dork query
+            const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(item.query)}`;
+
+            card.innerHTML = `
+                <div class="dork-category">${item.category}</div>
+                <div class="dork-title">${item.title}</div>
+                <div class="dork-query-box">
+                    <span>${item.query}</span>
+                    <a href="${googleUrl}" target="_blank" class="search-btn">Zoek op Google</a>
+                </div>
+                <div class="dork-desc">${item.description}</div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function filterDorks() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        
+        const filtered = dorksDatabase.filter(item => {
+            const matchesFilter = (currentFilter === 'all') || (item.category === currentFilter);
+            const matchesQuery = item.title.toLowerCase().includes(query) || 
+                                 item.query.toLowerCase().includes(query) || 
+                                 item.description.toLowerCase().includes(query);
+
+            return matchesFilter && matchesQuery;
+        });
+
+        renderDorks(filtered);
+    }
+
+    function setFilter(filterName, btnElement) {
+        currentFilter = filterName;
+        
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        btnElement.classList.add('active');
+        
+        filterDorks();
+    }
+
+    // Initieel laden
+    renderDorks(dorksDatabase);
+</script>
+
+</body>
+</html>
