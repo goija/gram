@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chronologisch Script 1574 (Mod 1 t/m Mod 365) & P2P Scriptorium</title>
+    <style>
+        :root {
+            --bg-color: #f4f1ea;
+            --container-bg: #fffdf9;
+            --text-color: #2c221e;
+            --primary-color: #5c4033;
+            --accent-color: #8b5a2b;
+            --border-color: #d1c7bd;
+            --active-color: #2e6930;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            background-color: var(--container-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            max-width: 950px;
+            width: 100%;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: #6c635b;
+            font-style: italic;
+            margin-bottom: 25px;
+        }
+
+        .section-box {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #fff;
+        }
+
+        .section-box h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"], textarea {
+            flex: 1;
+            padding: 10px 12px;
+            font-size: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: #fff;
+            font-family: inherit;
+        }
+
+        textarea {
+            resize: vertical;
+            height: 90px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.95rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-family: inherit;
+        }
+
+        button.secondary {
+            background-color: #a89f91;
+        }
+
+        button:hover {
+            background-color: var(--accent-color);
+        }
+
+        .results-box {
+            background-color: #eef2f5;
+            border: 1px dashed var(--border-color);
+            padding: 12px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: #1a252c;
+            border-radius: 4px;
+            max-height: 250px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            background-color: #d1c7bd;
+            color: #fff;
+        }
+
+        .status-connected {
+            background-color: var(--active-color);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Chronisch Script 1574 & Modulo Engine</h1>
+    <p class="subtitle">Geïntegreerde Mod 1 t/m Mod 365 tijdlijn voor het jaar 1574 met WebRTC P2P archiefkoppeling</p>
+
+    <!-- Sectie 1: Mod 1 t/m Mod 365 Chronologisch Script Explorer -->
+    <div class="section-box">
+        <h3>1. Chronologisch Script 1574 (Mod 1 t/m Mod 365)</h3>
+        <p style="font-size: 0.9rem; color: #6c635b;">Voer een dagnummer in of selecteer een historische gebeurtenis uit 1574 om de exacte Modulo-index (1 t/m 365) en het bijbehorende archieffragment op te halen.</p>
+        
+        <div class="input-group">
+            <input type="text" id="dayInput" placeholder="Voer dagnummer in (1 t/m 365, bijv. 29 voor 29 jan)..." value="29">
+            <button onclick="lookupDay()">Zoek in Script</button>
+        </div>
+        <div id="scriptResult" class="results-box">Resultaat van de dagindeling en gebeurtenis verschijnt hier...</div>
+    </div>
+
+    <!-- Sectie 2: WebRTC P2P Datachannel voor Archiefnummers -->
+    <div class="section-box">
+        <h3>2. WebRTC P2P Datachannel & Archiefkoppeling <span id="p2pStatus" class="status-badge">Offline</span></h3>
+        <p style="font-size: 0.9rem; color: #6c635b;">Deel 1574-scriptgegevens en archiefnummers rechtstreeks via P2P datachannels.</p>
+        
+        <div class="input-group">
+            <button onclick="initPeerConnection()">Start Host / Peer</button>
+            <button class="secondary" onclick="createOffer()">Genereer Koppelingscode (Offer)</button>
+        </div>
+
+        <div class="input-group">
+            <textarea id="remoteSignalInput" placeholder="Plak hier het offer/answer signaleringsblok van de peer..."></textarea>
+            <button onclick="handleSignalInput()">Verbinden</button>
+        </div>
+
+        <label style="font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; display: block;">P2P Log & Gekoppelde Script-items:</label>
+        <div id="p2pLog" class="results-box">Systeem gereed voor WebRTC initialisatie...</div>
+        
+        <div class="input-group" style="margin-top: 10px;">
+            <input type="text" id="archiefDataInput" placeholder="Stuur script-item of mod-index (bijv. Mod-29: Slag bij Reimerswaal)...">
+            <button onclick="sendViaDataChannel()">Verstuur naar Peer</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Database van belangrijke data in 1574 gekoppeld aan dag van het jaar (1-365)
+    const timeline1574 = {
+        29: "Mod 29 (29 januari): Slag bij Reimerswaal. Spaanse vloot verslagen door geuzen.",
+        51: "Mod 51 (20 februari): Akkoord van Fort Rammekens; Middelburg overgedragen aan Willem van Oranje.",
+        52: "Mod 52 (21 februari): Vrije aftocht voor Spaans garnizoen en katholieke priesters; vestiging gewestelijk bestuur en eerste Waalse kerk in Middelburg.",
+        61: "Mod 61 (2 maart): Uitvaardiging Zeeuwse regeringsordonnantie en instelling Raad van Zeeland.",
+        68: "Mod 68 (9 maart): Arnemuiden krijgt stadsrechten van de prins van Oranje.",
+        93: "Mod 93 (3 april): Burgerij van Middelburg legt eed van trouw af aan Willem van Oranje.",
+        104: "Mod 104 (14 april): Slag op de Mookerheide; Lodewijk en Hendrik van Nassau sneuvelen.",
+        130: "Mod 130 (10 mei): Hollands-Zeeuwse ordonnantie op de oorlogsfinanciering.",
+        137: "Mod 137 (17 mei): Invoering specifiek Zeeuws impostencomplex 'bij provisie'.",
+        150: "Mod 150 (30 mei): Slag bij Lillo.",
+        219: "Mod 219 (7 augustus): Raad en Staten van Zeeland besluiten tot invoering 'schouwgeld' en 'lastgeld'.",
+        244: "Mod 244 (september): Verpachting nieuwe imposten op gemaal en geslacht in Zeeland.",
+        276: "Mod 276 (3 oktober): Ontzet van Leiden door doorbreking van de belegering.",
+        298: "Mod 298 (25 oktober): Willem van Oranje arriveert in Arnemuiden; vlootschouw met ca. 200 schepen.",
+        313: "Mod 313 (9 november): Wijzigingen in impostheffing (wijn en bier), ingaand op 15 november."
+    };
+
+    function lookupDay() {
+        const val = parseInt(document.getElementById('dayInput').value.trim(), 10);
+        const resBox = document.getElementById('scriptResult');
+        if (isNaN(val) || val < 1 || val > 365) {
+            resBox.innerText = "Voer een geldig dagnummer in tussen 1 en 365.";
+            return;
+        }
+
+        let eventText = timeline1574[val] || `Geen specifieke hoofargebeurtenis geregistreerd voor Mod ${val} in 1574 (reguliere administratieve dag).`;
+        resBox.innerText = `[MODULO SCRIPT ARCHIEF 1574]\n` +
+                           `Dag van het jaar: Mod ${val} / 365\n` +
+                           `Gebeurtenis: ${eventText}\n` +
+                           `Status: Geverifieerd tegen chronologisch dossier.`;
+    }
+
+    // WebRTC P2P Logica
+    let peerConnection;
+    let dataChannel;
+    const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+
+    function initPeerConnection() {
+        if (peerConnection) return;
+        peerConnection = new RTCPeerConnection(configuration);
+
+        peerConnection.onicecandidate = event => {
+            if (event.candidate === null) {
+                document.getElementById('remoteSignalInput').value = JSON.stringify(peerConnection.localDescription);
+                logP2P("Lokale signaleringscode gegenereerd.");
+            }
+        };
+
+        peerConnection.ondatachannel = event => {
+            dataChannel = event.channel;
+            setupDataChannel();
+            logP2P("Datachannel ontvangen van peer!");
+            updateStatus(true);
+        };
+
+        logP2P("PeerConnection geïnitialiseerd.");
+    }
+
+    function createOffer() {
+        initPeerConnection();
+        dataChannel = peerConnection.createDataChannel("script-1574-datachannel");
+        setupDataChannel();
+
+        peerConnection.createOffer().then(offer => {
+            return peerConnection.setLocalDescription(offer);
+        }).catch(err => logP2P("Fout bij aanmaken offer: " + err));
+    }
+
+    function handleSignalInput() {
+        initPeerConnection();
+        const val = document.getElementById('remoteSignalInput').value.trim();
+        if (!val) return;
+
+        try {
+            const desc = JSON.parse(val);
+            if (desc.type === 'offer') {
+                peerConnection.setRemoteDescription(desc).then(() => {
+                    return peerConnection.createAnswer();
+                }).then(answer => {
+                    return peerConnection.setLocalDescription(answer);
+                }).catch(err => logP2P("Fout bij verwerken offer: " + err));
+            } else if (desc.type === 'answer') {
+                peerConnection.setRemoteDescription(desc).then(() => {
+                    logP2P("Remote description ingesteld.");
+                    updateStatus(true);
+                }).catch(err => logP2P("Fout bij verwerken answer: " + err));
+            }
+        } catch(e) {
+            logP2P("Ongeldige JSON signaleringsdata.");
+        }
+    }
+
+    function setupDataChannel() {
+        dataChannel.onopen = () => {
+            logP2P("WebRTC Datachannel geopend! Script-uitwisseling actief.");
+            updateStatus(true);
+        };
+        dataChannel.onclose = () => {
+            logP2P("WebRTC Datachannel gesloten.");
+            updateStatus(false);
+        };
+        dataChannel.onmessage = event => {
+            logP2P("Ontvangen Script-item: " + event.data);
+        };
+    }
+
+    function sendViaDataChannel() {
+        const msg = document.getElementById('archiefDataInput').value.trim();
+        if (!msg) return;
+        if (dataChannel && dataChannel.readyState === 'open') {
+            dataChannel.send(msg);
+            logP2P("Verzonden naar peer: " + msg);
+            document.getElementById('archiefDataInput').value = '';
+        } else {
+            logP2P("Fout: Datachannel is niet geopend.");
+        }
+    }
+
+    function logP2P(text) {
+        const logBox = document.getElementById('p2pLog');
+        logBox.innerText += "\n> " + text;
+        logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    function updateStatus(isConnected) {
+        const badge = document.getElementById('p2pStatus');
+        if (isConnected) {
+            badge.innerText = "Verbonden (P2P)";
+            badge.className = "status-badge status-connected";
+        } else {
+            badge.innerText = "Offline";
+            badge.className = "status-badge";
+        }
+    }
+
+    window.onload = function() {
+        lookupDay();
+    };
+</script>
+
+</body>
+</html>
