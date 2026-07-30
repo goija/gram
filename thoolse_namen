@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thoolse Familienamen & Mod -1 tot 1 Engine (TXT Export)</title>
+    <style>
+        :root {
+            --bg-color: #f4f1ea;
+            --container-bg: #fffdf9;
+            --text-color: #2c221e;
+            --primary-color: #5c4033;
+            --accent-color: #8b5a2b;
+            --border-color: #d1c7bd;
+            --active-color: #2e6930;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            background-color: var(--container-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            max-width: 950px;
+            width: 100%;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: #6c635b;
+            font-style: italic;
+            margin-bottom: 25px;
+        }
+
+        .section-box {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #fff;
+        }
+
+        .section-box h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        textarea {
+            width: 100%;
+            flex: 1;
+            padding: 10px 12px;
+            font-size: 0.9rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: #fff;
+            font-family: monospace;
+            height: 180px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.95rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-family: inherit;
+        }
+
+        button.secondary {
+            background-color: #a89f91;
+        }
+
+        button:hover {
+            background-color: var(--accent-color);
+        }
+
+        .results-box {
+            background-color: #eef2f5;
+            border: 1px dashed var(--border-color);
+            padding: 12px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: #1a252c;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Thoolse Familienamen & Mod -1 tot 1 Export</h1>
+    <p class="subtitle">Gegenereerd tekstbestand met Thoolse genealogische indexen en Modulo -1 tot 1 berekeningsmatrix</p>
+
+    <div class="section-box">
+<h3>1. TXT Export Inhoud (Mod -1 tot Mod 1 & Thoolse Familienamen)</h3>
+<div class="input-group">
+<textarea id="exportText" readonly>
+=== THOOLSE FAMILIENAMEN DOSSIER & MOD -1 TOT 1 MATRIX ===
+
+[MODULO MATRIX: -1 tot 1]
+Mod -1: Ondergrens historische cyclische index (voorganger/terugblik)
+Mod 0: Nulpunt / Basisreferentie archiefindexen Tholen & Scherpenisse
+Mod 1: Bovengrens / Start van nieuwe genealogische telling (1850-1899)
+
+[FAMILIENAMEN A t/m E]
+Aarnoudse, Andriesse, Anthonisse, Baaij, Bazen, Bentschap Knook, Bevelander, Bogert, Bolier, Boudeling, Den Braber, Bruijnzeel, Bijnaegt, Contant, Deurloo, Droogers, Duve, Van Dijke, Eerland, Elenbaas, Den Engelsman.
+
+[FAMILIENAMEN F t/m K]
+Fase, Gaakeer, Gast, Geluk, Geuze, Goedegebuure, Van Gorsel, Goudzwaard, Guequierre, Gunter, Van Haaften, Hage, Heijboer, Hommel, Van Houdt, Istha, Kaa, Kaashoek, Kempeneers, Kleppe, Klippel, Knulst, Koppenhol.
+
+[FAMILIENAMEN L t/m R]
+Ligtendag, Lindhout, Van der Male, Minheere, Moerland, Neele, Noom, Noorthoek, Op den Brouw, Opree, Oudesluijs, Overbeeke, Pipping, Polderman, Ponse, Van Poortvliet, Potappel, Potter, Priem, Quank, Quist, Van der Reest, Ridtdergoud, Rijnberg, Roggeband, Rijstenbil.
+
+[FAMILIENAMEN S t/m Z]
+Scherpenisse, Schot, Van der Slikke, Snoep, Van Suijlele, Tichem, Van Tiggele, Uijl, Verkamman, Verkerke, Verwijs, Van Viet (Vliet), De Vlieg, Voshol, Van Vossen, Vroegop, Waling, Westdorp, Wielaard, Zwagemaker.
+
+[SPECIALE FAMILIES & REGENTEN]
+- Regentenfamilies (16e-18e eeuw): Van Vrijberghe, Van Tuyll van Serooskerke, Liens, Turcq, Dallens, De Beaufort, Van Lichtenbergh, Van Stapele, Recxstoot, Plevier.
+- Naamsaanneming 1811 (Scherpenisse): Rosevelt (Van 't Rosevelt), Kleppe.
+- Volledige stambomen: De Rijke, Boeye, Hoogerwerf.
+</textarea>
+</div>
+        <div class="input-group">
+            <button onclick="downloadTxt()">Download als Thoolse_Familienamen_Mod_-1_1.txt</button>
+            <button class="secondary" onclick="copyTxt()">Kopieer naar Klembord</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function downloadTxt() {
+        const text = document.getElementById('exportText').value;
+        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'Thoolse_Familienamen_Mod_-1_1.txt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function copyTxt() {
+        const textElem = document.getElementById('exportText');
+        textElem.select();
+        document.execCommand('copy');
+        alert('Tekst gekopieerd naar klembord!');
+    }
+</script>
+
+</body>
+</html>
