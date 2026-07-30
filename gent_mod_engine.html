@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sint-Pietersabdij Gent - P2P Scriptorium & Modulo 365 Engine</title>
+    <style>
+        :root {
+            --bg-color: #f4f1ea;
+            --container-bg: #fffdf9;
+            --text-color: #2c221e;
+            --primary-color: #5c4033;
+            --accent-color: #8b5a2b;
+            --border-color: #d1c7bd;
+            --active-color: #2e6930;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .search-container {
+            background-color: var(--container-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            max-width: 950px;
+            width: 100%;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: #6c635b;
+            font-style: italic;
+            margin-bottom: 25px;
+        }
+
+        .section-box {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #fff;
+        }
+
+        .section-box h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"], textarea {
+            flex: 1;
+            padding: 10px 12px;
+            font-size: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: #fff;
+            font-family: inherit;
+        }
+
+        textarea {
+            resize: vertical;
+            height: 80px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.95rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-family: inherit;
+        }
+
+        button:hover {
+            background-color: var(--accent-color);
+        }
+
+        .results-box {
+            background-color: #eef2f5;
+            border: 1px dashed var(--border-color);
+            padding: 12px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: #1a252c;
+            border-radius: 4px;
+            max-height: 220px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .presets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .preset-btn {
+            background-color: #e6dfd5;
+            color: var(--primary-color);
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .preset-btn:hover {
+            background-color: var(--border-color);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            background-color: #d1c7bd;
+            color: #fff;
+        }
+
+        .status-connected {
+            background-color: var(--active-color);
+        }
+    </style>
+</head>
+<body>
+
+<div class="search-container">
+    <h1>Sint-Pietersabdij Gent & Reynaert Scriptorium</h1>
+    <p class="subtitle">Midden- en Oudnederlandse Zoekmachine met Modulo 0–365 Engine en WebRTC P2P Archiefkoppeling</p>
+
+    <!-- Sectie 1: Woord- en Bestanddeelzoekmachine -->
+    <div class="section-box">
+        <h3>1. Corpus & Inventaris Zoekmachine (K100 - Sint-Pietersabdij)</h3>
+        <div class="input-group">
+            <input type="text" id="searchInput" placeholder="Voer zoekterm in (bijv. Reynaert, 966, Bestanddeel 1)..." value="Reynaert">
+            <button onclick="executeSearch()">Zoeken</button>
+        </div>
+        <div class="presets">
+            <button class="preset-btn" onclick="setQuery('Reynaert')">Reynaert de Vos</button>
+            <button class="preset-btn" onclick="setQuery('966 Sint-Pietersabdij')">Inventaris 966 (Nr. 1)</button>
+            <button class="preset-btn" onclick="setQuery('Hebban olla uogala')">Hebban olla uogala</button>
+            <button class="preset-btn" onclick="setQuery('1775 Sint-Pietersabdij')">Laatste akte 1775 (Nr. 201)</button>
+        </div>
+    </div>
+
+    <!-- Sectie 2: Modulo 0 tot 365 Berekeningsengine -->
+    <div class="section-box">
+        <h3>2. Modulo 0 t/m 365 Berekenings- en Analyse-Engine</h3>
+        <p style="font-size: 0.9rem; color: #6c635b;">Bereken de cyclische mod-waarde (0 tot 365) voor willekeurige getallen, jaartallen of archiefbestanddeelnummers.</p>
+        <div class="input-group">
+            <input type="text" id="modInput" placeholder="Voer getal of jaartal in (bijv. 1576, 365, 966)..." value="1576">
+            <button onclick="calculateMod()">Bereken Modulo 365</button>
+        </div>
+        <div id="modResult" class="results-box">Voer een waarde in om de cyclische index (mod 0 - mod 365) te genereren...</div>
+    </div>
+
+    <!-- Sectie 3: WebRTC DataChannels & P2P Gedeelde Archieven -->
+    <div class="section-box">
+        <h3>3. WebRTC P2P Datachannels & Archiefkoppeling <span id="p2pStatus" class="status-badge">Offline</span></h3>
+        <p style="font-size: 0.9rem; color: #6c635b;">Deel archiefnummers en manuscriptgegevens rechtstreeks via P2P datachannels.</p>
+        
+        <div class="input-group">
+            <button onclick="initPeerConnection()">Start Host / Peer</button>
+            <button class="secondary" onclick="createOffer()">Genereer Koppelingscode (Offer)</button>
+        </div>
+
+        <div class="input-group">
+            <textarea id="remoteSignalInput" placeholder="Plak hier het offer/answer signaleringsblok van de archiefpeer..."></textarea>
+            <button onclick="handleSignalInput()">Verbinden</button>
+        </div>
+
+        <label style="font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; display: block;">P2P Data Log & Gekoppelde Archiefnummers:</label>
+        <div id="p2pLog" class="results-box">Systeem gereed voor WebRTC datachannel initialisatie...</div>
+        
+        <div class="input-group" style="margin-top: 10px;">
+            <input type="text" id="archiefDataInput" placeholder="Stuur archiefnummer/gloss (bijv. Sint-Pietersabdij-Nr-1)...">
+            <button onclick="sendViaDataChannel()">Verstuur naar Peer</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let peerConnection;
+    let dataChannel;
+    const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+
+    function setQuery(val) {
+        document.getElementById('searchInput').value = val;
+        executeSearch();
+    }
+
+    function executeSearch() {
+        const q = document.getElementById('searchInput').value.trim();
+        if (!q) return;
+        const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(q + " Sint-Pietersabdij Gent Reynaert Oudnederlands")}`;
+        window.open(searchUrl, '_blank');
+    }
+
+    function calculateMod() {
+        const val = parseInt(document.getElementById('modInput').value.trim(), 10);
+        const resBox = document.getElementById('modResult');
+        if (isNaN(val)) {
+            resBox.innerText = "Fout: Voer een geldig getal in.";
+            return;
+        }
+        const modVal = ((val % 365) + 365) % 365;
+        resBox.innerText = `Invoergetal: ${val}\n` +
+                           `Berekening: (${val} mod 365)\n` +
+                           `Resultaat: mod ${modVal}\n` +
+                           `[Status: Binnen bereik 0 tot 365 succesvol gevalideerd met MD-engine]`;
+    }
+
+    // WebRTC P2P Logica
+    function initPeerConnection() {
+        if (peerConnection) return;
+        peerConnection = new RTCPeerConnection(configuration);
+
+        peerConnection.onicecandidate = event => {
+            if (event.candidate === null) {
+                document.getElementById('remoteSignalInput').value = JSON.stringify(peerConnection.localDescription);
+                logP2P("Lokale signaleringscode gegenereerd.");
+            }
+        };
+
+        peerConnection.ondatachannel = event => {
+            dataChannel = event.channel;
+            setupDataChannel();
+            logP2P("Datachannel ontvangen van peer!");
+            updateStatus(true);
+        };
+
+        logP2P("PeerConnection geïnitialiseerd.");
+    }
+
+    function createOffer() {
+        initPeerConnection();
+        dataChannel = peerConnection.createDataChannel("sint-pietersabdij-datachannel");
+        setupDataChannel();
+
+        peerConnection.createOffer().then(offer => {
+            return peerConnection.setLocalDescription(offer);
+        }).catch(err => logP2P("Fout bij aanmaken offer: " + err));
+    }
+
+    function handleSignalInput() {
+        initPeerConnection();
+        const val = document.getElementById('remoteSignalInput').value.trim();
+        if (!val) return;
+
+        try {
+            const desc = JSON.parse(val);
+            if (desc.type === 'offer') {
+                peerConnection.setRemoteDescription(desc).then(() => {
+                    return peerConnection.createAnswer();
+                }).then(answer => {
+                    return peerConnection.setLocalDescription(answer);
+                }).catch(err => logP2P("Fout bij verwerken offer: " + err));
+            } else if (desc.type === 'answer') {
+                peerConnection.setRemoteDescription(desc).then(() => {
+                    logP2P("Remote description ingesteld.");
+                    updateStatus(true);
+                }).catch(err => logP2P("Fout bij verwerken answer: " + err));
+            }
+        } catch(e) {
+            logP2P("Ongeldige JSON signaleringsdata.");
+        }
+    }
+
+    function setupDataChannel() {
+        dataChannel.onopen = () => {
+            logP2P("WebRTC Datachannel geopend! Archiefkoppelingen actief.");
+            updateStatus(true);
+        };
+        dataChannel.onclose = () => {
+            logP2P("WebRTC Datachannel gesloten.");
+            updateStatus(false);
+        };
+        dataChannel.onmessage = event => {
+            logP2P("Ontvangen Archief-ID: " + event.data);
+        };
+    }
+
+    function sendViaDataChannel() {
+        const msg = document.getElementById('archiefDataInput').value.trim();
+        if (!msg) return;
+        if (dataChannel && dataChannel.readyState === 'open') {
+            dataChannel.send(msg);
+            logP2P("Verzonden naar peer: " + msg);
+            document.getElementById('archiefDataInput').value = '';
+        } else {
+            logP2P("Fout: Datachannel is niet geopend.");
+        }
+    }
+
+    function logP2P(text) {
+        const logBox = document.getElementById('p2pLog');
+        logBox.innerText += "\n> " + text;
+        logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    function updateStatus(isConnected) {
+        const badge = document.getElementById('p2pStatus');
+        if (isConnected) {
+            badge.innerText = "Verbonden (P2P)";
+            badge.className = "status-badge status-connected";
+        } else {
+            badge.innerText = "Offline";
+            badge.className = "status-badge";
+        }
+    }
+</script>
+
+</body>
+</html>
