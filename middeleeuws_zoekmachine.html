@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Middeleeuwse Geschriften & Oorkondes Zoekmachine</title>
+    <style>
+        :root {
+            --bg-color: #f4f1ea;
+            --container-bg: #fffdf9;
+            --text-color: #2c221e;
+            --primary-color: #5c4033;
+            --accent-color: #8b5a2b;
+            --border-color: #d1c7bd;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .search-container {
+            background-color: var(--container-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            max-width: 800px;
+            width: 100%;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: #6c635b;
+            font-style: italic;
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 15px;
+            font-size: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: #fff;
+            font-family: inherit;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-family: inherit;
+        }
+
+        button:hover {
+            background-color: var(--accent-color);
+        }
+
+        .filters-section {
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+
+        .filters-section h3 {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .presets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .preset-btn {
+            background-color: #e6dfd5;
+            color: var(--primary-color);
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .preset-btn:hover {
+            background-color: var(--border-color);
+        }
+    </style>
+</head>
+<body>
+
+<div class="search-container">
+    <h1>Scriptorium Dorks Zoekmachine</h1>
+    <p class="subtitle">Gericht zoeken naar oorkondes, paleografie en middeleeuwse handschriften</p>
+
+    <div class="input-group">
+        <input type="text" id="searchInput" placeholder="Voer zoektermen in (bijv. charter, Willemus, eschatocol)..." onkeypress="handleKeyPress(event)">
+        <button onclick="executeSearch()">Zoeken</button>
+    </div>
+
+    <div class="filters-section">
+        <h3>Bronbestanden & Archieven (Filetype & Domein Dorks)</h3>
+        <div class="filter-grid">
+            <label><input type="checkbox" name="filetype" value="pdf"> Alleen PDF-documenten</label>
+            <label><input type="checkbox" name="filetype" value="xml"> Alleen XML / TEI (Codering)</label>
+            <label><input type="checkbox" name="domain" value=".edu"> Academische domeinen (.edu)</label>
+            <label><input type="checkbox" name="domain" value=".org"> Culturele/Erfgoed (.org)</label>
+        </div>
+
+        <h3>Thematische Context</h3>
+        <div class="presets">
+            <button class="preset-btn" onclick="applyPreset('oorkonde charter diplomatica')">Oorkonde / Diplomatiek</button>
+            <button class="preset-btn" onclick="applyPreset('paleografie gotisch textualis')">Paleografie</button>
+            <button class="preset-btn" onclick="applyPreset('eschatocol getuigenlijst signum')">Eschatocol / Getuigen</button>
+            <button class="preset-btn" onclick="applyPreset('Middelnederlands Latijn oorkonde')">Middelnederlands / Latijn</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function applyPreset(queryText) {
+        document.getElementById('searchInput').value = queryText;
+    }
+
+    function handleKeyPress(event) {
+        if (event.key === 'Enter') {
+            executeSearch();
+        }
+    }
+
+    function executeSearch() {
+        let query = document.getElementById('searchInput').value.trim();
+        if (!query) return;
+
+        // Verwerk bestandstypen
+        let filetypes = [];
+        document.querySelectorAll('input[name="filetype"]:checked').forEach(el => {
+            filetypes.push(`filetype:${el.value}`);
+        });
+        if (filetypes.length > 0) {
+            query += ` (${filetypes.join(' OR ')})`;
+        }
+
+        // Verwerk domeinen
+        let domains = [];
+        document.querySelectorAll('input[name="domain"]:checked').forEach(el => {
+            domains.push(`site:${el.value}`);
+        });
+        if (domains.length > 0) {
+            query += ` (${domains.join(' OR ')})`;
+        }
+
+        // Open Google zoekopdracht in een nieuw tabblad
+        const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+        window.open(searchUrl, '_blank');
+    }
+</script>
+
+</body>
+</html>
