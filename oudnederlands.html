@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Midden- en Oudnederlandse Taalmachine & Zoekportal</title>
+    <style>
+        :root {
+            --bg-color: #f4f1ea;
+            --container-bg: #fffdf9;
+            --text-color: #2c221e;
+            --primary-color: #5c4033;
+            --accent-color: #8b5a2b;
+            --border-color: #d1c7bd;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .search-container {
+            background-color: var(--container-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            max-width: 850px;
+            width: 100%;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: #6c635b;
+            font-style: italic;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: #fff;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        .output-box {
+            background-color: #eef2f5;
+            border: 1px dashed var(--border-color);
+            padding: 12px;
+            font-family: monospace;
+            font-size: 1.1rem;
+            color: #1a252c;
+            border-radius: 4px;
+            margin: 20px 0 10px 0;
+            word-break: break-all;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.95rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-family: inherit;
+        }
+
+        button:hover {
+            background-color: var(--accent-color);
+        }
+
+        button.secondary {
+            background-color: #a89f91;
+        }
+
+        button.secondary:hover {
+            background-color: var(--primary-color);
+        }
+
+        .presets-section {
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+
+        .presets-section h3 {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .presets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .preset-btn {
+            background-color: #e6dfd5;
+            color: var(--primary-color);
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .preset-btn:hover {
+            background-color: var(--border-color);
+        }
+    </style>
+</head>
+<body>
+
+<div class="search-container">
+    <h1>Midden- & Oudnederlandse Taalmachine</h1>
+    <p class="subtitle">Genereer geavanceerde zoekopdrachten voor vroege taalfasen, glossen en oorkondes</p>
+
+    <div class="form-group">
+        <label for="allWords">Zoektermen (Modern / Lemma)</label>
+        <input type="text" id="allWords" placeholder="bijv. oorkonde, datief, meervoud" oninput="generateDork()">
+    </div>
+
+    <div class="form-group">
+        <label for="exactPhrase">Exacte middeleeuwse zinsnede ("...")</label>
+        <input type="text" id="exactPhrase" placeholder="bijv. hebban olla uogala" oninput="generateDork()">
+    </div>
+
+    <div class="form-group">
+        <label for="historicalPhase">Taalperiode / Vorm</label>
+        <select id="historicalPhase" onchange="generateDork()">
+            <option value="">Alle perioden</option>
+            <option value="Oudnederlands Oudnederfrankisch">Oudnederlands (vóór 1100)</option>
+            <option value="Laatoudnederlands sjibbolet">Laatoudnederlands</option>
+            <option value="Middelnederlands corpus">Middelnederlands (1150-1500)</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="siteDomain">Specifieke bron / website (site:)</label>
+        <input type="text" id="siteDomain" placeholder="bijv. dbnl.org, historici.nl" oninput="generateDork()">
+    </div>
+
+    <div class="form-group">
+        <label for="fileType">Bestandstype (filetype:)</label>
+        <select id="fileType" onchange="generateDork()">
+            <option value="">Alle bestandstypen</option>
+            <option value="pdf">PDF (.pdf)</option>
+            <option value="xml">XML / TEI (.xml)</option>
+            <option value="txt">Tekstbestand (.txt)</option>
+        </select>
+    </div>
+
+    <label>Gegenereerde Zoekopdracht (Dork):</label>
+    <div class="output-box" id="outputDork">Voer zoektermen of parameters in...</div>
+
+    <div class="btn-group">
+        <button onclick="executeSearch()">Zoek in Google</button>
+        <button class="secondary" onclick="copyDork()">Kopieer Query</button>
+        <button class="secondary" onclick="clearFields()">Wissen</button>
+    </div>
+
+    <div class="presets-section">
+        <h3>Snelle Presets voor Taalhistorie:</h3>
+        <div class="presets">
+            <button class="preset-btn" onclick="applyPreset('dbnl_oudnederlands')">Oudnederlands op DBNL</button>
+            <button class="preset-btn" onclick="applyPreset('gysseling_corpus')">Corpus Gysseling (PDF)</button>
+            <button class="preset-btn" onclick="applyPreset('wachtendonck')">Wachtendonckse Psalmen</button>
+            <button class="preset-btn" onclick="applyPreset('diplomata')">Diplomata Belgica</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function generateDork() {
+        let terms = [];
+
+        let allWords = document.getElementById('allWords').value.trim();
+        if (allWords) terms.push(allWords);
+
+        let exactPhrase = document.getElementById('exactPhrase').value.trim();
+        if (exactPhrase) terms.push(`"${exactPhrase}"`);
+
+        let historicalPhase = document.getElementById('historicalPhase').value;
+        if (historicalPhase) terms.push(historicalPhase);
+
+        let siteDomain = document.getElementById('siteDomain').value.trim();
+        if (siteDomain) terms.push(`site:${siteDomain}`);
+
+        let fileType = document.getElementById('fileType').value;
+        if (fileType) terms.push(`filetype:${fileType}`);
+
+        let result = terms.join(' ');
+        document.getElementById('outputDork').innerText = result || 'Voer zoektermen of parameters in...';
+    }
+
+    function executeSearch() {
+        let query = document.getElementById('outputDork').innerText;
+        if (!query || query === 'Voer zoektermen of parameters in...') return;
+        const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+        window.open(searchUrl, '_blank');
+    }
+
+    function copyDork() {
+        let query = document.getElementById('outputDork').innerText;
+        navigator.clipboard.writeText(query).then(() => {
+            alert('Zoekopdracht gekopieerd naar klembord!');
+        });
+    }
+
+    function clearFields() {
+        document.getElementById('allWords').value = '';
+        document.getElementById('exactPhrase').value = '';
+        document.getElementById('historicalPhase').value = '';
+        document.getElementById('siteDomain').value = '';
+        document.getElementById('fileType').value = '';
+        generateDork();
+    }
+
+    function applyPreset(type) {
+        clearFields();
+        if (type === 'dbnl_oudnederlands') {
+            document.getElementById('siteDomain').value = 'dbnl.org';
+            document.getElementById('allWords').value = 'Oudnederlands';
+        } else if (type === 'gysseling_corpus') {
+            document.getElementById('allWords').value = 'Corpus Middelnederlandse teksten Gysseling';
+            document.getElementById('fileType').value = 'pdf';
+        } else if (type === 'wachtendonck') {
+            document.getElementById('exactPhrase').value = 'Wachtendonckse Psalmen';
+        } else if (type === 'diplomata') {
+            document.getElementById('allWords').value = 'Diplomata Belgica Gysseling Koch';
+        }
+        generateDork();
+    }
+
+    window.onload = function() {
+        document.getElementById('historicalPhase').value = 'Laatoudnederlands sjibbolet';
+        generateDork();
+    };
+</script>
+
+</body>
+</html>
