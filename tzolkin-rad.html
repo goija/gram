@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>13 Manen & Tzolkin Cyclisch Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #38bdf8;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            font-size: 1.1rem;
+            margin-top: 0;
+            color: var(--accent);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        input[type="date"] {
+            width: 100%;
+            padding: 8px 12px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        .result-item {
+            margin: 10px 0;
+            font-size: 0.95rem;
+        }
+
+        .result-value {
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Cyclische Systemen & Kalenderstructuren</h1>
+    <p class="subtitle">Interactieve verkenning van de 13 Manen en Tzolkin patronen</p>
+
+    <div class="container">
+        <!-- Invoer & Berekening -->
+        <div class="card">
+            <h2>Datum Selectie</h2>
+            <div class="control-group">
+                <label for="targetDate">Kies een referentiedatum:</label>
+                <input type="date" id="targetDate">
+            </div>
+            
+            <h2>Systeem Parameters</h2>
+            <div class="result-item">Geselecteerde Dag: <span id="resDate" class="result-value">-</span></div>
+            <div class="result-item">Manen Cyclus (1-13): <span id="resMoon" class="result-value">-</span></div>
+            <div class="result-item">Dag in Maan (1-28): <span id="resDay" class="result-value">-</span></div>
+            <div class="result-item">Tzolkin Kin (1-260): <span id="resKin" class="result-value">-</span></div>
+        </div>
+
+        <!-- Visuele Weergave -->
+        <div class="card" style="display: flex; flex-direction: column; align-items: center;">
+            <h2>Cyclus Visualisatie</h2>
+            <canvas id="cycleCanvas" width="260" height="260"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const dateInput = document.getElementById('targetDate');
+        const resDate = document.getElementById('resDate');
+        const resMoon = document.getElementById('resMoon');
+        const resDay = document.getElementById('resDay');
+        const resKin = document.getElementById('resKin');
+        const canvas = document.getElementById('cycleCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Initialiseer met de huidige datum
+        const today = new Date();
+        dateInput.valueAsDate = today;
+
+        function updateCalculations() {
+            const selectedDate = new Date(dateInput.value);
+            if (isNaN(selectedDate)) return;
+
+            resDate.innerText = selectedDate.toLocaleDateString('nl-NL', { 
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+            });
+
+            // Basis berekening gebaseerd op dagnummer sinds epoch voor patronen
+            const startEpoch = new Date(1987, 6, 26); // Traditionele referentie (Harmonische Convergentie e.d.)
+            const diffTime = selectedDate - startEpoch;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            // 13 Manen van 28 dagen = 364 dagen + 1 dag buiten de tijd
+            const modYear = ((diffDays % 365) + 365) % 365;
+            
+            let moon = Math.floor(modYear / 28) + 1;
+            let dayInMoon = (modYear % 28) + 1;
+            if (moon > 13) {
+                moon = 13;
+                dayInMoon = 28; // Dag buiten de tijd benadering
+            }
+
+            // Tzolkin 260-daagse cyclus
+            const tzolkinKin = (((diffDays % 260) + 260) % 260) + 1;
+
+            resMoon.innerText = moon > 13 ? "Dag Buiten de Tijd" : `${moon} (van 13)`;
+            resDay.innerText = moon > 13 ? "-" : `${dayInMoon} (van 28)`;
+            resKin.innerText = `${tzolkinKin} (van 260)`;
+
+            drawWheel(moon, dayInMoon);
+        }
+
+        function drawWheel(moon, day) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 100;
+
+            // Buitenste ring (13 segmenten)
+            ctx.lineWidth = 16;
+            for (let i = 0; i < 13; i++) {
+                ctx.beginPath();
+                const startAngle = (i * 2 * Math.PI) / 13 - Math.PI / 2;
+                const endAngle = ((i + 1) * 2 * Math.PI) / 13 - Math.PI / 2;
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.strokeStyle = (i + 1 === moon) ? '#38bdf8' : '#334155';
+                ctx.stroke();
+            }
+
+            // Binnenste ring (28 segmenten indicator / kern)
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius - 25, 0, 2 * Math.PI);
+            ctx.fillStyle = '#1e293b';
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#38bdf8';
+            ctx.stroke();
+
+            // Tekst in het midden
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = '14px system-ui';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`Maan ${moon}`, centerX, centerY - 8);
+            ctx.font = '11px system-ui';
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillText(`Dag ${day}`, centerX, centerY + 12);
+        }
+
+        dateInput.addEventListener('change', updateCalculations);
+        
+        // Eerste uitvoering
+        updateCalculations();
+    </script>
+</body>
+</html>
