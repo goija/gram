@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MATHGEO-1887 • CARTE DU CIEL & VAN GOGH CELESTIAL-GEODETIC COCKPIT (1887–1889)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg-primary: #070b12;
+            --bg-secondary: #0d1421;
+            --bg-card: #121b2d;
+            --border-color: #1f304d;
+            --accent-cyan: #00f0ff;
+            --accent-gold: #ffd700;
+            --accent-green: #00ff88;
+            --accent-magenta: #ff0055;
+            --text-main: #e2ecf7;
+            --text-dim: #7f94b0;
+            --font-mono: 'Courier New', Courier, monospace;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image:
+                radial-gradient(circle at 12% 18%, rgba(0, 240, 255, 0.06) 0%, transparent 40%),
+                radial-gradient(circle at 88% 82%, rgba(255, 215, 0, 0.05) 0%, transparent 45%),
+                linear-gradient(180deg, rgba(7, 11, 18, 0.98) 0%, rgba(11, 17, 29, 1) 100%);
+        }
+
+        .mono {
+            font-family: var(--font-mono);
+        }
+
+        .cockpit-border {
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+        }
+
+        .glow-cyan {
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.18);
+        }
+
+        .glow-gold {
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.18);
+        }
+
+        .pill-badge {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            padding: 0.2rem 0.55rem;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 240, 255, 0.35);
+            background: rgba(0, 240, 255, 0.08);
+            color: var(--accent-cyan);
+            letter-spacing: 0.5px;
+        }
+
+        .pill-badge.gold {
+            border-color: rgba(255, 215, 0, 0.4);
+            background: rgba(255, 215, 0, 0.1);
+            color: var(--accent-gold);
+        }
+
+        .pill-badge.green {
+            border-color: rgba(0, 255, 136, 0.4);
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--accent-green);
+        }
+
+        .pill-badge.magenta {
+            border-color: rgba(255, 0, 85, 0.45);
+            background: rgba(255, 0, 85, 0.12);
+            color: var(--accent-magenta);
+        }
+
+        .cockpit-btn {
+            font-family: var(--font-mono);
+            font-size: 0.76rem;
+            padding: 0.45rem 0.85rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .cockpit-btn:hover, .cockpit-btn.active {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            background: rgba(0, 240, 255, 0.12);
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+        }
+
+        .cockpit-btn.gold.active, .cockpit-btn.gold:hover {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+            background: rgba(255, 215, 0, 0.12);
+            box-shadow: 0 0 12px rgba(255, 215, 0, 0.2);
+        }
+
+        .cockpit-btn.green.active, .cockpit-btn.green:hover {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+            background: rgba(0, 255, 136, 0.12);
+        }
+
+        .cockpit-btn.magenta.active, .cockpit-btn.magenta:hover {
+            border-color: var(--accent-magenta);
+            color: var(--accent-magenta);
+            background: rgba(255, 0, 85, 0.14);
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #070b12;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f304d;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00f0ff;
+        }
+
+        input[type="range"] {
+            accent-color: var(--accent-cyan);
+        }
+
+        #toastBanner {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            background: #121b2d;
+            border: 1px solid #00ff88;
+            color: #e2ecf7;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.65);
+            display: none;
+        }
+    </style>
+</head>
+<body class="p-2 md:p-4 select-none">
+
+<div id="toastBanner"></div>
+
+<!-- TOP TELEMETRY & EPOCH STATUS BAR -->
+<header class="cockpit-border rounded-xl p-3 mb-3">
+    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#1f304d] pb-2.5 mb-2.5">
+        <div class="flex items-center gap-3">
+            <div class="w-3 h-3 rounded-full bg-[#00f0ff] animate-pulse"></div>
+            <div>
+                <h1 class="text-base md:text-xl font-bold tracking-wider uppercase bg-gradient-to-r from-[#00f0ff] via-white to-[#ffd700] bg-clip-text text-transparent">
+                    MATHGEO-1887 • CARTE DU CIEL &amp; VAN GOGH CELESTIAL-GEODETIC COCKPIT
+                </h1>
+                <p class="text-xs text-[#7f94b0] mono">
+                    ASTROGRAPHIC CATALOGUE (MOUCHEZ, PARIJS APRIL 1887) • 18 OBSERVATORIA • BUREAU DES DAMES MICROMETER • SAINT-RÉMY HELMERT Δθ=+45.09°
+                </p>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-1.5">
+            <span class="pill-badge">🔭 33cm f/10.4 HENRY REFRACTOR</span>
+            <span class="pill-badge gold">📏 1mm = 60&Prime; (2°×2° PLAAT)</span>
+            <span class="pill-badge green">🔬 RÉSEAU: 27×27 (5mm GRID)</span>
+            <span class="pill-badge magenta" title="Michelson-Morley Experiment (Cleveland, juli 1887): Ether-drift = 0.00 km/s">⚛️ MICHELSON-MORLEY 1887: Δc = 0.00</span>
+        </div>
+    </div>
+
+    <!-- EPOCH & QUICK CONTROLS -->
+    <div class="flex flex-wrap items-center justify-between gap-3 text-xs mono">
+        <div class="flex flex-wrap items-center gap-2">
+            <span class="text-[#7f94b0] uppercase font-bold">Epoche Selectie:</span>
+            <button id="btnEpoch1887" class="cockpit-btn active" onclick="setGlobalEpoch(1887.3)">🗓️ 1887.3 (Congres Parijs &amp; Van Gogh Montmartre)</button>
+            <button id="btnEpoch1889" class="cockpit-btn gold" onclick="setGlobalEpoch(1889.55)">🌟 1889.55 (22 Juli 1889 Saint-Rémy Sterrennacht)</button>
+            <button id="btnEpoch2026" class="cockpit-btn green" onclick="setGlobalEpoch(2026.8)">🛰️ 2026.8 (Gaia DR3 Proper Motion Δt = +139.5j)</button>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 bg-[#070b12] px-3 py-1.5 rounded-lg border border-[#1f304d]">
+            <span>ACTIEF STATION: <strong id="hudStationName" class="text-[#00f0ff]">Parijs (Observatoire)</strong></span>
+            <span>ZONE: <strong id="hudZoneRange" class="text-[#ffd700]">+24° tot +18°</strong></span>
+            <span>COÖRD: <strong id="hudCoords" class="text-[#00ff88]">48.8361°N, 2.3364°E</strong></span>
+        </div>
+    </div>
+</header>
+
+<!-- MAIN DUAL-VIEWPORT COCKPIT -->
+<main class="grid grid-cols-1 lg:grid-cols-12 gap-3 mb-3">
+
+    <!-- LEFT VIEWPORT: 1887–1889 WORLD GEODETIC NETWORK & DECLINATION ZONES (7 COLS) -->
+    <section class="lg:col-span-7 cockpit-border rounded-xl p-3 flex flex-col justify-between">
+        <div>
+            <!-- Viewport Header & Mode Controls -->
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2 pb-2 border-b border-[#1f304d]">
+                <div>
+                    <span class="pill-badge">VIEWPORT A • GEODETISCHE WERELDKAART &amp; DECLINATIEZONES (1887)</span>
+                    <h2 class="text-sm font-bold text-white mt-1">
+                        18 Carte du Ciel Sterrenwachten (+90° tot -90°) &amp; Van Gogh / Kapteyn Geodetische Driehoek
+                    </h2>
+                </div>
+                <div class="flex flex-wrap gap-1.5">
+                    <button id="btnProjEqui" class="cockpit-btn active" onclick="setMapProjection('equirectangular')">🗺️ Mercator / Declinatie-Grid</button>
+                    <button id="btnProjGlobe" class="cockpit-btn" onclick="setMapProjection('orthographic')">🌐 3D Orthografische Hemel/Aarde Globe</button>
+                    <button id="btnToggleZones" class="cockpit-btn gold active" onclick="toggleDeclinationBands()">📏 18 Declinatiestroken</button>
+                    <button id="btnToggleLinks" class="cockpit-btn green active" onclick="toggleGeodeticLinks()">🔗 Kapteyn-Parijs-Kaap Lijnen</button>
+                </div>
+            </div>
+
+            <!-- Filter Bar for Map Stations -->
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2 text-xs mono bg-[#070b12] p-2 rounded-lg border border-[#1f304d]">
+                <div class="flex flex-wrap items-center gap-1.5">
+                    <span class="text-[#7f94b0]">Filter:</span>
+                    <button class="cockpit-btn active" id="fltAll" onclick="setStationFilter('ALL')">Alle (24)</button>
+                    <button class="cockpit-btn" id="fltNorth" onclick="setStationFilter('NORTH')">Noordelijk Halfrond (+90°..0°)</button>
+                    <button class="cockpit-btn" id="fltSouth" onclick="setStationFilter('SOUTH')">Zuidelijk Halfrond (0°..-90°)</button>
+                    <button class="cockpit-btn magenta" id="fltVgNl" onclick="setStationFilter('VGNL')">🎨 Van Gogh &amp; NL/BE (Parijs/St-Rémy/Groningen/Leiden/Ukkel)</button>
+                </div>
+                <div class="text-[#00f0ff]" id="mapHoverReadout">
+                    Klik op een observatorium of Van Gogh-ankerpunt op de kaart
+                </div>
+            </div>
+
+            <!-- Interactive World & Declination Map Canvas -->
+            <div class="relative w-full h-[430px] bg-[#05080f] rounded-lg border border-[#1f304d] overflow-hidden">
+                <canvas id="worldMapCanvas"></canvas>
+
+                <!-- Floating Map Legend Overlay -->
+                <div class="absolute bottom-2 left-2 bg-[#070b12]/90 border border-[#1f304d] rounded-lg p-2 text-[11px] mono flex flex-wrap gap-3 pointer-events-none">
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#00f0ff] inline-block"></span> 18 Carte du Ciel Observatoria</span>
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#ff0055] inline-block"></span> Van Gogh Locaties (1887–1889)</span>
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#ffd700] inline-block"></span> NL/BE &amp; Michelson-Morley (1887)</span>
+                </div>
+
+                <!-- Globe Rotation Hint -->
+                <div id="globeHint" class="hidden absolute top-2 right-2 bg-[#070b12]/90 border border-[#00f0ff] text-[#00f0ff] px-2.5 py-1 rounded text-[11px] mono">
+                    🖱️ Sleep op de globe om lengte/breedtegraad te roteren
+                </div>
+            </div>
+        </div>
+
+        <!-- Selected Station / Historical Anchor Telemetry Card -->
+        <div class="mt-2.5 bg-[#070b12] border border-[#1f304d] rounded-lg p-3">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#1f304d] pb-2 mb-2">
+                <div class="flex items-center gap-2">
+                    <span id="selBadge" class="pill-badge gold">ZONE #07 • PARIJS</span>
+                    <h3 id="selTitle" class="text-sm font-bold text-white mono">Observatoire de Paris — Amédée Mouchez &amp; Gebr. Henry</h3>
+                </div>
+                <div class="flex items-center gap-2 text-xs mono">
+                    <span id="selPlates" class="text-[#00ff88]">1.260 Glasplaten (2°×2°)</span>
+                    <button class="cockpit-btn" onclick="loadStationIntoPlate()">🔬 Laad Zone in Glasplaat-Micrometer &rightarrow;</button>
+                </div>
+            </div>
+            <p id="selDesc" class="text-xs text-[#e2ecf7] leading-relaxed mb-2">
+                Hoofdkwartier van het Astrographisch Congres (april 1887). Hier ontwikkelden Paul en Prosper Henry hun 33 cm fotografische refractor en leidde Dorothea Klumpke het 'Bureau des Dames' dat duizenden sterrenplaten met de microscoop uitmat. Slechts 4,2 km ten zuiden van Rue Lepic 54 waar Vincent van Gogh in 1887 woonde!
+            </p>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] mono">
+                <div class="bg-[#0d1421] p-1.5 rounded border border-[#1f304d]">
+                    <span class="text-[#7f94b0] block">DECLINATIEZONE</span>
+                    <strong id="selDecZone" class="text-[#00f0ff]">+24° tot +18° (Hyaden/Taurus)</strong>
+                </div>
+                <div class="bg-[#0d1421] p-1.5 rounded border border-[#1f304d]">
+                    <span class="text-[#7f94b0] block">GEODETISCH ANKER</span>
+                    <strong id="selGeoAnchor" class="text-[#ffd700]">48.8361°N, 2.3364°E</strong>
+                </div>
+                <div class="bg-[#0d1421] p-1.5 rounded border border-[#1f304d]">
+                    <span class="text-[#7f94b0] block">DIRECTEUR / REKENAARS</span>
+                    <strong id="selDirector" class="text-[#00ff88]">A. Mouchez / D. Klumpke</strong>
+                </div>
+                <div class="bg-[#0d1421] p-1.5 rounded border border-[#1f304d]">
+                    <span class="text-[#7f94b0] block">AFSTAND TOT SAINT-RÉMY</span>
+                    <strong id="selDistStRemy" class="text-[#ff0055]">591.4 km (Azimut 160.2°)</strong>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- RIGHT VIEWPORT: 1887 GLASS PLATE MICROMETER & VAN GOGH 1889 ROTATION / GAIA PROPER MOTION (5 COLS) -->
+    <section class="lg:col-span-5 cockpit-border rounded-xl p-3 flex flex-col justify-between">
+        <div>
+            <!-- Right Viewport Mode Switcher -->
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2 pb-2 border-b border-[#1f304d]">
+                <div>
+                    <span class="pill-badge gold">VIEWPORT B • ASTROGRAFISCHE &amp; GEODETISCHE SIMULATOR</span>
+                    <h2 class="text-sm font-bold text-white mt-1" id="rightViewportTitle">
+                        Modus 1: 1887 Glasplaat &amp; Gautier-Réseau Micrometer (Bureau des Dames)
+                    </h2>
+                </div>
+                <div class="flex flex-wrap gap-1.5">
+                    <button id="btnModePlate" class="cockpit-btn active" onclick="setRightMode('plate')">🔬 1. Glasplaat Micrometer (1887)</button>
+                    <button id="btnModeVanGogh" class="cockpit-btn magenta" onclick="setRightMode('vangogh')">🎨 2. Van Gogh 45°-Rotatie &amp; Gaia</button>
+                </div>
+            </div>
+
+            <!-- Sub-controls for Right Viewport -->
+            <div class="bg-[#070b12] p-2 rounded-lg border border-[#1f304d] mb-2 text-xs mono">
+                <!-- Controls for Mode 1: Plate Micrometer -->
+                <div id="plateControls" class="flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <button id="btnTripleExp" class="cockpit-btn gold active" onclick="toggleTripleExposure()" title="Elke ster kreeg 3 belichtingen in een driehoekje om stof op de glasplaat te herkennen">🔺 3-Voudige Belichting (Carte du Ciel)</button>
+                        <button id="btnInvertPlate" class="cockpit-btn active" onclick="togglePlateNegative()" title="Originele glasplaten werden als negatief (zwarte sterren op helder glas) onder de microscoop gemeten">🌗 Glas-Negatief / Donkere Hemel</button>
+                        <button class="cockpit-btn green" onclick="injectTestDust()" title="Voeg een vals stofdeeltje (1 puntje i.p.v. 3) toe om te testen of de 'human computer' het herkent">+ Stofdeeltje Test</button>
+                    </div>
+                    <span class="text-[#ffd700]" id="plateFieldLabel">Veld: Taurus / Hyaden (+15°..+24°)</span>
+                </div>
+
+                <!-- Controls for Mode 2: Van Gogh 45° Rotation & Gaia Proper Motion -->
+                <div id="vangoghControls" class="hidden space-y-2">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <span class="text-[#00f0ff]">Perspectiefrotatie Dorp Saint-Rémy (&Delta;&theta;): <strong id="lblRotAngle">+45.09°</strong></span>
+                        <div class="flex gap-1">
+                            <button class="cockpit-btn" onclick="setVanGoghAngle(0)">0° (Schilderscel NNO 26.21°)</button>
+                            <button class="cockpit-btn magenta active" onclick="setVanGoghAngle(45.09)">+45.09° (Venus EOT 71.30°)</button>
+                        </div>
+                    </div>
+                    <input type="range" id="sliderRotAngle" min="0" max="60" step="0.01" value="45.09" class="w-full" oninput="updateVanGoghAngle(this.value)">
+                    <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-[#1f304d]">
+                        <span class="text-[#00ff88]">Epoche Eigenbeweging (1887 &rightarrow; 2026): <strong id="lblEpochYear">1889.5</strong></span>
+                        <input type="range" id="sliderEpochYear" min="1887" max="2026" step="0.5" value="1889.5" class="w-44" oninput="updateProperMotionYear(this.value)">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Plate / Van Gogh Canvas -->
+            <div class="relative w-full h-[390px] bg-[#05080f] rounded-lg border border-[#1f304d] overflow-hidden">
+                <canvas id="plateCanvas"></canvas>
+
+                <!-- Microscope Loupe Overlay (Top-Right inside Canvas) -->
+                <div class="absolute top-2 right-2 w-28 h-28 rounded-full border-2 border-[#ffd700] bg-[#070b12]/95 overflow-hidden shadow-lg pointer-events-none flex flex-col items-center justify-end pb-1">
+                    <canvas id="loupeCanvas" class="w-full h-full"></canvas>
+                    <span class="text-[9px] mono text-[#ffd700] bg-black/80 px-1.5 rounded">10× MICROSCOOP</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Turner (1893) 6-Parameter Affine Plate Constants & Measurement Readout -->
+        <div class="mt-2.5 bg-[#070b12] border border-[#1f304d] rounded-lg p-3 mono text-xs">
+            <div class="flex items-center justify-between border-b border-[#1f304d] pb-1.5 mb-2">
+                <span class="text-[#ffd700] font-bold">📐 TURNER (1893) PLAATCONSTANTEN &amp; MICROMETER LOGBOEK</span>
+                <span id="measArtifactTag" class="pill-badge green">✓ ECHTE STER (3× BELICHTING)</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 mb-2 text-[11px]">
+                <div class="bg-[#0d1421] p-2 rounded border border-[#1f304d]">
+                    <div class="text-[#7f94b0]">GEMETEN GLASPLAAT (x, y)</div>
+                    <div id="readoutXY" class="text-[#00f0ff] font-bold text-sm">x = +14.25 mm, y = -08.40 mm</div>
+                    <div id="readoutReseau" class="text-[10px] text-[#7f94b0]">Réseau-cel: [R16, K12] • Schaal: 60&Prime;/mm</div>
+                </div>
+                <div class="bg-[#0d1421] p-2 rounded border border-[#1f304d]">
+                    <div class="text-[#7f94b0]">HERLEIDE HEMELCOÖRDINATEN (1887)</div>
+                    <div id="readoutRaDec" class="text-[#00ff88] font-bold text-sm">&alpha; = 04h 35m 55s, &delta; = +16° 30&prime; 33&Prime;</div>
+                    <div id="readoutProperMotion" class="text-[10px] text-[#ffd700]">&mu;&alpha; = +63.5 mas/j, &mu;&delta; = -188.9 mas/j (Gaia)</div>
+                </div>
+            </div>
+
+            <div class="bg-[#0d1421] p-2 rounded border border-[#1f304d] text-[11px] flex flex-wrap items-center justify-between gap-2">
+                <div>
+                    <span class="text-[#7f94b0]">Affiene Transformatie:</span>
+                    <span class="text-[#e2ecf7]">&xi; = Ax + By + C &nbsp;|&nbsp; &eta; = Dx + Ey + F</span>
+                </div>
+                <div id="readoutObjectName" class="text-[#ff0055] font-bold">
+                    Object: Aldebaran (&alpha; Tauri / Hyaden Anker)
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- BOTTOM MULTI-TAB ANALYTICAL & HISTORICAL DOSSIER PANEL -->
+<section class="cockpit-border rounded-xl p-3 mb-4">
+    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#1f304d] pb-2.5 mb-3">
+        <div class="flex flex-wrap gap-1.5">
+            <button id="tabBtnObs" class="cockpit-btn active" onclick="switchBottomTab('obs')">🔭 1. De 18 Sterrenwachten &amp; Declinatiezones (1887)</button>
+            <button id="tabBtnNlBe" class="cockpit-btn gold" onclick="switchBottomTab('nlbe')">🇳🇱🇧🇪 2. Nederlandse, Belgische &amp; Van Gogh (1887–1889) Synthese</button>
+            <button id="tabBtnDames" class="cockpit-btn magenta" onclick="switchBottomTab('dames')">👩‍🔬 3. 'Bureau des Dames' &amp; Waarom het Project Vastliep / Slaagde</button>
+            <button id="tabBtnLog" class="cockpit-btn green" onclick="switchBottomTab('log')">📊 4. Gemeten Glasplaat-Catalogus &amp; CSV/JSON Export</button>
+        </div>
+
+        <div class="flex gap-1.5">
+            <button class="cockpit-btn green" onclick="exportMeasurementsCSV()">💾 Exporteer Metingen (CSV)</button>
+            <button class="cockpit-btn gold" onclick="copyFullDatasetJSON()">📋 Kopieer 1887 Geo-JSON</button>
+        </div>
+    </div>
+
+    <!-- TAB 1: 18 OBSERVATORIES TABLE -->
+    <div id="tabPanelObs" class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs mono">
+            <thead>
+                <tr class="bg-[#070b12] text-[#ffd700] border-b border-[#1f304d]">
+                    <th class="p-2">#</th>
+                    <th class="p-2">Sterrenwacht (Land)</th>
+                    <th class="p-2">Declinatiezone</th>
+                    <th class="p-2">Coördinaten</th>
+                    <th class="p-2">Glasplaten</th>
+                    <th class="p-2">Historische Rol &amp; Koppeling (Kapteyn / Van Gogh / Dames)</th>
+                    <th class="p-2">Actie</th>
+                </tr>
+            </thead>
+            <tbody id="observatoriesTableBody" class="divide-y divide-[#1f304d]"></tbody>
+        </table>
+    </div>
+
+    <!-- TAB 2: DUTCH, BELGIAN & VAN GOGH 1887-1889 DOSSIER -->
+    <div id="tabPanelNlBe" class="hidden grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+        <div class="bg-[#070b12] p-3.5 rounded-lg border border-[#1f304d]">
+            <span class="pill-badge gold">NEDERLAND • GRONINGEN &amp; LEIDEN</span>
+            <h3 class="text-sm font-bold text-white mt-2 mb-1.5 mono">Jacobus Kapteyn &amp; H.G. van de Sande Bakhuyzen</h3>
+            <p class="text-[#e2ecf7] leading-relaxed mb-2">
+                Hoewel Nederland geen eigen zone fotografeerde vanwege het bewolkte klimaat, speelde het een sleutelrol:
+            </p>
+            <ul class="space-y-1.5 text-[#7f94b0] list-disc pl-4">
+                <li><strong class="text-[#00f0ff]">Leiden (Bakhuyzen):</strong> Directeur van de Sterrewacht Leiden, prominent lid van het Parijse Congres in april 1887 en adviseur voor de micrometer-precisie.</li>
+                <li><strong class="text-[#00ff88]">Groningen (Kapteyn):</strong> Richtte in 1896 het eerste <em>Astronomisch Laboratorium zonder telescoop</em> op. Met David Gill (Kaapstad) mat hij in Groningen (met hulp van gedetacheerde rekenaars) <strong>454.875 zuidelijke sterren</strong> op glasplaten uit (<em>Cape Photographic Durchmusterung</em>) en ontdekte zo in 1904 de twee grote <strong>Sterrenstromen (Star Streams)</strong>!</li>
+            </ul>
+        </div>
+
+        <div class="bg-[#070b12] p-3.5 rounded-lg border border-[#1f304d]">
+            <span class="pill-badge">BELGIË • UKKEL (KONINKLIJKE STERRENWACHT)</span>
+            <h3 class="text-sm font-bold text-white mt-2 mb-1.5 mono">De Belgische Bijdrage &amp; Zone Potsdam/Ukkel</h3>
+            <p class="text-[#e2ecf7] leading-relaxed mb-2">
+                De Koninklijke Sterrenwacht van België (verhuisd van Brussel naar Ukkel onder François Folie en later Georges Lecointe) schafte een identieke 33 cm Henry-Gautier astrograaf aan:
+            </p>
+            <ul class="space-y-1.5 text-[#7f94b0] list-disc pl-4">
+                <li><strong class="text-[#ffd700]">Overname Potsdam-Carte:</strong> Toen Potsdam tijdens en na WOI zijn fotografische kaarten (zone +32° tot +39°) niet voltooide, nam Ukkel een groot deel van de observaties en reproducties op zich.</li>
+                <li><strong class="text-[#00f0ff]">Heliogravures op Koper:</strong> België en Frankrijk produceerden haarscherpe kopergravures van de glasplaten (tot magnitude 14) zodat sterrenkaarten niet zouden verbleken.</li>
+            </ul>
+        </div>
+
+        <div class="bg-[#070b12] p-3.5 rounded-lg border border-[#1f304d]">
+            <span class="pill-badge magenta">PARIJS 1887 &rightarrow; SAINT-RÉMY 1889</span>
+            <h3 class="text-sm font-bold text-white mt-2 mb-1.5 mono">Vincent van Gogh &amp; Camille Flammarion / Mouchez</h3>
+            <p class="text-[#e2ecf7] leading-relaxed mb-2">
+                In exact dezelfde maand (april 1887) dat 56 astronomen in Parijs de <em>Carte du Ciel</em> lanceerden, schilderde Vincent van Gogh in Montmartre (Rue Lepic 54, op 4,2 km van het Observatoire de Paris):
+            </p>
+            <ul class="space-y-1.5 text-[#7f94b0] list-disc pl-4">
+                <li><strong class="text-[#ff0055]">Astronomische Tijdgeest:</strong> Franse kranten en Camille Flammarions tijdschrift <em>L'Astronomie</em> stonden in 1887–1889 vol met de eerste astrofoto's van de Henry-gebroeders (waaronder de Plejaden, Hyaden en spiraalnevels zoals M51).</li>
+                <li><strong class="text-[#00ff88]">Geodetische 45°-Synthese:</strong> In juli 1889 combineerde Van Gogh in Saint-Rémy de exacte oostelijke positie van Venus (71,3° EOT), de Hyaden (in de Parijse/Bordeaux Carte-zone) en de maansikkel met het over +45,09° geroteerde dorpsgezicht.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- TAB 3: BUREAU DES DAMES & PROJECT LEGACY -->
+    <div id="tabPanelDames" class="hidden grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+        <div class="bg-[#070b12] p-3.5 rounded-lg border border-[#1f304d]">
+            <span class="pill-badge magenta">BUREAU DES DAMES (1887–1962)</span>
+            <h3 class="text-sm font-bold text-white mt-2 mb-1.5 mono">Hoe de Vrouwelijke 'Human Computers' de Hemel Opmatten</h3>
+            <p class="text-[#e2ecf7] leading-relaxed mb-2">
+                Het fotograferen van 22.000 glasplaten was slechts het begin. Elke glasplaat (16×16 cm) bevatte honderden tot duizenden microscopische sterpuntjes. Onder leiding van pioniers als <strong>Dorothea Klumpke</strong> (Parijs), <strong>zusters Emilia, Regina, Rosina en Luigia</strong> (Vaticaanstad), en teams in Greenwich, Perth en Córdoba werkten tientallen vrouwen decennialang aan precisie-meetmachines:
+            </p>
+            <ol class="space-y-1.5 text-[#7f94b0] list-decimal pl-4">
+                <li><strong class="text-[#00f0ff]">Het Gautier-Réseau (5 mm raster):</strong> Vóór de ontwikkeling werd een verzilverd rooster van 27×27 lijnen (exact 5 mm uit elkaar) op de glasplaat belicht. Als de gelatine-emulsie bij het drogen kromp, vervormde het rooster mee en bleef de meting foutloos!</li>
+                <li><strong class="text-[#ffd700]">De 3-Voudige Belichting (Driehoekjes):</strong> Voor de <em>Carte du Ciel</em> werd elke ster drie keer belicht (elk 20 minuten), waarbij de telescoop telkens een paar boogseconden werd verplaatst. Onder de loep vormde elke echte ster een gelijkzijdig driehoekje (asterisme), zodat stofjes of luchtbellen in het glas direct werden herkend.</li>
+                <li><strong class="text-[#00ff88]">Bisectie met Spinrag-Kruisdraden:</strong> Met dubbele micrometerschroeven (tot op 0,001 mm = 0,06 boogseconde nauwkeurig) maten twee dames onafhankelijk de afstand van het ster-zwaartepunt tot de dichtstbijzijnde réseaulijnen, waarna de plaat op 180° gedraaid nogmaals werd gemeten om persoonlijke oog-bias te elimineren.</li>
+            </ol>
+        </div>
+
+        <div class="bg-[#070b12] p-3.5 rounded-lg border border-[#1f304d]">
+            <span class="pill-badge green">WAAROM HET VASTLIEP ÉN TOCH GOUD WAARD BLEEK</span>
+            <h3 class="text-sm font-bold text-white mt-2 mb-1.5 mono">Van 'Monnikenwerk' in 1887 naar de ESA Hipparcos &amp; Gaia Revolutie</h3>
+            <div class="space-y-2 text-[#7f94b0] leading-relaxed">
+                <p>
+                    <strong class="text-[#ff0055]">Waarom de Carte du Ciel (deels) vastliep:</strong> De <em>Astrographic Catalogue</em> (posities van 4,6 miljoen sterren tot mag 11) werd voltooid in 1962, maar de fotografische atlas <em>Carte du Ciel</em> (mag 14) bleef onvoltooid. Door twee wereldoorlogen, hoge kosten van kopergravures en de komst van grote Schmidt-spiegeltelescopen (zoals Palomar in 1948) raakten de kleine 2°×2° refractorvelden ingehaald door de tijd. Bovendien absorbeerde het project decennialang het volledige Europese onderzoeksbudget ten koste van de opkomende astrofysica.
+                </p>
+                <p>
+                    <strong class="text-[#00ff88]">De 21e-eeuwse Triomf (Tycho-2 &amp; Gaia):</strong> Aan het einde van de 20e eeuw beseften astronomen dat de glasplaten uit 1887–1910 een onvervangbare tijdcapsule vormden. Door de 4,6 miljoen posities uit de <em>Astrographic Catalogue</em> te combineren met de ESA <strong>Hipparcos/Tycho-2</strong> (1997) en <strong>Gaia DR3</strong> (2022–2026) satellieten, ontstond een tijdsbasis van <strong>ruim 110 tot 139 jaar</strong>. Hierdoor kennen we nu de driedimensionale snelheidsvectoren (eigenbeweging) van miljoenen sterren in de Melkweg!
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 4: MEASUREMENT LOGBOOK -->
+    <div id="tabPanelLog" class="hidden overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs mono">
+            <thead>
+                <tr class="bg-[#070b12] text-[#00ff88] border-b border-[#1f304d]">
+                    <th class="p-2">Tijdstip</th>
+                    <th class="p-2">Ster / Object</th>
+                    <th class="p-2">Observatorium Zone</th>
+                    <th class="p-2">Plaat x (mm)</th>
+                    <th class="p-2">Plaat y (mm)</th>
+                    <th class="p-2">RA &alpha; (1887)</th>
+                    <th class="p-2">Dec &delta; (1887)</th>
+                    <th class="p-2">Gaia &mu; (mas/j)</th>
+                    <th class="p-2">Classificatie</th>
+                </tr>
+            </thead>
+            <tbody id="measurementLogBody" class="divide-y divide-[#1f304d]"></tbody>
+        </table>
+    </div>
+</section>
+
+<script>
+// ============================================================================
+// 1. DATASET: DE 18 CARTE DU CIEL OBSERVATORIA (1887) + HISTORISCHE ANKERS
+// ============================================================================
+const STATIONS_1887 = [
+    // De 18 officiële Carte du Ciel sterrenwachten (gesorteerd van Noord +90° naar Zuid -90°)
+    { id: 1, code: "GRW", name: "Greenwich (Royal Observatory)", country: "VK", lat: 51.4769, lon: -0.0005, decMin: 65, decMax: 90, plates: 1149, status: "AC & CdC Voltooid", director: "W. Christie / Lady Computers", type: "CDC", role: "Noordpool-zone (+90° tot +65°). Eerste systematische vrouwelijke 'Lady Computers' afdeling in Groot-Brittannië (1890)." },
+    { id: 2, code: "VAT", name: "Vaticaanstad (Specola Vaticana)", country: "Vaticaan", lat: 41.9038, lon: 12.4520, decMin: 55, decMax: 64, plates: 1040, status: "AC & CdC Voltooid", director: "F. Denza / J.G. Hagen & 4 Zusters", type: "CDC", role: "Zone +64° tot +55°. Beroemd om de vier kloosterzusters (Emilia, Regina, Rosina, Luigia) die 481.215 sterren opmaten." },
+    { id: 3, code: "CAT", name: "Catania (Sicilië)", country: "Italië", lat: 37.5150, lon: 15.0830, decMin: 47, decMax: 54, plates: 1008, status: "AC Voltooid", director: "A. Riccò", type: "CDC", role: "Zone +54° tot +47°. Bestrijkt o.a. het zenit boven Midden-Europa en de noordelijke Melkweg." },
+    { id: 4, code: "HEL", name: "Helsingfors (Helsinki)", country: "Finland", lat: 60.1619, lon: 24.9525, decMin: 40, decMax: 46, plates: 1008, status: "AC Voltooid", director: "A. Donner", type: "CDC", role: "Zone +46° tot +40°. Omvat de exacte breedtegraad-declinatie (43.79°N) van het zenit boven Saint-Rémy-de-Provence!" },
+    { id: 5, code: "POT", name: "Potsdam (en later Ukkel/Hyderabad)", country: "Duitsland", lat: 52.3806, lon: 13.0642, decMin: 32, decMax: 39, plates: 1232, status: "Overgenomen door Ukkel/Oxford", director: "H.C. Vogel / J. Scheiner", type: "CDC", role: "Zone +39° tot +32°. Werkte nauw samen met Kapteyn en werd na WOI deels overgenomen door Ukkel (België)." },
+    { id: 6, code: "OXF", name: "Oxford (University Observatory)", country: "VK", lat: 51.7586, lon: -1.2525, decMin: 25, decMax: 31, plates: 1180, status: "AC Voltooid (Turner)", director: "H.H. Turner", type: "CDC", role: "Zone +31° tot +25°. Hier ontwikkelde H.H. Turner in 1893 de 6-parameter lineaire plaatconstanten-methode (ξ, η)." },
+    { id: 7, code: "PAR", name: "Parijs (Observatoire de Paris)", country: "Frankrijk", lat: 48.8361, lon: 2.3364, decMin: 18, decMax: 24, plates: 1260, status: "AC & CdC Voltooid", director: "A. Mouchez / Gebr. Henry / D. Klumpke", type: "CDC", role: "Hoofdkwartier Congres 1887 (Zone +24° tot +18°). Bevat het noordelijke deel van Stier/Plejaden en grenst aan Van Goghs oosthemel." },
+    { id: 8, code: "BOR", name: "Bordeaux (Floirac)", country: "Frankrijk", lat: 44.8350, lon: -0.5260, decMin: 11, decMax: 17, plates: 1260, status: "AC & CdC Voltooid", director: "G. Rayet", type: "CDC", role: "Zone +17° tot +11°. Bevat exact de Hyaden en Aldebaran (+16°30') die Van Gogh in juli 1889 in De Sterrennacht schilderde!" },
+    { id: 9, code: "TOU", name: "Toulouse (Jolimont)", country: "Frankrijk", lat: 43.6122, lon: 1.4633, decMin: 5, decMax: 10, plates: 1260, status: "AC & CdC Voltooid", director: "B. Baillaud", type: "CDC", role: "Zone +10° tot +5°. Dichtstbijzijnde Carte du Ciel-observatorium bij Saint-Rémy-de-Provence (op 273 km ten westen)." },
+    { id: 10, code: "ALG", name: "Algiers (Bouzaréah)", country: "Algerije", lat: 36.7975, lon: 3.0328, decMin: -2, decMax: 4, plates: 1260, status: "AC & CdC Voltooid", director: "Ch. Trépied", type: "CDC", role: "Equatoriale zone (+4° tot -2°). Zeer heldere nachten leverden enkele van de scherpste glasplaten van het hele project." },
+    { id: 11, code: "SFE", name: "San Fernando (Cádiz)", country: "Spanje", lat: 36.4647, lon: -6.2056, decMin: -9, decMax: -3, plates: 1260, status: "AC & CdC Voltooid", director: "C. Pujazón", type: "CDC", role: "Zone -3° tot -9° (Orion-gordel en Rigel). Volledig afgewerkt inclusief kopergravures." },
+    { id: 12, code: "TAC", name: "Tacubaya (Mexico-Stad)", country: "Mexico", lat: 19.4025, lon: -99.1939, decMin: -16, decMax: -10, plates: 1260, status: "AC Voltooid", director: "Á. Anguiano / J. Gallo", type: "CDC", role: "Zone -10° tot -16°. Ondanks de Mexicaanse Revolutie slaagde het team (met vrouwelijke rekenaars) erin de catalogus te voltooien." },
+    { id: 13, code: "UCC", name: "Ukkel / Brussel (en Hyderabad)", country: "België", lat: 50.7983, lon: 4.3586, decMin: -23, decMax: -17, plates: 1260, status: "Belgische CdC & Hyderabad AC", director: "F. Folie / G. Lecointe", type: "NLBE", role: "Koninklijke Sterrenwacht van België (Ukkel). Produceerde de beroemde Carte du Ciel heliogravures en nam de Potsdam-zone over." },
+    { id: 14, code: "COR", name: "Córdoba (Observatorio Nacional)", country: "Argentinië", lat: -31.4211, lon: -64.1986, decMin: -31, decMax: -24, plates: 1360, status: "AC Voltooid", director: "J.M. Thome / C.D. Perrine", type: "CDC", role: "Zone -24° tot -31° (Galactisch Centrum in Boogschutter). Extreem sterrijke glasplaten." },
+    { id: 15, code: "PER", name: "Perth (en Edinburgh)", country: "Australië", lat: -31.9519, lon: 115.8406, decMin: -40, decMax: -32, plates: 1376, status: "AC Voltooid (met Edinburgh)", director: "W.E. Cooke / H.B. Curlewis", type: "CDC", role: "Zone -32° tot -40°. Veel platen uit Perth werden naar het Royal Observatory Edinburgh verscheept om door vrouwelijke computers te worden gemeten." },
+    { id: 16, code: "CAP", name: "Kaap de Goede Hoop (Kaapstad)", country: "Zuid-Afrika", lat: -33.9347, lon: 18.4775, decMin: -51, decMax: -41, plates: 1512, status: "AC Voltooid (Gill & Kapteyn)", director: "Sir David Gill", type: "CDC", role: "Zone -41° tot -51°. David Gill fotografeerde hier in 1882 de Grote Komeet (startschot astrofotografie) en werkte 13 jaar samen met Kapteyn in Groningen!" },
+    { id: 17, code: "SYD", name: "Sydney Observatory", country: "Australië", lat: -33.8594, lon: 151.2047, decMin: -64, decMax: -52, plates: 1400, status: "AC Voltooid (1964)", director: "H.C. Russell", type: "CDC", role: "Zone -52° tot -64° (Zuiderkruis & Carina-nevel)." },
+    { id: 18, code: "MEL", name: "Melbourne Observatory", country: "Australië", lat: -37.8297, lon: 144.9756, decMin: -90, decMax: -65, plates: 1149, status: "Voltooid door Sydney", director: "R.L.J. Ellery / P. Baracchi", type: "CDC", role: "Zuidpool-zone (-65° tot -90°, Magelhaense Wolken)." },
+
+    // Extra Historische & Geodetische Ankerpunten (1887–1889: Van Gogh, Nederland & Michelson-Morley)
+    { id: 19, code: "VGP", name: "Montmartre, Rue Lepic 54 (Van Gogh 1887)", country: "Frankrijk", lat: 48.8856, lon: 2.3347, decMin: 18, decMax: 24, plates: 0, status: "Atelier Vincent & Theo (1887)", director: "Vincent van Gogh", type: "VG", role: "In april 1887 woonde en schilderde Vincent van Gogh hier op slechts 4,2 km van het Observatoire de Paris waar op dat moment het Carte du Ciel congres plaatsvond." },
+    { id: 20, code: "VGA", name: "Arles, Place Lamartine (Rhône 1888)", country: "Frankrijk", lat: 43.6819, lon: 4.6305, decMin: 11, decMax: 24, plates: 0, status: "Sterrennacht boven de Rhône (Sept 1888)", director: "Vincent van Gogh", type: "VG", role: "Locatie waar Van Gogh in september 1888 'De Sterrennacht boven de Rhône' (Grote Beer / Ursa Major richting het noorden) precies op het canvas uitlijnde." },
+    { id: 21, code: "VGS", name: "Saint-Rémy (Saint-Paul-de-Mausole 1889)", country: "Frankrijk", lat: 43.7864, lon: 4.8457, decMin: 11, decMax: 24, plates: 0, status: "De Sterrennacht (22 Juli 1889, 03:00 LMT)", director: "Vincent van Gogh", type: "VG", role: "Geodetisch hoofdanker (43.7864°N, 4.8457°E). Hier roteerde Van Gogh het dorp over Δθ = +45.09° (van 26.21° NNO naar 71.30° EOT) onder Venus, de Hyaden en de Maansikkel." },
+    { id: 22, code: "GRO", name: "Groningen (Astronomisch Laboratorium)", country: "Nederland", lat: 53.2194, lon: 6.5665, decMin: -51, decMax: -19, plates: 454875, status: "Cape Photographic Durchmusterung", director: "Prof. Jacobus C. Kapteyn", type: "NLBE", role: "Wereldberoemd 'sterrenkundig laboratorium zonder telescoop'. Kapteyn mat hier de glasplaten van David Gill (Kaapstad) op en ontdekte de rotatie en sterrenstromen van de Melkweg." },
+    { id: 23, code: "LEI", name: "Sterrewacht Leiden (Congreslid 1887)", country: "Nederland", lat: 52.1550, lon: 4.4839, decMin: 18, decMax: 39, plates: 0, status: "Bestuurslid Comité Permanent 1887", director: "Prof. H.G. van de Sande Bakhuyzen", type: "NLBE", role: "Vertegenwoordigde Nederland op het Astrographisch Congres in Parijs (1887) en leverde fundamentele bijdragen aan de geodetische plaatvereffening." },
+    { id: 24, code: "CLE", name: "Cleveland (Michelson-Morley 1887)", country: "VS", lat: 41.5042, lon: -81.6084, decMin: 32, decMax: 46, plates: 0, status: "Interferometer Ether-Experiment (Juli 1887)", director: "A.A. Michelson & E.W. Morley", type: "NLBE", role: "In hetzelfde jaar 1887 bewezen Michelson en Morley met hun interferometer dat de lichtsnelheid constant is (geen ether-wind), de kiem voor Einsteins relativiteitstheorie." }
+];
+
+// ============================================================================
+// 2. ASTROGRAPHIC GLASS PLATE TARGETS (HYADEN / TAURUS / VAN GOGH SKY 1889)
+// ============================================================================
+// Plaatcentrum gekalibreerd op de Bordeaux/Parijs Carte du Ciel grenszone (RA 04h 30m, Dec +16.5°)
+// inclusief echte Hipparcos/Gaia eigenbewegingen (pmRA, pmDec in mas/jaar) en Van Gogh 1889 objecten.
+const PLATE_STARS = [
+    { id: "S01", name: "Aldebaran (α Tauri)", mag: 0.87, xMm: -14.20, yMm: 4.50, raH: 4, raM: 35, raS: 55.2, decD: 16, decM: 30, decS: 33, pmRa: 63.45, pmDec: -188.94, vgRole: "Hoofdanker Hyaden V-vorm", isSolarSys: false, isDust: false },
+    { id: "S02", name: "Ain (ε Tauri / Hyaden)", mag: 3.53, xMm: 8.40, yMm: 29.10, raH: 4, raM: 28, raS: 37.0, decD: 19, decM: 10, decS: 50, pmRa: 107.23, pmDec: -36.77, vgRole: "Noordelijke punt Hyaden-V", isSolarSys: false, isDust: false },
+    { id: "S03", name: "Hyadum I (γ Tauri)", mag: 3.65, xMm: 24.80, yMm: -11.30, raH: 4, raM: 19, raS: 47.6, decD: 15, decM: 37, decS: 40, pmRa: 115.29, pmDec: -23.86, vgRole: "Punt van de V-formatie (Stier)", isSolarSys: false, isDust: false },
+    { id: "S04", name: "Hyadum II (δ¹ Tauri)", mag: 3.77, xMm: 18.10, yMm: 12.60, raH: 4, raM: 22, raS: 56.1, decD: 17, decM: 32, decS: 33, pmRa: 107.75, pmDec: -28.94, vgRole: "Westelijke arm Hyaden", isSolarSys: false, isDust: false },
+    { id: "S05", name: "θ² Tauri (Dubbelster Hyaden)", mag: 3.40, xMm: 5.20, yMm: -6.80, raH: 4, raM: 28, raS: 39.7, decD: 15, decM: 52, decS: 15, pmRa: 103.07, pmDec: -18.60, vgRole: "Heldere kernpaar Hyaden", isSolarSys: false, isDust: false },
+    { id: "S06", name: "θ¹ Tauri (Hyaden)", mag: 3.84, xMm: 5.60, yMm: -1.40, raH: 4, raM: 28, raS: 34.4, decD: 15, decM: 57, decS: 44, pmRa: 105.12, pmDec: -15.40, vgRole: "Begeleider van θ² Tauri", isSolarSys: false, isDust: false },
+    { id: "S07", name: "σ² Tauri (Oostelijke Hyaden)", mag: 4.67, xMm: -26.50, yMm: -5.90, raH: 4, raM: 39, raS: 16.5, decD: 15, decM: 55, decS: 5, pmRa: 82.50, pmDec: -19.20, vgRole: "Linkerflank boven horizon", isSolarSys: false, isDust: false },
+    { id: "S08", name: "71 Tauri (Hyaden Cluster)", mag: 4.48, xMm: 11.90, yMm: -14.80, raH: 4, raM: 26, raS: 20.7, decD: 15, decM: 37, decS: 6, pmRa: 112.40, pmDec: -25.10, vgRole: "Zuidelijke flank V-cluster", isSolarSys: false, isDust: false },
+    { id: "S09", name: "TYC 1266-481-1 (CdC Plaatster #142)", mag: 8.40, xMm: -31.20, yMm: 22.40, raH: 4, raM: 41, raS: 12.1, decD: 18, decM: 14, decS: 19, pmRa: 14.20, pmDec: -8.10, vgRole: "Carte du Ciel referentiester mag 8.4", isSolarSys: false, isDust: false },
+    { id: "S10", name: "TYC 1265-912-1 (CdC Plaatster #289)", mag: 9.85, xMm: -4.10, yMm: 38.20, raH: 4, raM: 31, raS: 4.8, decD: 19, decM: 49, decS: 12, pmRa: -6.40, pmDec: -12.30, vgRole: "Astrographic Catalogue veldster", isSolarSys: false, isDust: false },
+    { id: "S11", name: "Venus (Ochtendster 22 Juli 1889)", mag: -4.20, xMm: -38.50, yMm: -22.00, raH: 5, raM: 2, raS: 18.0, decD: 20, decM: 42, decS: 0, pmRa: 340.00, pmDec: 85.00, vgRole: "Wiskundige spil (71.30° EOT, Δθ=+45.09°)", isSolarSys: true, isDust: false },
+    { id: "S12", name: "Afnemende Maansikkel (22 Juli 1889)", mag: -8.50, xMm: 36.00, yMm: 34.50, raH: 3, raM: 54, raS: 10.0, decD: 21, decM: 18, decS: 0, pmRa: 520.00, pmDec: 140.00, vgRole: "Rechtsboven in Sterrennacht (18.6° van Venus)", isSolarSys: true, isDust: false }
+];
+
+// ============================================================================
+// 3. STATE MANAGEMENT
+// ============================================================================
+let state = {
+    globalEpoch: 1887.3,
+    mapProjection: 'equirectangular', // 'equirectangular' | 'orthographic'
+    showDeclinationBands: true,
+    showGeodeticLinks: true,
+    stationFilter: 'ALL',
+    selectedStation: STATIONS_1887[6], // Parijs default
+    hoveredStation: null,
+    globeRotLon: -10,
+    globeRotLat: 28,
+    isDraggingGlobe: false,
+    dragStartX: 0,
+    dragStartY: 0,
+
+    // Right viewport
+    rightMode: 'plate', // 'plate' | 'vangogh'
+    tripleExposure: true,
+    plateNegative: true,
+    selectedStar: PLATE_STARS[0], // Aldebaran
+    cursorMmX: -14.20,
+    cursorMmY: +4.50,
+    vgRotationAngle: 45.09,
+    properMotionYear: 1889.5,
+    measurementLog: []
+};
+
+// ============================================================================
+// 4. GEODETIC & ASTROMETRIC CORE FORMULAS
+// ============================================================================
+const DEG2RAD = Math.PI / 180;
+const RAD2DEG = 180 / Math.PI;
+
+function calcHaversineKm(lat1, lon1, lat2, lon2) {
+    const R = 6371.0;
+    const dLat = (lat2 - lat1) * DEG2RAD;
+    const dLon = (lon2 - lon1) * DEG2RAD;
+    const a = Math.sin(dLat / 2) ** 2 +
+              Math.cos(lat1 * DEG2RAD) * Math.cos(lat2 * DEG2RAD) * Math.sin(dLon / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function calcAzimuthDeg(lat1, lon1, lat2, lon2) {
+    const phi1 = lat1 * DEG2RAD;
+    const phi2 = lat2 * DEG2RAD;
+    const dLon = (lon2 - lon1) * DEG2RAD;
+    const y = Math.sin(dLon) * Math.cos(phi2);
+    const x = Math.cos(phi1) * Math.sin(phi2) - Math.sin(phi1) * Math.cos(phi2) * Math.cos(dLon);
+    return (Math.atan2(y, x) * RAD2DEG + 360) % 360;
+}
+
+// Turner (1893) 6-Parameter Plate Constant Reduction (1 mm = 60 arcsec = 1 arcmin)
+function mmToRaDec1887(xMm, yMm, centerRaDeg = 67.5, centerDecDeg = 16.5) {
+    // Standaard astrograaf schaal: 1 mm = 60" = 1/60 graad
+    const scaleDegPerMm = 1.0 / 60.0;
+    // Affiene termen A, B, C, D, E, F inclusief kleine plaatrotatie (0.0012 rad)
+    const A = -scaleDegPerMm / Math.cos(centerDecDeg * DEG2RAD);
+    const B = 0.00002;
+    const D = -0.00002;
+    const E = scaleDegPerMm;
+
+    const raDeg = centerRaDeg + (A * xMm + B * yMm);
+    const decDeg = centerDecDeg + (D * xMm + E * yMm);
+    return { raDeg, decDeg };
+}
+
+function formatRaHMS(raDeg) {
+    const totalHours = ((raDeg % 360) + 360) % 360 / 15.0;
+    const h = Math.floor(totalHours);
+    const mFloat = (totalHours - h) * 60;
+    const m = Math.floor(mFloat);
+    const s = ((mFloat - m) * 60).toFixed(1);
+    return `${String(h).padStart(2, '0')}h ${String(m).padStart(2, '0')}m ${String(s).padStart(4, '0')}s`;
+}
+
+function formatDecDMS(decDeg) {
+    const sign = decDeg >= 0 ? '+' : '-';
+    const absDec = Math.abs(decDeg);
+    const d = Math.floor(absDec);
+    const mFloat = (absDec - d) * 60;
+    const m = Math.floor(mFloat);
+    const s = Math.round((mFloat - m) * 60);
+    return `${sign}${String(d).padStart(2, '0')}° ${String(m).padStart(2, '0')}′ ${String(s).padStart(2, '0')}″`;
+}
+
+// ============================================================================
+// 5. LEFT VIEWPORT RENDERER: WORLD MAP, 18 DECLINATION BANDS & ORTHO GLOBE
+// ============================================================================
+const worldCanvas = document.getElementById('worldMapCanvas');
+const worldCtx = worldCanvas.getContext('2d');
+
+// Simplified continental outlines [lon, lat] for crisp geodetic rendering
+const CONTINENT_POLYGONS = [
+    // Europe
+    [[-9,36],[-9,43],[-2,43],[-5,48],[2,51],[5,53],[10,55],[12,57],[20,60],[28,70],[40,68],[50,55],[40,45],[28,41],[24,38],[15,38],[12,42],[5,43],[3,42],[-2,36],[-9,36]],
+    // UK & Ireland
+    [[-6,50],[-5,54],[-2,58],[1,53],[1,51],[-6,50]],
+    // Africa
+    [[-17,15],[-6,36],[10,37],[32,31],[43,12],[51,12],[40,-10],[35,-25],[18,-35],[12,-17],[9,4],[-8,5],[-17,15]],
+    // Asia & India & East Asia
+    [[28,41],[45,40],[60,55],[100,70],[140,60],[142,45],[122,30],[105,10],[98,16],[88,22],[77,8],[68,24],[55,24],[48,30],[35,32],[28,41]],
+    // Australia
+    [[114,-22],[130,-12],[142,-11],[153,-28],[147,-38],[130,-32],[115,-34],[114,-22]],
+    // North America
+    [[-165,62],[-130,55],[-124,40],[-110,23],[-97,19],[-82,9],[-80,25],[-75,35],[-67,45],[-55,52],[-75,62],[-120,70],[-165,62]],
+    // South America
+    [[-80,9],[-62,10],[-35,-6],[-40,-22],[-55,-35],[-68,-54],[-75,-45],[-71,-18],[-81,-5],[-80,9]]
+];
+
+function projectGeoPoint(lat, lon, w, h) {
+    if (state.mapProjection === 'equirectangular') {
+        const x = ((lon + 180) / 360) * w;
+        const y = ((90 - lat) / 180) * h;
+        return { x, y, visible: true };
+    } else {
+        // 3D Orthographic Globe Projection
+        const R = Math.min(w, h) * 0.42;
+        const cx = w * 0.5;
+        const cy = h * 0.5;
+        const phi = lat * DEG2RAD;
+        const lam = lon * DEG2RAD;
+        const phi0 = state.globeRotLat * DEG2RAD;
+        const lam0 = state.globeRotLon * DEG2RAD;
+
+        const cosC = Math.sin(phi0) * Math.sin(phi) + Math.cos(phi0) * Math.cos(phi) * Math.cos(lam - lam0);
+        if (cosC < 0) return { x: 0, y: 0, visible: false };
+
+        const x = cx + R * Math.cos(phi) * Math.sin(lam - lam0);
+        const y = cy - R * (Math.cos(phi0) * Math.sin(phi) - Math.sin(phi0) * Math.cos(phi) * Math.cos(lam - lam0));
+        return { x, y, visible: true };
+    }
+}
+
+function getFilteredStations() {
+    return STATIONS_1887.filter(st => {
+        if (state.stationFilter === 'NORTH') return st.lat >= 0;
+        if (state.stationFilter === 'SOUTH') return st.lat < 0;
+        if (state.stationFilter === 'VGNL') return st.type === 'VG' || st.type === 'NLBE' || st.code === 'PAR' || st.code === 'BOR';
+        return true;
+    });
+}
+
+function drawWorldMap() {
+    const rect = worldCanvas.parentElement.getBoundingClientRect();
+    if (worldCanvas.width !== Math.floor(rect.width) || worldCanvas.height !== Math.floor(rect.height)) {
+        worldCanvas.width = Math.floor(rect.width);
+        worldCanvas.height = Math.floor(rect.height);
+    }
+    const w = worldCanvas.width;
+    const h = worldCanvas.height;
+
+    worldCtx.clearRect(0, 0, w, h);
+
+    // Background
+    worldCtx.fillStyle = '#05080f';
+    worldCtx.fillRect(0, 0, w, h);
+
+    // If Orthographic Globe: Draw Sphere Rim
+    if (state.mapProjection === 'orthographic') {
+        const R = Math.min(w, h) * 0.42;
+        const grad = worldCtx.createRadialGradient(w * 0.45, h * 0.42, R * 0.1, w * 0.5, h * 0.5, R);
+        grad.addColorStop(0, '#0f1b2e');
+        grad.addColorStop(1, '#060a12');
+        worldCtx.fillStyle = grad;
+        worldCtx.beginPath();
+        worldCtx.arc(w * 0.5, h * 0.5, R, 0, Math.PI * 2);
+        worldCtx.fill();
+        worldCtx.strokeStyle = '#00f0ff';
+        worldCtx.lineWidth = 1.5;
+        worldCtx.stroke();
+    }
+
+    // 1. Draw 18 Carte du Ciel Declination Zones (+90° to -90°)
+    if (state.showDeclinationBands) {
+        const cdcZones = STATIONS_1887.slice(0, 18);
+        cdcZones.forEach((z, idx) => {
+            const isSelected = state.selectedStation && state.selectedStation.id === z.id;
+            if (state.mapProjection === 'equirectangular') {
+                const yTop = ((90 - z.decMax) / 180) * h;
+                const yBot = ((90 - z.decMin) / 180) * h;
+                worldCtx.fillStyle = isSelected
+                    ? 'rgba(0, 240, 255, 0.16)'
+                    : (idx % 2 === 0 ? 'rgba(0, 240, 255, 0.03)' : 'rgba(255, 215, 0, 0.025)');
+                worldCtx.fillRect(0, yTop, w, yBot - yTop);
+
+                worldCtx.strokeStyle = isSelected ? 'rgba(0, 240, 255, 0.6)' : 'rgba(31, 48, 77, 0.55)';
+                worldCtx.lineWidth = isSelected ? 1.2 : 0.6;
+                worldCtx.beginPath();
+                worldCtx.moveTo(0, yTop);
+                worldCtx.lineTo(w, yTop);
+                worldCtx.stroke();
+
+                // Right-side Declination Band Tag
+                worldCtx.fillStyle = isSelected ? '#00f0ff' : '#526887';
+                worldCtx.font = '10px "Courier New", monospace';
+                worldCtx.fillText(`${z.code} [${z.decMax >= 0 ? '+' : ''}${z.decMax}°..${z.decMin >= 0 ? '+' : ''}${z.decMin}°]`, w - 125, (yTop + yBot) / 2 + 3);
+            }
+        });
+    }
+
+    // 2. Draw Graticule (Meridians & Parallels every 30°)
+    worldCtx.strokeStyle = 'rgba(0, 240, 255, 0.12)';
+    worldCtx.lineWidth = 0.7;
+    for (let lon = -150; lon <= 180; lon += 30) {
+        worldCtx.beginPath();
+        let started = false;
+        for (let lat = -85; lat <= 85; lat += 5) {
+            const p = projectGeoPoint(lat, lon, w, h);
+            if (p.visible) {
+                if (!started) { worldCtx.moveTo(p.x, p.y); started = true; }
+                else worldCtx.lineTo(p.x, p.y);
+            } else {
+                started = false;
+            }
+        }
+        worldCtx.stroke();
+    }
+    for (let lat = -60; lat <= 60; lat += 30) {
+        worldCtx.beginPath();
+        let started = false;
+        for (let lon = -180; lon <= 180; lon += 5) {
+            const p = projectGeoPoint(lat, lon, w, h);
+            if (p.visible) {
+                if (!started) { worldCtx.moveTo(p.x, p.y); started = true; }
+                else worldCtx.lineTo(p.x, p.y);
+            } else {
+                started = false;
+            }
+        }
+        worldCtx.stroke();
+    }
+
+    // 3. Draw Continental Outlines
+    worldCtx.strokeStyle = 'rgba(127, 148, 176, 0.45)';
+    worldCtx.fillStyle = 'rgba(18, 27, 45, 0.65)';
+    worldCtx.lineWidth = 1.1;
+    CONTINENT_POLYGONS.forEach(poly => {
+        worldCtx.beginPath();
+        let started = false;
+        poly.forEach(([lon, lat]) => {
+            const p = projectGeoPoint(lat, lon, w, h);
+            if (p.visible) {
+                if (!started) { worldCtx.moveTo(p.x, p.y); started = true; }
+                else worldCtx.lineTo(p.x, p.y);
+            }
+        });
+        if (started) {
+            worldCtx.closePath();
+            worldCtx.fill();
+            worldCtx.stroke();
+        }
+    });
+
+    // 4. Draw Geodetic & Scientific Links (Parijs 1887 Hub, Kapteyn Groningen <-> Kaapstad, Parijs <-> Saint-Rémy)
+    if (state.showGeodeticLinks) {
+        const paris = STATIONS_1887.find(s => s.code === 'PAR');
+        const stRemy = STATIONS_1887.find(s => s.code === 'VGS');
+        const groningen = STATIONS_1887.find(s => s.code === 'GRO');
+        const cape = STATIONS_1887.find(s => s.code === 'CAP');
+        const ukkel = STATIONS_1887.find(s => s.code === 'UCC');
+        const potsdam = STATIONS_1887.find(s => s.code === 'POT');
+
+        // Helper for geodesic lines
+        function drawGeodesicLink(stA, stB, color, dashed = true) {
+            const pA = projectGeoPoint(stA.lat, stA.lon, w, h);
+            const pB = projectGeoPoint(stB.lat, stB.lon, w, h);
+            if (!pA.visible || !pB.visible) return;
+            worldCtx.save();
+            worldCtx.strokeStyle = color;
+            worldCtx.lineWidth = 1.4;
+            if (dashed) worldCtx.setLineDash([4, 4]);
+            worldCtx.beginPath();
+            worldCtx.moveTo(pA.x, pA.y);
+            worldCtx.lineTo(pB.x, pB.y);
+            worldCtx.stroke();
+            worldCtx.restore();
+        }
+
+        // Hub lines from Paris (Mouchez 1887) to all 18 observatories
+        STATIONS_1887.slice(0, 18).forEach(obs => {
+            if (obs.code !== 'PAR') {
+                drawGeodesicLink(paris, obs, 'rgba(0, 240, 255, 0.22)', true);
+            }
+        });
+
+        // Highlighted historical links:
+        // Kapteyn (Groningen) <-> Gill (Kaap de Goede Hoop): 454,875 Southern Stars measured in Groningen!
+        drawGeodesicLink(groningen, cape, '#ffd700', false);
+        // Van Gogh Paris (1887) <-> Saint-Rémy (1889)
+        drawGeodesicLink(paris, stRemy, '#ff0055', false);
+        // Ukkel <-> Potsdam
+        drawGeodesicLink(ukkel, potsdam, '#00ff88', false);
+    }
+
+    // 5. Plot Stations & Historical Anchors
+    const stations = getFilteredStations();
+    stations.forEach(st => {
+        const p = projectGeoPoint(st.lat, st.lon, w, h);
+        if (!p.visible) return;
+
+        st._screenX = p.x;
+        st._screenY = p.y;
+
+        const isSelected = state.selectedStation && state.selectedStation.id === st.id;
+        const isHovered = state.hoveredStation && state.hoveredStation.id === st.id;
+
+        let color = '#00f0ff';
+        if (st.type === 'VG') color = '#ff0055';
+        else if (st.type === 'NLBE') color = '#ffd700';
+
+        // Outer Pulse Ring for Selected/Hovered
+        if (isSelected || isHovered) {
+            worldCtx.beginPath();
+            worldCtx.arc(p.x, p.y, isSelected ? 11 : 8, 0, Math.PI * 2);
+            worldCtx.strokeStyle = color;
+            worldCtx.lineWidth = 1.8;
+            worldCtx.stroke();
+        }
+
+        // Station Node
+        worldCtx.beginPath();
+        worldCtx.arc(p.x, p.y, isSelected ? 5.5 : 4, 0, Math.PI * 2);
+        worldCtx.fillStyle = color;
+        worldCtx.fill();
+        worldCtx.strokeStyle = '#05080f';
+        worldCtx.lineWidth = 1.2;
+        worldCtx.stroke();
+
+        // Station Code Label
+        worldCtx.fillStyle = isSelected ? '#ffffff' : color;
+        worldCtx.font = isSelected ? 'bold 11px "Courier New", monospace' : '10px "Courier New", monospace';
+        worldCtx.fillText(st.code, p.x + 7, p.y + 3);
+    });
+}
+
+// ============================================================================
+// 6. RIGHT VIEWPORT RENDERER: 1887 GLASS PLATE MICROMETER & VAN GOGH 1889
+// ============================================================================
+const plateCanvas = document.getElementById('plateCanvas');
+const plateCtx = plateCanvas.getContext('2d');
+const loupeCanvas = document.getElementById('loupeCanvas');
+const loupeCtx = loupeCanvas.getContext('2d');
+
+function mmToCanvasXY(xMm, yMm, w, h) {
+    // Glasplaat is 120×120 mm zichtbaar meetveld (-60 mm tot +60 mm)
+    const cx = w * 0.5;
+    const cy = h * 0.5;
+    const scale = Math.min(w, h) / 110;
+    return {
+        x: cx + xMm * scale,
+        y: cy - yMm * scale,
+        scale
+    };
+}
+
+function canvasXYToMm(px, py, w, h) {
+    const cx = w * 0.5;
+    const cy = h * 0.5;
+    const scale = Math.min(w, h) / 110;
+    return {
+        xMm: (px - cx) / scale,
+        yMm: (cy - py) / scale
+    };
+}
+
+function drawRightViewport() {
+    const rect = plateCanvas.parentElement.getBoundingClientRect();
+    if (plateCanvas.width !== Math.floor(rect.width) || plateCanvas.height !== Math.floor(rect.height)) {
+        plateCanvas.width = Math.floor(rect.width);
+        plateCanvas.height = Math.floor(rect.height);
+    }
+    const w = plateCanvas.width;
+    const h = plateCanvas.height;
+
+    if (state.rightMode === 'plate') {
+        drawGlassPlateMicrometer(plateCtx, w, h);
+    } else {
+        drawVanGoghRotationSimulator(plateCtx, w, h);
+    }
+
+    drawMicroscopeLoupe();
+}
+
+function drawGlassPlateMicrometer(ctx, w, h) {
+    const isNeg = state.plateNegative;
+
+    // 1. Glass Plate Background (Gelatin Silver Bromide Emulsion)
+    if (isNeg) {
+        const grad = ctx.createRadialGradient(w * 0.5, h * 0.5, 20, w * 0.5, h * 0.5, Math.max(w, h) * 0.65);
+        grad.addColorStop(0, '#e8e4d5');
+        grad.addColorStop(1, '#c7c0aa');
+        ctx.fillStyle = grad;
+    } else {
+        const grad = ctx.createRadialGradient(w * 0.5, h * 0.5, 20, w * 0.5, h * 0.5, Math.max(w, h) * 0.65);
+        grad.addColorStop(0, '#0a1324');
+        grad.addColorStop(1, '#040811');
+        ctx.fillStyle = grad;
+    }
+    ctx.fillRect(0, 0, w, h);
+
+    // 2. Gautier Réseau Grid (27x27 lines at exact 5 mm intervals)
+    ctx.strokeStyle = isNeg ? 'rgba(60, 55, 45, 0.32)' : 'rgba(0, 240, 255, 0.22)';
+    ctx.lineWidth = 0.8;
+
+    for (let mm = -50; mm <= 50; mm += 5) {
+        const p1 = mmToCanvasXY(mm, -50, w, h);
+        const p2 = mmToCanvasXY(mm, 50, w, h);
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.stroke();
+
+        const q1 = mmToCanvasXY(-50, mm, w, h);
+        const q2 = mmToCanvasXY(50, mm, w, h);
+        ctx.beginPath();
+        ctx.moveTo(q1.x, q1.y);
+        ctx.lineTo(q2.x, q2.y);
+        ctx.stroke();
+
+        // Millimeter labels along axes
+        if (mm % 10 === 0) {
+            ctx.fillStyle = isNeg ? '#4a4336' : '#00f0ff';
+            ctx.font = '9px "Courier New", monospace';
+            ctx.fillText(`${mm > 0 ? '+' : ''}${mm}`, p1.x - 8, h - 6);
+            ctx.fillText(`${mm > 0 ? '+' : ''}${mm}`, 6, q1.y + 3);
+        }
+    }
+
+    // Center Optical Axis Cross (0,0 mm)
+    const center = mmToCanvasXY(0, 0, w, h);
+    ctx.strokeStyle = isNeg ? 'rgba(180, 30, 30, 0.55)' : 'rgba(255, 215, 0, 0.5)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(center.x - 10, center.y);
+    ctx.lineTo(center.x + 10, center.y);
+    ctx.moveTo(center.x, center.y - 10);
+    ctx.lineTo(center.x, center.y + 10);
+    ctx.stroke();
+
+    // 3. Draw Hyades V-Asterism Connection Lines
+    const hyadesIds = ["S01", "S06", "S05", "S03", "S04", "S02"];
+    ctx.save();
+    ctx.strokeStyle = isNeg ? 'rgba(30, 90, 160, 0.35)' : 'rgba(0, 240, 255, 0.35)';
+    ctx.setLineDash([4, 4]);
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    hyadesIds.forEach((id, i) => {
+        const st = PLATE_STARS.find(s => s.id === id);
+        if (st) {
+            const p = mmToCanvasXY(st.xMm, st.yMm, w, h);
+            if (i === 0) ctx.moveTo(p.x, p.y);
+            else ctx.lineTo(p.x, p.y);
+        }
+    });
+    ctx.stroke();
+    ctx.restore();
+
+    // 4. Draw Stars (with authentic 3-exposure triangle asterism of Carte du Ciel!)
+    PLATE_STARS.forEach(star => {
+        // Apply epoch offset if year != 1887
+        const dtYears = state.properMotionYear - 1887.3;
+        const dxMm = (star.pmRa * dtYears) / 60000.0; // scaled for visual clarity on plate
+        const dyMm = (star.pmDec * dtYears) / 60000.0;
+
+        const p = mmToCanvasXY(star.xMm + dxMm * 8, star.yMm + dyMm * 8, w, h);
+        star._px = p.x;
+        star._py = p.y;
+
+        const baseRadius = Math.max(1.6, 5.5 - star.mag * 0.42);
+        const dotColor = star.isDust
+            ? (isNeg ? '#7a5520' : '#ff0055')
+            : (isNeg ? '#141210' : (star.isSolarSys ? '#ffd700' : '#ffffff'));
+
+        if (state.tripleExposure && !star.isDust) {
+            // Triple exposure triangle: 3 microscopic dots separated by ~3.5 px
+            const offsets = [
+                { dx: 0, dy: -3.2 },
+                { dx: -2.9, dy: 2.2 },
+                { dx: +2.9, dy: 2.2 }
+            ];
+            offsets.forEach(off => {
+                ctx.beginPath();
+                ctx.arc(p.x + off.dx, p.y + off.dy, baseRadius * 0.72, 0, Math.PI * 2);
+                ctx.fillStyle = dotColor;
+                ctx.fill();
+            });
+        } else {
+            // Single exposure or dust particle
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, baseRadius, 0, Math.PI * 2);
+            ctx.fillStyle = dotColor;
+            ctx.fill();
+        }
+
+        // Highlight circle if selected
+        if (state.selectedStar && state.selectedStar.id === star.id) {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, baseRadius + 7, 0, Math.PI * 2);
+            ctx.strokeStyle = '#ff0055';
+            ctx.lineWidth = 1.6;
+            ctx.stroke();
+        }
+
+        // Star Label
+        ctx.fillStyle = isNeg ? '#1e293b' : '#00f0ff';
+        ctx.font = '10px "Courier New", monospace';
+        ctx.fillText(star.name.split(' ')[0], p.x + 8, p.y - 5);
+    });
+
+    // 5. Spider-Silk Micrometer Crosshair at Current Measurement Position
+    const curP = mmToCanvasXY(state.cursorMmX, state.cursorMmY, w, h);
+    ctx.save();
+    ctx.strokeStyle = '#ff0055';
+    ctx.lineWidth = 1.1;
+    ctx.beginPath();
+    ctx.moveTo(curP.x - 18, curP.y);
+    ctx.lineTo(curP.x + 18, curP.y);
+    ctx.moveTo(curP.x, curP.y - 18);
+    ctx.lineTo(curP.x, curP.y + 18);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(curP.x, curP.y, 10, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+}
+
+function drawVanGoghRotationSimulator(ctx, w, h) {
+    // Dark Starry Night Sky + Alpilles 3D Horizon & +45.09° Rotation Vector
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, h);
+    skyGrad.addColorStop(0, '#060c1f');
+    skyGrad.addColorStop(0.65, '#0f2547');
+    skyGrad.addColorStop(1, '#1b334f');
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, w, h);
+
+    // Expressive Van Gogh Swirl Streamlines in Background
+    ctx.save();
+    ctx.strokeStyle = 'rgba(0, 240, 255, 0.14)';
+    ctx.lineWidth = 2;
+    for (let r = 15; r < 95; r += 12) {
+        ctx.beginPath();
+        ctx.arc(w * 0.45, h * 0.36, r, 0.2, Math.PI * 1.45);
+        ctx.stroke();
+    }
+    ctx.restore();
+
+    // Horizon Line & Alpilles 6.4° Cut-Off Profile
+    const horizonY = h * 0.78;
+    ctx.strokeStyle = 'rgba(0, 255, 136, 0.45)';
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(0, horizonY);
+    ctx.lineTo(w, horizonY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#00ff88';
+    ctx.font = '10px "Courier New", monospace';
+    ctx.fillText('Wiskundige Horizon (0.0°)', 10, horizonY - 4);
+
+    // Alpilles Mountain Ridge Profile (+6.4° to +2.13° EOT)
+    ctx.fillStyle = '#0c1626';
+    ctx.strokeStyle = '#00f0ff';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(0, h);
+    ctx.lineTo(0, horizonY - 22);
+    ctx.quadraticCurveTo(w * 0.28, horizonY - 48, w * 0.55, horizonY - 28);
+    ctx.quadraticCurveTo(w * 0.78, horizonY - 42, w, horizonY - 15);
+    ctx.lineTo(w, h);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#00f0ff';
+    ctx.fillText('Alpilles Kam (α = 6.4° → 2.13° EOT)', w * 0.52, horizonY - 32);
+
+    // Rotated Saint-Rémy Church Spire (26.21° NNO rotated by state.vgRotationAngle to 71.30° EOT)
+    const rotProgress = state.vgRotationAngle / 45.09;
+    const spireX = w * 0.18 + rotProgress * (w * 0.30);
+    const spireBaseY = horizonY + 12;
+
+    // Draw Ghost Original Unrotated Spire at 26.21° NNO
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(w * 0.18 - 10, spireBaseY);
+    ctx.lineTo(w * 0.18, spireBaseY - 70);
+    ctx.lineTo(w * 0.18 + 10, spireBaseY);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+    ctx.fillText('Werkelijk Dorp (26.21° NNO)', w * 0.06, spireBaseY + 18);
+    ctx.restore();
+
+    // Draw Rotated Église Saint-Martin Spire
+    ctx.fillStyle = '#1e293b';
+    ctx.strokeStyle = '#ff0055';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(spireX - 12, spireBaseY);
+    ctx.lineTo(spireX, spireBaseY - 95); // Vertical exaggeration v_y = -12.4 cm
+    ctx.lineTo(spireX + 12, spireBaseY);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#ff0055';
+    ctx.font = 'bold 10px "Courier New", monospace';
+    ctx.fillText(`Saint-Martin Spits (θ=${(26.21 + Number(state.vgRotationAngle)).toFixed(2)}°)`, spireX - 55, spireBaseY - 102);
+
+    // Cypress Tree Foreground Obstruction (Left, β = 50.2°)
+    ctx.fillStyle = '#07120e';
+    ctx.strokeStyle = '#00ff88';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(w * 0.12 - 22, h);
+    ctx.quadraticCurveTo(w * 0.10, h * 0.45, w * 0.13, h * 0.08);
+    ctx.quadraticCurveTo(w * 0.17, h * 0.45, w * 0.12 + 24, h);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#00ff88';
+    ctx.fillText('Cipres (β=50.2°)', w * 0.04, h * 0.18);
+
+    // Plot Celestial Objects & Proper Motion Vectors (1887 -> state.properMotionYear)
+    const dt = state.properMotionYear - 1887.3;
+    PLATE_STARS.forEach(star => {
+        if (star.isDust) return;
+        const p1887 = mmToCanvasXY(star.xMm, star.yMm, w, h * 0.82);
+        // Proper motion displacement scaled so vectors are clearly inspectable
+        const dx = (star.pmRa * dt) * 0.0018;
+        const dy = -(star.pmDec * dt) * 0.0018;
+        const px = p1887.x + dx;
+        const py = p1887.y + dy;
+
+        star._px = px;
+        star._py = py;
+
+        // Draw Proper Motion Vector Arrow from 1887 to current epoch
+        if (Math.abs(dt) > 1 && !star.isSolarSys) {
+            ctx.strokeStyle = '#00ff88';
+            ctx.lineWidth = 1.3;
+            ctx.beginPath();
+            ctx.moveTo(p1887.x, p1887.y);
+            ctx.lineTo(px, py);
+            ctx.stroke();
+        }
+
+        // Glow Halo for Venus & Crescent Moon
+        if (star.isSolarSys) {
+            const halo = ctx.createRadialGradient(px, py, 2, px, py, 24);
+            halo.addColorStop(0, 'rgba(255, 215, 0, 0.95)');
+            halo.addColorStop(0.5, 'rgba(255, 215, 0, 0.35)');
+            halo.addColorStop(1, 'rgba(255, 215, 0, 0)');
+            ctx.fillStyle = halo;
+            ctx.beginPath();
+            ctx.arc(px, py, 24, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        ctx.beginPath();
+        ctx.arc(px, py, star.isSolarSys ? 6 : 3.2, 0, Math.PI * 2);
+        ctx.fillStyle = star.isSolarSys ? '#ffd700' : '#ffffff';
+        ctx.fill();
+
+        ctx.fillStyle = star.isSolarSys ? '#ffd700' : '#00f0ff';
+        ctx.font = '10px "Courier New", monospace';
+        ctx.fillText(star.name.split(' ')[0], px + 8, py + 3);
+    });
+}
+
+function drawMicroscopeLoupe() {
+    loupeCanvas.width = 112;
+    loupeCanvas.height = 112;
+    const lw = loupeCanvas.width;
+    const lh = loupeCanvas.height;
+
+    const isNeg = state.plateNegative && state.rightMode === 'plate';
+    loupeCtx.fillStyle = isNeg ? '#e6e0ce' : '#050a14';
+    loupeCtx.fillRect(0, 0, lw, lh);
+
+    // Fine Réseau sub-grid inside 10x Loupe
+    loupeCtx.strokeStyle = isNeg ? 'rgba(50,45,35,0.35)' : 'rgba(0,240,255,0.28)';
+    loupeCtx.lineWidth = 1;
+    loupeCtx.beginPath();
+    loupeCtx.moveTo(lw * 0.5, 0);
+    loupeCtx.lineTo(lw * 0.5, lh);
+    loupeCtx.moveTo(0, lh * 0.5);
+    loupeCtx.lineTo(lw, lh * 0.5);
+    loupeCtx.stroke();
+
+    const st = state.selectedStar;
+    if (st) {
+        const dotColor = st.isDust
+            ? '#ff0055'
+            : (isNeg ? '#111111' : '#ffd700');
+
+        if (state.tripleExposure && !st.isDust) {
+            // Magnified 3-exposure triangle (Carte du Ciel signature)
+            const pts = [
+                { x: lw * 0.5, y: lh * 0.5 - 12 },
+                { x: lw * 0.5 - 11, y: lh * 0.5 + 8 },
+                { x: lw * 0.5 + 11, y: lh * 0.5 + 8 }
+            ];
+            pts.forEach(pt => {
+                loupeCtx.beginPath();
+                loupeCtx.arc(pt.x, pt.y, 4.5, 0, Math.PI * 2);
+                loupeCtx.fillStyle = dotColor;
+                loupeCtx.fill();
+            });
+        } else {
+            loupeCtx.beginPath();
+            loupeCtx.arc(lw * 0.5, lh * 0.5, 6, 0, Math.PI * 2);
+            loupeCtx.fillStyle = dotColor;
+            loupeCtx.fill();
+        }
+    }
+
+    // Spider-silk red crosshair
+    loupeCtx.strokeStyle = '#ff0055';
+    loupeCtx.lineWidth = 0.9;
+    loupeCtx.beginPath();
+    loupeCtx.moveTo(0, lh * 0.5);
+    loupeCtx.lineTo(lw, lh * 0.5);
+    loupeCtx.moveTo(lw * 0.5, 0);
+    loupeCtx.lineTo(lw * 0.5, lh);
+    loupeCtx.stroke();
+}
+
+// ============================================================================
+// 7. UI UPDATES & INTERACTION HANDLERS
+// ============================================================================
+function showToast(msg) {
+    const el = document.getElementById('toastBanner');
+    el.textContent = msg;
+    el.style.display = 'block';
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(() => { el.style.display = 'none'; }, 3400);
+}
+
+function selectStation(station) {
+    state.selectedStation = station;
+
+    document.getElementById('hudStationName').textContent = station.name;
+    document.getElementById('hudZoneRange').textContent = `${station.decMax >= 0 ? '+' : ''}${station.decMax}° tot ${station.decMin >= 0 ? '+' : ''}${station.decMin}°`;
+    document.getElementById('hudCoords').textContent = `${Math.abs(station.lat).toFixed(4)}°${station.lat >= 0 ? 'N' : 'S'}, ${Math.abs(station.lon).toFixed(4)}°${station.lon >= 0 ? 'E' : 'W'}`;
+
+    document.getElementById('selBadge').textContent = `STATION #${String(station.id).padStart(2, '0')} • ${station.code}`;
+    document.getElementById('selTitle').textContent = `${station.name} (${station.country})`;
+    document.getElementById('selPlates').textContent = station.plates > 0 ? `${station.plates.toLocaleString('nl-NL')} Glasplaten` : station.status;
+    document.getElementById('selDesc').textContent = station.role;
+    document.getElementById('selDecZone').textContent = `${station.decMax >= 0 ? '+' : ''}${station.decMax}° tot ${station.decMin >= 0 ? '+' : ''}${station.decMin}°`;
+    document.getElementById('selGeoAnchor').textContent = `${Math.abs(station.lat).toFixed(4)}°${station.lat >= 0 ? 'N' : 'S'}, ${Math.abs(station.lon).toFixed(4)}°${station.lon >= 0 ? 'E' : 'W'}`;
+    document.getElementById('selDirector').textContent = station.director;
+
+    // Distance & Azimuth to Saint-Rémy-de-Provence (43.7864°N, 4.8457°E)
+    const distKm = calcHaversineKm(station.lat, station.lon, 43.7864, 4.8457);
+    const azDeg = calcAzimuthDeg(station.lat, station.lon, 43.7864, 4.8457);
+    document.getElementById('selDistStRemy').textContent = distKm < 1 ? '0.0 km (Observatiepunt Cel)' : `${distKm.toFixed(1)} km (Azimut ${azDeg.toFixed(1)}°)`;
+
+    drawWorldMap();
+}
+
+function updateMicrometerReadout(star) {
+    state.selectedStar = star;
+    state.cursorMmX = star.xMm;
+    state.cursorMmY = star.yMm;
+
+    const { raDeg, decDeg } = mmToRaDec1887(star.xMm, star.yMm);
+    const rowIdx = Math.floor((star.yMm + 65) / 5);
+    const colIdx = Math.floor((star.xMm + 65) / 5);
+
+    document.getElementById('readoutXY').textContent = `x = ${star.xMm >= 0 ? '+' : ''}${star.xMm.toFixed(2)} mm, y = ${star.yMm >= 0 ? '+' : ''}${star.yMm.toFixed(2)} mm`;
+    document.getElementById('readoutReseau').textContent = `Réseau-cel: [R${rowIdx}, K${colIdx}] • Schaal: 1 mm = 60″`;
+    document.getElementById('readoutRaDec').textContent = `α = ${formatRaHMS(raDeg)}, δ = ${formatDecDMS(decDeg)}`;
+    document.getElementById('readoutProperMotion').textContent = `μα = ${star.pmRa >= 0 ? '+' : ''}${star.pmRa} mas/j, μδ = ${star.pmDec >= 0 ? '+' : ''}${star.pmDec} mas/j (Gaia)`;
+    document.getElementById('readoutObjectName').textContent = `${star.name} — ${star.vgRole}`;
+
+    const tag = document.getElementById('measArtifactTag');
+    if (star.isDust) {
+        tag.className = 'pill-badge magenta';
+        tag.textContent = '⚠️ PLAAT-ARTEFACT / STOFDEELTJE (SLECHTS 1 PUNTJE)';
+    } else {
+        tag.className = 'pill-badge green';
+        tag.textContent = '✓ GEVALIDEERDE STER (3× BELICHTING DRIEHOEKJE)';
+    }
+
+    // Log measurement
+    logStarMeasurement(star, raDeg, decDeg);
+    drawRightViewport();
+}
+
+function logStarMeasurement(star, raDeg, decDeg) {
+    const entry = {
+        time: new Date().toLocaleTimeString('nl-NL'),
+        name: star.name,
+        zone: state.selectedStation ? state.selectedStation.code : 'PAR/BOR',
+        xMm: star.xMm.toFixed(2),
+        yMm: star.yMm.toFixed(2),
+        ra: formatRaHMS(raDeg),
+        dec: formatDecDMS(decDeg),
+        pm: `${star.pmRa}/${star.pmDec}`,
+        type: star.isDust ? 'STOF-ARTEFACT' : 'ECHTE STER (3×)'
+    };
+    state.measurementLog.unshift(entry);
+    if (state.measurementLog.length > 25) state.measurementLog.pop();
+    renderMeasurementLogTable();
+}
+
+function renderMeasurementLogTable() {
+    const tbody = document.getElementById('measurementLogBody');
+    tbody.innerHTML = state.measurementLog.map(row => `
+        <tr class="hover:bg-[#121b2d]">
+            <td class="p-2 text-[#7f94b0]">${row.time}</td>
+            <td class="p-2 font-bold text-white">${row.name}</td>
+            <td class="p-2 text-[#00f0ff]">${row.zone}</td>
+            <td class="p-2">${row.xMm}</td>
+            <td class="p-2">${row.yMm}</td>
+            <td class="p-2 text-[#00ff88]">${row.ra}</td>
+            <td class="p-2 text-[#00ff88]">${row.dec}</td>
+            <td class="p-2 text-[#ffd700]">${row.pm}</td>
+            <td class="p-2"><span class="pill-badge ${row.type.includes('STOF') ? 'magenta' : 'green'}">${row.type}</span></td>
+        </tr>
+    `).join('');
+}
+
+function renderObservatoriesTable() {
+    const tbody = document.getElementById('observatoriesTableBody');
+    tbody.innerHTML = STATIONS_1887.map(st => `
+        <tr class="hover:bg-[#121b2d] cursor-pointer" onclick="selectStationById(${st.id})">
+            <td class="p-2 text-[#7f94b0]">${String(st.id).padStart(2, '0')}</td>
+            <td class="p-2 font-bold text-white">${st.name} <span class="text-[#7f94b0]">(${st.country})</span></td>
+            <td class="p-2 text-[#00f0ff]">${st.decMax >= 0 ? '+' : ''}${st.decMax}° tot ${st.decMin >= 0 ? '+' : ''}${st.decMin}°</td>
+            <td class="p-2 text-[#ffd700]">${st.lat.toFixed(2)}°, ${st.lon.toFixed(2)}°</td>
+            <td class="p-2 text-[#00ff88]">${st.plates > 0 ? st.plates.toLocaleString('nl-NL') : 'Ankerpunt'}</td>
+            <td class="p-2 text-[#e2ecf7] max-w-md">${st.role}</td>
+            <td class="p-2"><button class="cockpit-btn" onclick="event.stopPropagation(); selectStationById(${st.id})">Selecteer ↗</button></td>
+        </tr>
+    `).join('');
+}
+
+function selectStationById(id) {
+    const st = STATIONS_1887.find(s => s.id === id);
+    if (st) {
+        selectStation(st);
+        if (state.mapProjection === 'orthographic') {
+            state.globeRotLat = st.lat;
+            state.globeRotLon = st.lon;
+            drawWorldMap();
+        }
+    }
+}
+
+// ============================================================================
+// 8. CONTROL ACTIONS & TABS
+// ============================================================================
+function setGlobalEpoch(epoch) {
+    state.globalEpoch = epoch;
+    document.getElementById('btnEpoch1887').classList.toggle('active', epoch === 1887.3);
+    document.getElementById('btnEpoch1889').classList.toggle('active', epoch === 1889.55);
+    document.getElementById('btnEpoch2026').classList.toggle('active', epoch === 2026.8);
+
+    state.properMotionYear = epoch;
+    document.getElementById('sliderEpochYear').value = epoch;
+    document.getElementById('lblEpochYear').textContent = epoch.toFixed(1);
+
+    if (epoch === 1887.3) {
+        selectStationById(7); // Parijs 1887
+        showToast('🗓️ Epoche 1887.3: Astrographisch Congres Parijs (Mouchez) & Van Gogh in Montmartre');
+    } else if (epoch === 1889.55) {
+        selectStationById(21); // Saint-Rémy 1889
+        setRightMode('vangogh');
+        showToast('🌟 Epoche 22 Juli 1889 (03:00 LMT): De Sterrennacht te Saint-Rémy-de-Provence (Δθ = +45.09°)');
+    } else {
+        setRightMode('vangogh');
+        showToast('🛰️ Epoche 2026.8: Gaia DR3 Eigenbeweging t.o.v. 1887 Carte du Ciel glasplaten (+139.5 jaar)');
+    }
+    drawWorldMap();
+    drawRightViewport();
+}
+
+function setMapProjection(proj) {
+    state.mapProjection = proj;
+    document.getElementById('btnProjEqui').classList.toggle('active', proj === 'equirectangular');
+    document.getElementById('btnProjGlobe').classList.toggle('active', proj === 'orthographic');
+    document.getElementById('globeHint').classList.toggle('hidden', proj !== 'orthographic');
+    drawWorldMap();
+}
+
+function toggleDeclinationBands() {
+    state.showDeclinationBands = !state.showDeclinationBands;
+    document.getElementById('btnToggleZones').classList.toggle('active', state.showDeclinationBands);
+    drawWorldMap();
+}
+
+function toggleGeodeticLinks() {
+    state.showGeodeticLinks = !state.showGeodeticLinks;
+    document.getElementById('btnToggleLinks').classList.toggle('active', state.showGeodeticLinks);
+    drawWorldMap();
+}
+
+function setStationFilter(flt) {
+    state.stationFilter = flt;
+    ['ALL', 'NORTH', 'SOUTH', 'VGNL'].forEach(k => {
+        const btn = document.getElementById(k === 'ALL' ? 'fltAll' : k === 'NORTH' ? 'fltNorth' : k === 'SOUTH' ? 'fltSouth' : 'fltVgNl');
+        if (btn) btn.classList.toggle('active', k === flt);
+    });
+    drawWorldMap();
+}
+
+function setRightMode(mode) {
+    state.rightMode = mode;
+    document.getElementById('btnModePlate').classList.toggle('active', mode === 'plate');
+    document.getElementById('btnModeVanGogh').classList.toggle('active', mode === 'vangogh');
+    document.getElementById('plateControls').classList.toggle('hidden', mode !== 'plate');
+    document.getElementById('vangoghControls').classList.toggle('hidden', mode !== 'vangogh');
+    document.getElementById('rightViewportTitle').textContent = mode === 'plate'
+        ? 'Modus 1: 1887 Glasplaat & Gautier-Réseau Micrometer (Bureau des Dames)'
+        : 'Modus 2: Van Gogh 1889 Geodetische 45°-Rotatie & Gaia Eigenbeweging (1887 → 2026)';
+    drawRightViewport();
+}
+
+function toggleTripleExposure() {
+    state.tripleExposure = !state.tripleExposure;
+    document.getElementById('btnTripleExp').classList.toggle('active', state.tripleExposure);
+    drawRightViewport();
+}
+
+function togglePlateNegative() {
+    state.plateNegative = !state.plateNegative;
+    document.getElementById('btnInvertPlate').classList.toggle('active', state.plateNegative);
+    drawRightViewport();
+}
+
+function injectTestDust() {
+    const rx = Number(((Math.random() - 0.5) * 70).toFixed(2));
+    const ry = Number(((Math.random() - 0.5) * 70).toFixed(2));
+    const dustObj = {
+        id: 'DUST_' + Date.now(),
+        name: 'Stofdeeltje / Emulsie-fout',
+        mag: 3.2,
+        xMm: rx,
+        yMm: ry,
+        raH: 4, raM: 30, raS: 0, decD: 16, decM: 0, decS: 0,
+        pmRa: 0.0, pmDec: 0.0,
+        vgRole: 'Geen 3-voudig driehoekje → Door Bureau des Dames verworpen!',
+        isSolarSys: false,
+        isDust: true
+    };
+    PLATE_STARS.push(dustObj);
+    updateMicrometerReadout(dustObj);
+    showToast('🔬 Stofdeeltje op de glasplaat geplaatst: let op het ontbreken van het 3-punts driehoekje in de loep!');
+}
+
+function updateVanGoghAngle(val) {
+    state.vgRotationAngle = parseFloat(val);
+    document.getElementById('lblRotAngle').textContent = `+${state.vgRotationAngle.toFixed(2)}°`;
+    drawRightViewport();
+}
+
+function setVanGoghAngle(val) {
+    document.getElementById('sliderRotAngle').value = val;
+    updateVanGoghAngle(val);
+}
+
+function updateProperMotionYear(val) {
+    state.properMotionYear = parseFloat(val);
+    document.getElementById('lblEpochYear').textContent = state.properMotionYear.toFixed(1);
+    drawRightViewport();
+}
+
+function loadStationIntoPlate() {
+    const st = state.selectedStation;
+    document.getElementById('plateFieldLabel').textContent = `Veld: ${st.code} Zone (${st.decMax >= 0 ? '+' : ''}${st.decMax}°..${st.decMin >= 0 ? '+' : ''}${st.decMin}°)`;
+    setRightMode('plate');
+    showToast(`🔭 Glasplaat gekalibreerd op declinatiezone van ${st.name}`);
+}
+
+function switchBottomTab(tab) {
+    const tabs = ['obs', 'nlbe', 'dames', 'log'];
+    tabs.forEach(t => {
+        document.getElementById('tabPanel' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('hidden', t !== tab);
+    });
+    document.getElementById('tabBtnObs').classList.toggle('active', tab === 'obs');
+    document.getElementById('tabBtnNlBe').classList.toggle('active', tab === 'nlbe');
+    document.getElementById('tabBtnDames').classList.toggle('active', tab === 'dames');
+    document.getElementById('tabBtnLog').classList.toggle('active', tab === 'log');
+}
+
+function exportMeasurementsCSV() {
+    const headers = ['Tijdstip,Object,Zone,x_mm,y_mm,RA_1887,Dec_1887,ProperMotion_mas_yr,Classificatie'];
+    const rows = state.measurementLog.map(r => `"${r.time}","${r.name}","${r.zone}",${r.xMm},${r.yMm},"${r.ra}","${r.dec}","${r.pm}","${r.type}"`);
+    const csv = headers.concat(rows).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'carte_du_ciel_1887_micrometer_log.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast('💾 CSV-bestand met gemeten glasplaatcoördinaten gedownload!');
+}
+
+function copyFullDatasetJSON() {
+    const payload = {
+        project: "MATHGEO-1887 Carte du Ciel & Van Gogh Geodetic Cockpit",
+        congressDate: "April 1887, Observatoire de Paris (Amédée Mouchez)",
+        standardInstrument: "33cm f/10.4 Henry Brothers Astrographic Refractor (1mm = 60 arcsec)",
+        observatories: STATIONS_1887,
+        measuredPlateStars: state.measurementLog
+    };
+    const ta = document.createElement('textarea');
+    ta.value = JSON.stringify(payload, null, 2);
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('📋 Volledige 1887 Carte du Ciel & Van Gogh Geo-JSON gekopieerd naar klembord!');
+}
+
+// ============================================================================
+// 9. CANVAS MOUSE & TOUCH EVENTS
+// ============================================================================
+worldCanvas.addEventListener('mousedown', e => {
+    const rect = worldCanvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    // Check if user clicked a station
+    const stations = getFilteredStations();
+    let hit = null;
+    for (const st of stations) {
+        if (st._screenX !== undefined) {
+            const d = Math.hypot(mx - st._screenX, my - st._screenY);
+            if (d < 12) { hit = st; break; }
+        }
+    }
+
+    if (hit) {
+        selectStation(hit);
+    } else if (state.mapProjection === 'orthographic') {
+        state.isDraggingGlobe = true;
+        state.dragStartX = mx;
+        state.dragStartY = my;
+    }
+});
+
+window.addEventListener('mouseup', () => {
+    state.isDraggingGlobe = false;
+});
+
+worldCanvas.addEventListener('mousemove', e => {
+    const rect = worldCanvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    if (state.isDraggingGlobe && state.mapProjection === 'orthographic') {
+        const dx = mx - state.dragStartX;
+        const dy = my - state.dragStartY;
+        state.globeRotLon -= dx * 0.45;
+        state.globeRotLat = Math.max(-80, Math.min(80, state.globeRotLat + dy * 0.45));
+        state.dragStartX = mx;
+        state.dragStartY = my;
+        drawWorldMap();
+        return;
+    }
+
+    const stations = getFilteredStations();
+    let hover = null;
+    for (const st of stations) {
+        if (st._screenX !== undefined && Math.hypot(mx - st._screenX, my - st._screenY) < 12) {
+            hover = st;
+            break;
+        }
+    }
+    if (hover !== state.hoveredStation) {
+        state.hoveredStation = hover;
+        document.getElementById('mapHoverReadout').textContent = hover
+            ? `${hover.name} (${hover.country}) • Zone ${hover.decMax >= 0 ? '+' : ''}${hover.decMax}°..${hover.decMin >= 0 ? '+' : ''}${hover.decMin}°`
+            : 'Klik op een observatorium of Van Gogh-ankerpunt op de kaart';
+        drawWorldMap();
+    }
+});
+
+plateCanvas.addEventListener('click', e => {
+    const rect = plateCanvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    // Find nearest star on plate
+    let closest = null;
+    let minDist = 24;
+    for (const st of PLATE_STARS) {
+        if (st._px !== undefined) {
+            const d = Math.hypot(mx - st._px, my - st._py);
+            if (d < minDist) {
+                minDist = d;
+                closest = st;
+            }
+        }
+    }
+
+    if (closest) {
+        updateMicrometerReadout(closest);
+    } else {
+        const mm = canvasXYToMm(mx, my, plateCanvas.width, plateCanvas.height);
+        state.cursorMmX = Math.max(-50, Math.min(50, mm.xMm));
+        state.cursorMmY = Math.max(-50, Math.min(50, mm.yMm));
+        const { raDeg, decDeg } = mmToRaDec1887(state.cursorMmX, state.cursorMmY);
+        document.getElementById('readoutXY').textContent = `x = ${state.cursorMmX >= 0 ? '+' : ''}${state.cursorMmX.toFixed(2)} mm, y = ${state.cursorMmY >= 0 ? '+' : ''}${state.cursorMmY.toFixed(2)} mm`;
+        document.getElementById('readoutRaDec').textContent = `α = ${formatRaHMS(raDeg)}, δ = ${formatDecDMS(decDeg)}`;
+        document.getElementById('readoutObjectName').textContent = 'Vrije Veldmeting (Gautier-Réseau)';
+        drawRightViewport();
+    }
+});
+
+window.addEventListener('resize', () => {
+    drawWorldMap();
+    drawRightViewport();
+});
+
+// ============================================================================
+// 10. INITIALIZATION
+// ============================================================================
+window.onload = function () {
+    renderObservatoriesTable();
+    selectStation(STATIONS_1887[6]); // Parijs 1887
+    updateMicrometerReadout(PLATE_STARS[0]); // Aldebaran
+    drawWorldMap();
+    drawRightViewport();
+};
+</script>
+
+</body>
+</html>
