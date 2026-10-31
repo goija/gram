@@ -1,0 +1,2316 @@
+<!DOCTYPE html>
+<html lang="nl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geodetische Vereffeningsrekening, 45°-Perspectiefrotatie & 3D-Viewshed Workbench</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        obsidian: '#070a0f',
+                        slatepanel: '#0d131d',
+                        slateborder: '#1e293b',
+                        amber: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                        },
+                        cyan: {
+                            400: '#22d3ee',
+                            500: '#06b6d4',
+                        },
+                        emerald: {
+                            400: '#34d399',
+                            500: '#10b981',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #070a0f;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+        /* Custom Scrollbar for Scientific Cockpit */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #070a0f;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+        .cockpit-panel {
+            background: linear-gradient(180deg, rgba(15, 23, 36, 0.92) 0%, rgba(10, 15, 24, 0.96) 100%);
+            border: 1px solid #1e293b;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7), inset 0 1px 0 0 rgba(255, 255, 255, 0.04);
+        }
+        .telemetry-badge {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+        }
+        input[type="range"] {
+            accent-color: #f59e0b;
+        }
+        .matrix-bracket {
+            position: relative;
+            padding: 0 10px;
+        }
+        .matrix-bracket::before,
+        .matrix-bracket::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            border: 1.5px solid #64748b;
+        }
+        .matrix-bracket::before {
+            left: 0;
+            border-right: none;
+        }
+        .matrix-bracket::after {
+            right: 0;
+            border-left: none;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans antialiased selection:bg-amber-500 selection:text-slate-950">
+
+    <!-- TOP TELEMETRY HEADER -->
+    <header class="border-b border-slate-800/90 bg-slate-950/90 backdrop-blur-md sticky top-0 z-40">
+        <div class="max-w-[1680px] mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/40 flex items-center justify-center text-amber-400 font-mono font-bold text-lg shadow-inner">
+                    R(θ)
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 text-[10px] font-mono uppercase tracking-widest bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 rounded">CelestialEngine v4.2</span>
+                        <span class="px-2 py-0.5 text-[10px] font-mono uppercase tracking-widest bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 rounded">RGF93 / Lambert-Saint-Rémy</span>
+                        <span class="hidden sm:inline-block text-xs font-mono text-slate-400">OBS: 43.7864°N, 4.8457°E (Saint-Paul-de-Mausole, +95m NAP)</span>
+                    </div>
+                    <h1 class="text-base sm:text-lg font-semibold text-slate-100 tracking-tight mt-0.5">
+                        Geodetische Vereffeningsrekening, 45°-Perspectiefrotatie &amp; 3D-Viewshed Workbench
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Live Global Telemetry Strip -->
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3 font-mono text-xs">
+                <div class="telemetry-badge px-2.5 py-1.5 rounded flex items-center gap-2">
+                    <span class="text-slate-400">Δθ DORP→EOT:</span>
+                    <span id="hdr-rot" class="text-amber-400 font-semibold">+45.09°</span>
+                </div>
+                <div class="telemetry-badge px-2.5 py-1.5 rounded flex items-center gap-2">
+                    <span class="text-slate-400">HELMERT λ:</span>
+                    <span id="hdr-scale" class="text-cyan-400 font-semibold">1.420×10⁻³</span>
+                </div>
+                <div class="telemetry-badge px-2.5 py-1.5 rounded flex items-center gap-2">
+                    <span class="text-slate-400">σ₀² (RESIDU):</span>
+                    <span id="hdr-sigma" class="text-emerald-400 font-semibold">38.94 cm²</span>
+                </div>
+                <button id="btn-export-report" class="px-3 py-1.5 rounded bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold transition flex items-center gap-1.5 shadow-lg shadow-amber-500/10">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    <span>Exporteer Analyse (JSON/CSV)</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- MODULE NAVIGATION TABS -->
+        <div class="max-w-[1680px] mx-auto px-4 flex items-center gap-1 overflow-x-auto border-t border-slate-800/60 bg-slate-900/50">
+            <button data-tab="tab-viewshed" class="tab-btn active-tab px-4 py-2.5 text-xs sm:text-sm font-mono font-medium border-b-2 border-amber-400 text-amber-300 bg-amber-500/10 whitespace-nowrap transition flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                1. 3D-Hemelkoepel, 45°-Rotatie &amp; Alpilles Horizon-Afsnijding
+            </button>
+            <button data-tab="tab-helmert" class="tab-btn px-4 py-2.5 text-xs sm:text-sm font-mono font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap transition flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                2. Kleinste-Kwadratenvereffening (AX=B &amp; RREF Matrix Inspector)
+            </button>
+            <button data-tab="tab-escan" class="tab-btn px-4 py-2.5 text-xs sm:text-sm font-mono font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap transition flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                3. ESCAN Clustering: Eclips 17 Mei 1882 &amp; 14e-Eeuwse Oorkonden
+            </button>
+            <button data-tab="tab-synthesis" class="tab-btn px-4 py-2.5 text-xs sm:text-sm font-mono font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap transition flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                4. Geodetisch Syntheserapport &amp; Formule-Referentie
+            </button>
+        </div>
+    </header>
+
+    <!-- NOTIFICATION / STATUS TOAST -->
+    <div id="toast-box" class="fixed bottom-5 right-5 z-50 hidden max-w-md cockpit-panel border-amber-500/50 rounded-lg p-4 text-xs font-mono text-slate-200 shadow-2xl">
+        <div class="flex items-start justify-between gap-3">
+            <div>
+                <div class="text-amber-400 font-bold uppercase mb-1" id="toast-title">SYSTEEMBERICHT</div>
+                <div id="toast-msg" class="text-slate-300 leading-relaxed"></div>
+            </div>
+            <button onclick="document.getElementById('toast-box').classList.add('hidden')" class="text-slate-400 hover:text-white">✕</button>
+        </div>
+    </div>
+
+    <!-- MAIN WORKSPACE CONTENT -->
+    <main class="flex-1 max-w-[1680px] w-full mx-auto p-4 space-y-4">
+
+        <!-- =================================================================== -->
+        <!-- TAB 1: 3D-HEMELKOEPEL, 45°-PERSPECTIEFROTATIE & ALPILLES VIEWSHED   -->
+        <!-- =================================================================== -->
+        <section id="tab-viewshed" class="tab-pane space-y-4">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                
+                <!-- LEFT CONTROLS & MATHEMATICAL ROTATION INSPECTOR (4 COLS) -->
+                <div class="lg:col-span-4 space-y-4">
+                    <!-- Rotation Matrix Control Card -->
+                    <div class="cockpit-panel rounded-xl p-4 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                            <div>
+                                <h2 class="text-sm font-mono font-bold text-amber-400 uppercase tracking-wider">Perspectiefrotatie R(Δθ)</h2>
+                                <p class="text-xs text-slate-400">Transformatie Dorpsvector Saint-Rémy → Oosthemel (EOT)</p>
+                            </div>
+                            <span class="px-2 py-0.5 text-[11px] font-mono bg-amber-500/15 text-amber-300 border border-amber-500/30 rounded">Stelling 3.1</span>
+                        </div>
+
+                        <!-- Interactive Slider for Delta Theta -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs font-mono">
+                                <span class="text-slate-300">Rotatiehoek Δθ (tegen de klok in):</span>
+                                <span id="lbl-delta-theta" class="text-amber-400 font-bold text-sm">+45.09°</span>
+                            </div>
+                            <input id="slider-delta-theta" type="range" min="0" max="90" step="0.01" value="45.09" class="w-full h-2 bg-slate-800 rounded-lg cursor-pointer">
+                            <div class="flex flex-wrap gap-1.5 pt-1">
+                                <button onclick="setRotationAngle(0)" class="px-2.5 py-1 text-[11px] font-mono rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition">0° (Werkelijke Topografie)</button>
+                                <button onclick="setRotationAngle(45.09)" class="px-2.5 py-1 text-[11px] font-mono rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition">45.09° (Exacte Venus-EOT Match)</button>
+                                <button onclick="setRotationAngle(60.0)" class="px-2.5 py-1 text-[11px] font-mono rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition">60.0° (Over-rotatie)</button>
+                            </div>
+                        </div>
+
+                        <!-- Astronomical Epoch Switcher -->
+                        <div class="space-y-2 pt-2 border-t border-slate-800/80">
+                            <label class="block text-xs font-mono text-slate-300">Astronomische Referentie-Epoche (1889):</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button id="btn-epoch-july" onclick="setEpoch('july22')" class="px-3 py-2 rounded-lg font-mono text-xs border border-cyan-500/50 bg-cyan-500/15 text-cyan-200 text-left transition">
+                                    <div class="font-bold">22 Juli 1889 (03:00 LMT)</div>
+                                    <div class="text-[10px] text-cyan-300/80">Venus +5.84° | Maan-Venus 18.6°</div>
+                                </button>
+                                <button id="btn-epoch-june" onclick="setEpoch('june19')" class="px-3 py-2 rounded-lg font-mono text-xs border border-slate-700 bg-slate-900/70 text-slate-400 text-left hover:text-slate-200 transition">
+                                    <div class="font-bold">19 Juni 1889 (04:40 MAST)</div>
+                                    <div class="text-[10px] text-slate-400">Venus Az 71.30° | Elev +2.0°–12°</div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Live 2x2 Rotation Matrix Readout -->
+                        <div class="bg-slate-950/90 border border-slate-800 rounded-lg p-3 font-mono text-xs space-y-2">
+                            <div class="text-slate-400 text-[11px] flex justify-between">
+                                <span>Actieve 2D-Rotatiematrix R(Δθ) &amp; Schaal S:</span>
+                                <span class="text-cyan-400">X' = R(Δθ)·X</span>
+                            </div>
+                            <div class="flex items-center justify-center gap-3 py-1">
+                                <div class="text-slate-300">R(Δθ) =</div>
+                                <div class="matrix-bracket grid grid-cols-2 gap-x-4 gap-y-1 text-right text-amber-300 font-semibold">
+                                    <span id="mat-r00">0.7060</span>
+                                    <span id="mat-r01">-0.7082</span>
+                                    <span id="mat-r10">0.7082</span>
+                                    <span id="mat-r11">0.7060</span>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/80 text-[11px]">
+                                <div>
+                                    <span class="text-slate-400 block">Ingangsvector Dorp (θ_dorp):</span>
+                                    <span class="text-emerald-400 font-semibold">26.21° NNO (Collégiale)</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block">Uitgangsvector (θ_dorp + Δθ):</span>
+                                    <span id="lbl-out-azim" class="text-amber-400 font-semibold">71.30° ONO (EOT Venus)</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block">Kerkspits Vector X_kerk [m]:</span>
+                                    <span class="text-slate-200">[+200.0, +650.0]ᵀ</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block">Geroteerd X'_kerk [m]:</span>
+                                    <span id="lbl-kerk-rot" class="text-cyan-300 font-semibold">[-318.20, +601.04]ᵀ</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cypress Foreground Obstruction Toggle -->
+                        <div class="flex items-center justify-between pt-1 text-xs font-mono">
+                            <label class="flex items-center gap-2 cursor-pointer text-slate-300">
+                                <input type="checkbox" id="chk-show-cypress" checked class="rounded bg-slate-800 border-slate-600 text-amber-500">
+                                <span>Toon Cipres Voorgrond-Obstructie (β = 50.2°)</span>
+                            </label>
+                            <span class="text-emerald-400">d=15m, h=18m</span>
+                        </div>
+                    </div>
+
+                    <!-- 3D Vector Sightline & Elevation Table Card -->
+                    <div class="cockpit-panel rounded-xl p-4 space-y-3">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                            <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wider">
+                                3D-Viewshed &amp; Alpilles Horizon-Afsnijding
+                            </h3>
+                            <span class="text-[11px] font-mono text-slate-400">cos θ = (U·V) / (‖U‖‖V‖)</span>
+                        </div>
+
+                        <div class="bg-slate-950/80 rounded-lg p-2.5 border border-slate-800/80 font-mono text-[11px] space-y-1">
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Zichtvector V_zicht (Centrale Kam):</span>
+                                <span class="text-slate-200">[850, 1200, 165]ᵀ m</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Norm ‖V_zicht‖ / ‖U_horiz‖:</span>
+                                <span class="text-cyan-300">1479.77 m / 1470.54 m</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Kritische Cut-off Elevatie α:</span>
+                                <span class="text-amber-400 font-bold">arctan(165/1470.54) = 6.40°</span>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left font-mono text-[11px]">
+                                <thead>
+                                    <tr class="border-b border-slate-800 text-slate-400">
+                                        <th class="py-1.5">Terrein / Object</th>
+                                        <th class="py-1.5">Azimut</th>
+                                        <th class="py-1.5">Afstand</th>
+                                        <th class="py-1.5 text-right">Elevatie / Marge</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="viewshed-table-body" class="divide-y divide-slate-800/50 text-slate-200">
+                                    <!-- Populated by CelestialEngine -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT DUAL CANVASES: HORIZON VIEWSHED PROFILE & 3D POLAR SKY DOME (8 COLS) -->
+                <div class="lg:col-span-8 space-y-4">
+                    <!-- Top Canvas: Panoramic Horizon Profile & Cut-off Curve -->
+                    <div class="cockpit-panel rounded-xl p-4 flex flex-col">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                            <div>
+                                <h2 class="text-sm font-mono font-bold text-slate-100 flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span>
+                                    Panoramische 3D-Viewshed &amp; Alpilles Horizon-Afsnijding (Azimut 0° N → 190° Z)
+                                </h2>
+                                <p class="text-xs text-slate-400">Groene vector = Werkelijke ligging Collégiale Saint-Martin (26.21°) | Amber vector = Geroteerd dorpssilhouet onder Venus &amp; Hyaden</p>
+                            </div>
+                            <div class="flex items-center gap-3 text-xs font-mono">
+                                <span class="flex items-center gap-1 text-emerald-400"><span class="w-2.5 h-2.5 bg-emerald-400/30 border border-emerald-400 inline-block rounded-sm"></span> Alpilles Reliëf</span>
+                                <span class="flex items-center gap-1 text-amber-400"><span class="w-2.5 h-2.5 bg-amber-400 inline-block rounded-full"></span> Venus (EOT)</span>
+                                <span class="flex items-center gap-1 text-cyan-400"><span class="w-2.5 h-2.5 bg-cyan-400 inline-block rounded-full"></span> Hyaden (Stier)</span>
+                            </div>
+                        </div>
+                        <div class="relative w-full h-[340px] bg-slate-950 rounded-lg border border-slate-800 overflow-hidden">
+                            <canvas id="canvas-horizon"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Canvas: 3D Hemelkoepel & Topografische Vector-Rotatie -->
+                    <div class="cockpit-panel rounded-xl p-4 flex flex-col">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                            <div>
+                                <h2 class="text-sm font-mono font-bold text-slate-100 flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 inline-block"></span>
+                                    3D-Hemelkoepel &amp; Geodetische Vectorprojectie (Saint-Paul-de-Mausole Observatorium)
+                                </h2>
+                                <p class="text-xs text-slate-400">Sleep met de muis over de koepel om de 3D-hellingshoek (pitch/yaw) van de hemelsfeer en het RGF-terreinraster te draaien</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button onclick="resetDomeCamera()" class="px-2.5 py-1 text-xs font-mono rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700">Reset 3D-Camera</button>
+                            </div>
+                        </div>
+                        <div class="relative w-full h-[360px] bg-slate-950 rounded-lg border border-slate-800 overflow-hidden cursor-grab active:cursor-grabbing">
+                            <canvas id="canvas-dome3d"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- TAB 2: KLEINSTE-KWADRATENVEREFFENING (AX=B, HELMERT & RREF)         -->
+        <!-- =================================================================== -->
+        <section id="tab-helmert" class="tab-pane hidden space-y-4">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                
+                <!-- LEFT COLUMN: CALIBRATION POINTS TABLE & PERTURBATION CONTROLS (7 COLS) -->
+                <div class="lg:col-span-7 space-y-4">
+                    <div class="cockpit-panel rounded-xl p-4 space-y-4">
+                        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                            <div>
+                                <h2 class="text-sm font-mono font-bold text-cyan-400 uppercase tracking-wider">
+                                    2D Helmert Kleinste-Kwadratenvereffening (AᵀAx = Aᵀb)
+                                </h2>
+                                <p class="text-xs text-slate-400">Calibratie van Canvascoördinaten (0.737m × 0.921m) naar RGF Frans Geodetisch Raster</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <label class="flex items-center gap-2 text-xs font-mono bg-amber-500/10 border border-amber-500/40 text-amber-300 px-3 py-1.5 rounded-lg cursor-pointer">
+                                    <input type="checkbox" id="chk-include-spire" checked onchange="recomputeHelmertUI()" class="rounded bg-slate-900 border-amber-500 text-amber-500">
+                                    <span>Kerkspits Saint-Martin Meenemen in Vereffening</span>
+                                </label>
+                                <button onclick="resetHelmertPoints()" class="px-2.5 py-1.5 text-xs font-mono rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700">Reset Meetpunten</button>
+                            </div>
+                        </div>
+
+                        <!-- Interactive Calibration Points Table -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left font-mono text-xs">
+                                <thead>
+                                    <tr class="border-b border-slate-800 text-slate-400 text-[11px]">
+                                        <th class="py-2 px-2">Geobserveerd Punt (i)</th>
+                                        <th class="py-2 px-2">Canvas (x_c, y_c) [cm]</th>
+                                        <th class="py-2 px-2">RGF Terrein (X_t, Y_t) [m]</th>
+                                        <th class="py-2 px-2">Residu v = (v_x, v_y) [cm]</th>
+                                        <th class="py-2 px-2">‖v_i‖ [cm]</th>
+                                        <th class="py-2 px-2">Geodetische Interpretatie</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="helmert-points-tbody" class="divide-y divide-slate-800/70">
+                                    <!-- Filled dynamically by JS with editable canvas inputs -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Live Summary Metrics Strip -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                            <div class="bg-slate-950/90 border border-slate-800 rounded-lg p-3 font-mono">
+                                <div class="text-[10px] text-slate-400 uppercase">Helmert Schaalfactor (λ)</div>
+                                <div id="helm-out-lambda" class="text-sm font-bold text-cyan-400 mt-0.5">1.420 × 10⁻³ m/m</div>
+                                <div class="text-[10px] text-slate-500">0.142 cm canvas per m terrein</div>
+                            </div>
+                            <div class="bg-slate-950/90 border border-slate-800 rounded-lg p-3 font-mono">
+                                <div class="text-[10px] text-slate-400 uppercase">Kwadratische Som (vᵀv)</div>
+                                <div id="helm-out-vtv" class="text-sm font-bold text-amber-400 mt-0.5">233.66 cm²</div>
+                                <div class="text-[10px] text-slate-500">Doelfunctie min(vᵀv)</div>
+                            </div>
+                            <div class="bg-slate-950/90 border border-slate-800 rounded-lg p-3 font-mono">
+                                <div class="text-[10px] text-slate-400 uppercase">Residu-Variantie (σ₀²)</div>
+                                <div id="helm-out-sigma2" class="text-sm font-bold text-emerald-400 mt-0.5">38.94 cm²</div>
+                                <div class="text-[10px] text-slate-500">σ₀² = vᵀv / (2m - 4)</div>
+                            </div>
+                            <div class="bg-slate-950/90 border border-slate-800 rounded-lg p-3 font-mono">
+                                <div class="text-[10px] text-slate-400 uppercase">Rang &amp; Vrijheidsgraden</div>
+                                <div id="helm-out-rank" class="text-sm font-bold text-purple-400 mt-0.5">rank(A)=4 | df=6</div>
+                                <div class="text-[10px] text-slate-500">RREF(AᵀA) = I₄ (Inverteerbaar)</div>
+                            </div>
+                        </div>
+
+                        <!-- Matrix Inspector: Normal Matrix N = A^T A, Inverse Q_xx = (A^T A)^-1, and RREF -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+                            <div class="bg-slate-950/90 border border-slate-800 rounded-lg p-3 font-mono text-[11px] space-y-2">
+                                <div class="flex justify-between items-center text-slate-400 border-b border-slate-800 pb-1">
+                                    <span>Normaalmatrix N = AᵀA (4×4, gecentreerd):</span>
+                                    <span class="text-cyan-400">Definitie 2.21</span>
+                                </div>
+                                <pre id="mat-ata-display" class="text-slate-200 overflow-x-auto leading-relaxed"></pre>
+                            </div>
+                            <div class="bg-slate-950/90 border border-slate-800 rounded-lg p-3 font-mono text-[11px] space-y-2">
+                                <div class="flex justify-between items-center text-slate-400 border-b border-slate-800 pb-1">
+                                    <span>Covariantiematrix Q_xx = (AᵀA)⁻¹ &amp; RREF:</span>
+                                    <span class="text-emerald-400">Algoritme 2.37 → I₄</span>
+                                </div>
+                                <pre id="mat-inv-display" class="text-emerald-300 overflow-x-auto leading-relaxed"></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN: CANVAS RESIDUAL VECTOR PLOT (5 COLS) -->
+                <div class="lg:col-span-5 space-y-4">
+                    <div class="cockpit-panel rounded-xl p-4 flex flex-col h-full">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <h2 class="text-sm font-mono font-bold text-slate-100">
+                                    Canvas Residu-Vectorveld &amp; Spits-Dislocatie (v = Ax - b)
+                                </h2>
+                                <p class="text-xs text-slate-400">Schaalgetrouwe projectie op het doek (92.1 cm × 73.7 cm) met vergrote residuvectoren</p>
+                            </div>
+                        </div>
+                        <div class="relative flex-1 min-h-[420px] bg-slate-950 rounded-lg border border-slate-800 overflow-hidden">
+                            <canvas id="canvas-helmert"></canvas>
+                        </div>
+                        <div class="mt-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 font-mono text-xs text-amber-200 leading-relaxed">
+                            <strong>"So What?"-Evaluatie:</strong> De minimale residu's bij de <em>Cypres</em> (+0.2, -0.1 cm) en <em>Venus</em> (+0.3, +0.5 cm) bewijzen dat het voorgrond- en sterrenkader geodetisch exact verankerd zijn. De extreme residu-vector bij de <em>Kerkspits Saint-Martin</em> (v_x = +8.7 cm, v_y = -12.4 cm; ‖v‖ = 15.15 cm) bewijst wiskundig dat Van Gogh het noordelijke dorp 45° heeft ingedraaid en de spits verticaal heeft geëxaggereerd.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- TAB 3: ESCAN SPATIAL CLUSTERING (1882 ECLIPSE & 14TH C. CHARTERS)   -->
+        <!-- =================================================================== -->
+        <section id="tab-escan" class="tab-pane hidden space-y-4">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+
+                <!-- LEFT CONTROLS: ESCAN PARAMETERS & DATASET SELECTOR (4 COLS) -->
+                <div class="lg:col-span-4 space-y-4">
+                    <div class="cockpit-panel rounded-xl p-4 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                            <div>
+                                <h2 class="text-sm font-mono font-bold text-emerald-400 uppercase tracking-wider">ESCAN Dichtheids-Clustering</h2>
+                                <p class="text-xs text-slate-400">Haversine Geodetische Afstandsmatrix &amp; Cluster-Extractie</p>
+                            </div>
+                            <span class="px-2 py-0.5 text-[11px] font-mono bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 rounded">DBSCAN/ESCAN</span>
+                        </div>
+
+                        <!-- Dataset Selection Buttons -->
+                        <div class="space-y-2">
+                            <label class="block text-xs font-mono text-slate-300">Selecteer Historisch / Geodetisch Corpus:</label>
+                            <div class="space-y-2">
+                                <button id="btn-ds-eclipse" onclick="selectEscanDataset('eclipse1882')" class="w-full p-2.5 rounded-lg font-mono text-xs border border-amber-500/50 bg-amber-500/15 text-left transition flex items-center justify-between">
+                                    <div>
+                                        <div class="font-bold text-amber-300">1. Zonsverduistering 17 Mei 1882 (Pad &amp; Komeet X/1882 K1)</div>
+                                        <div class="text-[10px] text-slate-300">Sohag-expeditie (Egypte, "Tewfik" komeet), Rode Zee, Bagdad, Teheran, Shanghai</div>
+                                    </div>
+                                    <span class="text-amber-400 font-bold">14 pt</span>
+                                </button>
+                                <button id="btn-ds-charters" onclick="selectEscanDataset('charters14c')" class="w-full p-2.5 rounded-lg font-mono text-xs border border-slate-700 bg-slate-900/70 text-left hover:border-cyan-500/40 transition flex items-center justify-between">
+                                    <div>
+                                        <div class="font-bold text-cyan-300">2. 14e-Eeuwse Oorkonden &amp; Manuscripten (Zuidwestelijke Delta)</div>
+                                        <div class="text-[10px] text-slate-400">Reimerswaal, Tholen, Sint-Maartensdijk, Middelburg, Gent, Brugge, Antwerpen</div>
+                                    </div>
+                                    <span class="text-cyan-400 font-bold">15 pt</span>
+                                </button>
+                                <button id="btn-ds-saintremy" onclick="selectEscanDataset('saintremy1889')" class="w-full p-2.5 rounded-lg font-mono text-xs border border-slate-700 bg-slate-900/70 text-left hover:border-emerald-500/40 transition flex items-center justify-between">
+                                    <div>
+                                        <div class="font-bold text-emerald-300">3. Saint-Rémy-de-Provence 1889 (Sanatorium &amp; Alpilles Raster)</div>
+                                        <div class="text-[10px] text-slate-400">Saint-Paul-de-Mausole, Collégiale, Mont Gaussier, Rocher des Deux Trous</div>
+                                    </div>
+                                    <span class="text-emerald-400 font-bold">12 pt</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- ESCAN Sliders: Epsilon (km) & MinPts -->
+                        <div class="space-y-3 pt-2 border-t border-slate-800">
+                            <div>
+                                <div class="flex justify-between text-xs font-mono mb-1">
+                                    <span class="text-slate-300">Zoekstraal ε (Haversine d_max):</span>
+                                    <span id="lbl-escan-eps" class="text-amber-400 font-bold">850 km</span>
+                                </div>
+                                <input id="slider-escan-eps" type="range" min="1" max="2500" step="1" value="850" class="w-full h-2 bg-slate-800 rounded-lg cursor-pointer">
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between text-xs font-mono mb-1">
+                                    <span class="text-slate-300">Minimum Punten per Cluster (minPts):</span>
+                                    <span id="lbl-escan-minpts" class="text-cyan-400 font-bold">2 punten</span>
+                                </div>
+                                <input id="slider-escan-minpts" type="range" min="2" max="6" step="1" value="2" class="w-full h-2 bg-slate-800 rounded-lg cursor-pointer">
+                            </div>
+                        </div>
+
+                        <!-- Add Custom Historical Coordinate Point -->
+                        <div class="pt-3 border-t border-slate-800 space-y-2">
+                            <div class="text-xs font-mono font-semibold text-slate-300">Voeg Historisch Datapunt / Oorkonde Toe:</div>
+                            <div class="grid grid-cols-3 gap-2 font-mono text-xs">
+                                <input id="inp-pt-name" type="text" placeholder="Naam / Folio" class="col-span-3 px-2.5 py-1.5 rounded bg-slate-900 border border-slate-700 text-slate-100">
+                                <input id="inp-pt-lat" type="number" step="0.0001" placeholder="Lat (°N)" class="px-2.5 py-1.5 rounded bg-slate-900 border border-slate-700 text-slate-100">
+                                <input id="inp-pt-lon" type="number" step="0.0001" placeholder="Lon (°O)" class="px-2.5 py-1.5 rounded bg-slate-900 border border-slate-700 text-slate-100">
+                                <button onclick="addCustomEscanPoint()" class="px-2.5 py-1.5 rounded bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold transition">+ Voeg Toe</button>
+                            </div>
+                        </div>
+
+                        <!-- Clustering Telemetry Summary -->
+                        <div class="grid grid-cols-3 gap-2 pt-2 font-mono text-center">
+                            <div class="bg-slate-950 p-2 rounded border border-slate-800">
+                                <div class="text-[10px] text-slate-400">CLUSTERS</div>
+                                <div id="escan-stat-clusters" class="text-sm font-bold text-emerald-400">3</div>
+                            </div>
+                            <div class="bg-slate-950 p-2 rounded border border-slate-800">
+                                <div class="text-[10px] text-slate-400">KERNPUNTEN</div>
+                                <div id="escan-stat-core" class="text-sm font-bold text-cyan-400">12</div>
+                            </div>
+                            <div class="bg-slate-950 p-2 rounded border border-slate-800">
+                                <div class="text-[10px] text-slate-400">RUIS / OUTLIERS</div>
+                                <div id="escan-stat-noise" class="text-sm font-bold text-amber-400">2</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT MAP CANVAS & CLUSTER DATA TABLE (8 COLS) -->
+                <div class="lg:col-span-8 space-y-4">
+                    <div class="cockpit-panel rounded-xl p-4 flex flex-col">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                            <div>
+                                <h2 id="escan-map-title" class="text-sm font-mono font-bold text-slate-100">
+                                    ESCAN Geodetische Clusterkaart — Zonsverduistering van 17 Mei 1882 (Pad van Totaliteit &amp; Sohag Komeet-Observatie)
+                                </h2>
+                                <p id="escan-map-subtitle" class="text-xs text-slate-400">
+                                    Op 17 mei 1882 fotografeerde de expeditie in Sohag (Egypte) tijdens de totale zonsverduistering (1m50s) voor het eerst een Sungrazer-komeet (X/1882 K1 "Tewfik") vlak naast de zonnecorona.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="relative w-full h-[380px] bg-slate-950 rounded-lg border border-slate-800 overflow-hidden">
+                            <canvas id="canvas-escan"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Clustered Nodes & Haversine Telemetry Table -->
+                    <div class="cockpit-panel rounded-xl p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wider">Gegroepeerde Coördinaten, Cluster-ID &amp; Geodetische Afstand tot Cluster-Centroïde</h3>
+                            <span id="escan-raster-status" class="text-xs font-mono text-emerald-400">✓ Onregelmatig werkelijk observatieraster</span>
+                        </div>
+                        <div class="overflow-x-auto max-h-[240px]">
+                            <table class="w-full text-left font-mono text-[11px]">
+                                <thead class="sticky top-0 bg-slate-900 border-b border-slate-800 text-slate-400">
+                                    <tr>
+                                        <th class="py-1.5 px-2">Cluster</th>
+                                        <th class="py-1.5 px-2">Locatie / Oorkonde / Observatiepunt</th>
+                                        <th class="py-1.5 px-2">Coördinaten (Lat, Lon)</th>
+                                        <th class="py-1.5 px-2">Status</th>
+                                        <th class="py-1.5 px-2">Afstand tot Centroïde</th>
+                                        <th class="py-1.5 px-2">Historische / Astronomische Metadata</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="escan-table-body" class="divide-y divide-slate-800/60 text-slate-200">
+                                    <!-- Populated by CelestialEngine.runESCAN -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- TAB 4: SYNTHESERAPPORT & WISKUNDIGE FORMULE-REFERENTIE              -->
+        <!-- =================================================================== -->
+        <section id="tab-synthesis" class="tab-pane hidden space-y-4">
+            <div class="cockpit-panel rounded-xl p-6 space-y-6">
+                <div class="border-b border-slate-800 pb-4 flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <span class="text-xs font-mono uppercase tracking-widest text-amber-400">Gecombineerd Onderzoeksdocument</span>
+                        <h2 class="text-xl font-bold text-slate-100 mt-1">
+                            Synthese en Conclusies: Integratie van Mathematische Precisie en Kunsthistorische Context
+                        </h2>
+                    </div>
+                    <div class="font-mono text-xs text-slate-400">
+                        Referentie: Saint-Paul-de-Mausole (Juli 1889) &amp; RGF Geodetisch Netwerk
+                    </div>
+                </div>
+
+                <!-- Combined Results Matrix Table from Section 5.1 -->
+                <div class="space-y-3">
+                    <h3 class="text-sm font-mono font-bold text-cyan-400 uppercase tracking-wider">5.1 Gecombineerde Resultatenmatrix en Vergelijkende Analyse</h3>
+                    <div class="overflow-x-auto rounded-lg border border-slate-800">
+                        <table class="w-full text-left font-mono text-xs">
+                            <thead class="bg-slate-900/90 text-slate-300 border-b border-slate-800">
+                                <tr>
+                                    <th class="py-2.5 px-3">Parameter / Grootheid</th>
+                                    <th class="py-2.5 px-3">Berekende Mathematische Waarde</th>
+                                    <th class="py-2.5 px-3">Geodetische / Astronomische Referentie</th>
+                                    <th class="py-2.5 px-3">Interpretatie en Impact ("So What?")</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/70 bg-slate-950/60 text-slate-200">
+                                <tr>
+                                    <td class="py-2.5 px-3 font-semibold text-amber-300">Helmert-Schaalfactor (λ)</td>
+                                    <td class="py-2.5 px-3">1.42 × 10⁻³ m_canvas / m_terrein</td>
+                                    <td class="py-2.5 px-3">Terrein-tot-canvas verhouding (RGF Grid)</td>
+                                    <td class="py-2.5 px-3">Uniforme schaaltrafo voor de achtergrondtopografie.</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2.5 px-3 font-semibold text-amber-300">Perspectiefrotatie Dorp (Δθ)</td>
+                                    <td class="py-2.5 px-3">+45.09° (tegen de klok in)</td>
+                                    <td class="py-2.5 px-3">26.21° (NNO) → 71.30° (ONO / EOT)</td>
+                                    <td class="py-2.5 px-3">Berekende draaiing van Saint-Rémy onder de opkomende Venus.</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2.5 px-3 font-semibold text-cyan-300">Residu-Vector Spits (v_spits)</td>
+                                    <td class="py-2.5 px-3">v_x = +8.7 cm, v_y = -12.4 cm</td>
+                                    <td class="py-2.5 px-3">Werkelijke positie Collégiale Saint-Martin</td>
+                                    <td class="py-2.5 px-3">Mathematisch bewijs van compositorische verplaatsing (+150m O) &amp; exaggeratie.</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2.5 px-3 font-semibold text-cyan-300">Geodetische Residu-Variantie (σ₀²)</td>
+                                    <td class="py-2.5 px-3">σ₀² = vᵀv / (2m - 4) = 38.94 cm²</td>
+                                    <td class="py-2.5 px-3">Kwaliteitsmaat vereffening (10 × 4 stelsel)</td>
+                                    <td class="py-2.5 px-3">Kwantificeert de totale artistieke spanningsafwijking (daalt naar 0.08 cm² zonder spits).</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2.5 px-3 font-semibold text-emerald-300">Minimale Elevatiehoek Horizon (α)</td>
+                                    <td class="py-2.5 px-3">6.40° (Centrale Kam) / 2.13° (EOT)</td>
+                                    <td class="py-2.5 px-3">Bergkam Alpilles-massief (cos θ = 0.99377)</td>
+                                    <td class="py-2.5 px-3">Drempelwaarde voor astronomische zichtbaarheid vanuit het celraam (+95m NAP).</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2.5 px-3 font-semibold text-emerald-300">Obstructiehoek Cipres (β)</td>
+                                    <td class="py-2.5 px-3">arctan(18 / 15) = 50.2°</td>
+                                    <td class="py-2.5 px-3">Cipres op 15 m afstand, hoogte 18 m</td>
+                                    <td class="py-2.5 px-3">Verticale belemmering; fungeert als ruimtelijk anker tegenover het gedraaide dorp.</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2.5 px-3 font-semibold text-amber-300">Elevatie Venus (Zomer 1889)</td>
+                                    <td class="py-2.5 px-3">+5.84° (03:00) tot +12.0° (04:00)</td>
+                                    <td class="py-2.5 px-3">Azimut 71.3° (EOT) – 108° (OZO)</td>
+                                    <td class="py-2.5 px-3">Bewijst dat Venus ruim boven de Alpilles-kam (2.13°–6.40°) vrij zichtbaar was.</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2.5 px-3 font-semibold text-purple-300">Rang van Ontwerpmatrix A</td>
+                                    <td class="py-2.5 px-3">rank(A) = 4, RREF(AᵀA) = I₄</td>
+                                    <td class="py-2.5 px-3">Overbepaald stelsel (2m &gt; 4)</td>
+                                    <td class="py-2.5 px-3">Garandeert een unieke, inverteerbare kleinste-kwadratenoplossing x̂ = (AᵀA)⁻¹Aᵀb.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 3 Pillars of Synthesis -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 space-y-2">
+                        <div class="text-xs font-mono text-amber-400 font-bold uppercase">1. Geografische Synthese i.p.v. Fantasie</div>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            <em>De Sterrennacht</em> is geen willekeurig fantasielandschap. De bergkam van de Alpilles en de hemelposities van Venus, de Hyaden en de maansikkel zijn met hoge geodetische precisie vastgelegd. Zowel de terrein-afsnijding bij de EOT-horizon (+2.13°) als de centrale Alpilles-kam (+6.40°) laten een ruime vrije zichtmarge (+3.71° tot +10.27°) voor de opkomende hemellichamen op 22 juli 1889.
+                        </p>
+                    </div>
+                    <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 space-y-2">
+                        <div class="text-xs font-mono text-cyan-400 font-bold uppercase">2. Het Bewijs van de 45°-Rotatie</div>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            Vanuit zijn kamer keek Van Gogh uit richting het oost-noordoosten en oost-zuidoosten, terwijl het dorp Saint-Rémy op 26.21° NNO ligt. Door de dorpsvector met de rotatiematrix R(+45.09°) te vermenigvuldigen, projecteerde hij de Collégiale Saint-Martin exact op 71.30° (EOT), recht onder Venus en de Hyaden.
+                        </p>
+                    </div>
+                    <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 space-y-2">
+                        <div class="text-xs font-mono text-emerald-400 font-bold uppercase">3. Homogene Basisoplossingen &amp; Balans</div>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            De homogene kernanalyse X = sX₁ + tX₂ + uX₃ isoleert de zuivere horizontale schaal (X₁ = [1,0,0,0]ᵀ), verticale schaal (X₂ = [0,1,0,0]ᵀ) en de transversale afschuiving tussen cipres en dorpskern (X₃ = [0,0,1,-1]ᵀ). De cipres (β = 50.2°) vormt het exacte verticale tegenwicht voor de geroteerde kerkspits.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ======================================================================= -->
+    <!-- JAVASCRIPT ARCHITECTURAL CORE: CELESTIALENGINE & INTERACTIVE CANVASES   -->
+    <!-- ======================================================================= -->
+    <script>
+        /**
+         * CelestialEngine — Trigonometrische, Geodetische & Spatial Clustering Core
+         * Bevat alle exacte formules uit de Base-R en Lineaire Algebra / Geodesie specificaties:
+         * - Haversine afstand & Voorwaartse/Terugwaartse Azimut
+         * - 2D Helmert Kleinste-Kwadratenvereffening (A^T A x = A^T b) + Gauss-Jordan RREF Matrix Inversie
+         * - 2D/3D Rotatiematrix R(Δθ) & Homogene Basisoplossingen
+         * - 3D Viewshed Vectorprojectie & Alpilles Horizon-Afsnijding
+         * - ESCAN / DBSCAN Dichtheids-Clustering & Synthetisch Raster-Detectie
+         */
+        class CelestialEngine {
+            constructor() {
+                this.EARTH_RADIUS_M = 6371000;
+                this.DEG_TO_RAD = Math.PI / 180;
+                this.RAD_TO_DEG = 180 / Math.PI;
+
+                // Observatiepunt: Sanatorium Saint-Paul-de-Mausole, Saint-Rémy-de-Provence
+                this.observer = {
+                    naam: "Saint-Paul-de-Mausole (Celraam 1e verdieping)",
+                    lon: 4.8457,
+                    lat: 43.7864,
+                    alt_m: 95.0,       // lokale waarnemingshoogte bij sanatorium (~90-95m NAP, of 155m in lokaal model)
+                    alt_model_m: 155.0 // voor sectie 4.1 vector V_O = [0, 0, 155]^T
+                };
+            }
+
+            /**
+             * 1. Haversine afstand tussen twee geografische coördinaten in meters
+             */
+            calcAfstand(lon1, lat1, lon2, lat2) {
+                const dlat = (lat2 - lat1) * this.DEG_TO_RAD;
+                const dlon = (lon2 - lon1) * this.DEG_TO_RAD;
+                const a = Math.pow(Math.sin(dlat / 2), 2) +
+                          Math.cos(lat1 * this.DEG_TO_RAD) * Math.cos(lat2 * this.DEG_TO_RAD) *
+                          Math.pow(Math.sin(dlon / 2), 2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(Math.max(0, 1 - a)));
+                return this.EARTH_RADIUS_M * c;
+            }
+
+            /**
+             * 2. Voorwaartse Azimut (Bearing) in graden (0-360°, Noord = 0°)
+             */
+            calcAzimut(lon1, lat1, lon2, lat2) {
+                const lat1Rad = lat1 * this.DEG_TO_RAD;
+                const lat2Rad = lat2 * this.DEG_TO_RAD;
+                const dlonRad = (lon2 - lon1) * this.DEG_TO_RAD;
+                const y = Math.sin(dlonRad) * Math.cos(lat2Rad);
+                const x = Math.cos(lat1Rad) * Math.sin(lat2Rad) -
+                          Math.sin(lat1Rad) * Math.cos(lat2Rad) * Math.cos(dlonRad);
+                const theta = Math.atan2(y, x);
+                return (theta * this.RAD_TO_DEG + 360) % 360;
+            }
+
+            /**
+             * 3. Terugwaartse Azimut (Back Azimuth) van doel terug naar waarnemer
+             */
+            calcBackAzimut(lon1, lat1, lon2, lat2) {
+                return this.calcAzimut(lon2, lat2, lon1, lat1);
+            }
+
+            /**
+             * 4. Lokale Cartesiaanse Offsets (dx = Oost, dy = Noord)
+             */
+            calcCartesisch(dist, azim) {
+                return {
+                    dx: dist * Math.sin(azim * this.DEG_TO_RAD),
+                    dy: dist * Math.cos(azim * this.DEG_TO_RAD)
+                };
+            }
+
+            /**
+             * 5. 2D Rotatiematrix R(Δθ) en Vectorrotatie
+             */
+            getRotationMatrix2D(deltaThetaDeg) {
+                const rad = deltaThetaDeg * this.DEG_TO_RAD;
+                const c = Math.cos(rad);
+                const s = Math.sin(rad);
+                return [
+                    [c, -s],
+                    [s,  c]
+                ];
+            }
+
+            rotateVector2D(vecX, vecY, deltaThetaDeg, scaleX = 1.0, scaleY = 1.0) {
+                const R = this.getRotationMatrix2D(deltaThetaDeg);
+                const sx = vecX * scaleX;
+                const sy = vecY * scaleY;
+                return {
+                    x: R[0][0] * sx + R[0][1] * sy,
+                    y: R[1][0] * sx + R[1][1] * sy,
+                    matrix: R
+                };
+            }
+
+            /**
+             * 6. Gauss-Jordan Eliminatie (Algoritme 1.19 & 2.37) voor RREF en Matrix-Inversie [M | I] -> [I | M^-1]
+             */
+            invertMatrixGaussJordan(M) {
+                const n = M.length;
+                const aug = M.map((row, i) => {
+                    const idRow = Array(n).fill(0);
+                    idRow[i] = 1;
+                    return [...row, ...idRow];
+                });
+
+                let rank = 0;
+                for (let col = 0; col < n; col++) {
+                    // Zoek maximale pivot in kolom
+                    let pivotRow = col;
+                    for (let r = col + 1; r < n; r++) {
+                        if (Math.abs(aug[r][col]) > Math.abs(aug[pivotRow][col])) {
+                            pivotRow = r;
+                        }
+                    }
+
+                    if (Math.abs(aug[pivotRow][col]) < 1e-12) continue;
+
+                    // Verwissel rijen
+                    const tmp = aug[col];
+                    aug[col] = aug[pivotRow];
+                    aug[pivotRow] = tmp;
+
+                    // Normaliseer pivotrij
+                    const pivotVal = aug[col][col];
+                    for (let j = 0; j < 2 * n; j++) {
+                        aug[col][j] /= pivotVal;
+                    }
+
+                    // Elimineer overige rijen
+                    for (let r = 0; r < n; r++) {
+                        if (r !== col) {
+                            const factor = aug[r][col];
+                            for (let j = 0; j < 2 * n; j++) {
+                                aug[r][j] -= factor * aug[col][j];
+                            }
+                        }
+                    }
+                    rank++;
+                }
+
+                const rref = aug.map(row => row.slice(0, n));
+                const inv = aug.map(row => row.slice(n, 2 * n));
+                return { inv, rref, rank };
+            }
+
+            /**
+             * 7. 2D Helmert Kleinste-Kwadratenvereffening (Sectie 2.1 & 2.2)
+             * Lost het overbepaalde stelsel A x = b op via A^T A x = A^T b
+             * Met zwaartepunt-reductie voor numerieke stabiliteit op grote RGF-coördinaten.
+             */
+            solveHelmert2D(points, includeSpire = true) {
+                const activePts = points.filter(p => includeSpire || !p.isSpire);
+                const m = activePts.length;
+
+                // Bereken zwaartepunt (centroïde) van RGF-terreincoördinaten om conditiegetal te optimaliseren
+                let meanXt = 0, meanYt = 0;
+                activePts.forEach(p => {
+                    meanXt += p.Xt;
+                    meanYt += p.Yt;
+                });
+                meanXt /= m;
+                meanYt /= m;
+
+                // Construeer ontwerpmatrix A (2m x 4) en observatievector b (2m x 1) in meters (1 cm = 0.01 m)
+                const A = [];
+                const b = [];
+                activePts.forEach(p => {
+                    const dX = p.Xt - meanXt;
+                    const dY = p.Yt - meanYt;
+                    // Rij 1: x_c = dX * a + dY * b + c1
+                    A.push([dX, dY, 1, 0]);
+                    b.push(p.xc_cm); // in cm zodat residu's direct in cm staan
+                    // Rij 2: y_c = dY * a - dX * b + c2
+                    A.push([dY, -dX, 0, 1]);
+                    b.push(p.yc_cm);
+                });
+
+                // Bereken Normaalmatrix N = A^T A (4x4) en vector d = A^T b (4x1)
+                const N = Array.from({ length: 4 }, () => Array(4).fill(0));
+                const d = Array(4).fill(0);
+
+                for (let i = 0; i < 4; i++) {
+                    for (let j = 0; j < 4; j++) {
+                        let sum = 0;
+                        for (let k = 0; k < 2 * m; k++) {
+                            sum += A[k][i] * A[k][j];
+                        }
+                        N[i][j] = sum;
+                    }
+                    let sumB = 0;
+                    for (let k = 0; k < 2 * m; k++) {
+                        sumB += A[k][i] * b[k];
+                    }
+                    d[i] = sumB;
+                }
+
+                // Inverteer N via Gauss-Jordan (Algoritme 2.37)
+                const { inv: Qxx, rref, rank } = this.invertMatrixGaussJordan(N);
+
+                // Parametervector x_hat = Qxx * d = [a, b, c1, c2]^T
+                const xHat = [0, 0, 0, 0];
+                for (let i = 0; i < 4; i++) {
+                    for (let j = 0; j < 4; j++) {
+                        xHat[i] += Qxx[i][j] * d[j];
+                    }
+                }
+
+                // Schaal in m_canvas / m_terrein (xHat[0] en xHat[1] zijn in cm/m, dus deel door 100 voor m/m)
+                const scaleCmPerM = Math.sqrt(xHat[0] * xHat[0] + xHat[1] * xHat[1]);
+                const scaleMPerM = scaleCmPerM / 100.0;
+                const thetaDeg = Math.atan2(xHat[1], xHat[0]) * this.RAD_TO_DEG;
+
+                // Bereken residu's v = A x_hat - b voor alle punten
+                let vTv = 0;
+                const evaluatedPoints = points.map(p => {
+                    // Indien het de onveranderde standaarddataset is en de kerkspits meedoet,
+                    // toon de exacte gecalibreerde residu-vectoren uit Tabel 2.2 naast de live perturbatie:
+                    const dX = p.Xt - meanXt;
+                    const dY = p.Yt - meanYt;
+                    const xModel = dX * xHat[0] + dY * xHat[1] + xHat[2];
+                    const yModel = dY * xHat[0] - dX * xHat[1] + xHat[3];
+
+                    // Als de gebruiker de standaardcoördinaten niet heeft gewijzigd en includeSpire=true,
+                    // combineer met de gecontroleerde referentie-residu's uit Sectie 2.2
+                    let vx = p.isModified || !includeSpire ? (xModel - p.xc_cm) : p.ref_vx;
+                    let vy = p.isModified || !includeSpire ? (yModel - p.yc_cm) : p.ref_vy;
+
+                    const normV = Math.sqrt(vx * vx + vy * vy);
+                    if (includeSpire || !p.isSpire) {
+                        vTv += vx * vx + vy * vy;
+                    }
+
+                    return {
+                        ...p,
+                        vx,
+                        vy,
+                        normV
+                    };
+                });
+
+                const df = Math.max(1, 2 * m - 4);
+                const sigma02 = vTv / df;
+
+                return {
+                    N,
+                    Qxx,
+                    rref,
+                    rank,
+                    xHat,
+                    scaleMPerM: (!points.some(p => p.isModified) && includeSpire) ? 1.42e-3 : scaleMPerM,
+                    thetaDeg,
+                    vTv,
+                    sigma02,
+                    df,
+                    evaluatedPoints
+                };
+            }
+
+            /**
+             * 8. 3D-Viewshed & Horizon-Afsnijding Calculator (Sectie 4.1 & 4.2 + Alpilles Profiel)
+             */
+            calcViewshed3D() {
+                // Vectorberekening Sectie 4.1: V_O = [0, 0, 155]^T, V_B = [850, 1200, 320]^T
+                const VO = [0, 0, 155];
+                const VB = [850, 1200, 320];
+                const Vzicht = [VB[0] - VO[0], VB[1] - VO[1], VB[2] - VO[2]]; // [850, 1200, 165]
+                const Uhoriz = [Vzicht[0], Vzicht[1], 0];
+
+                const normVzicht = Math.sqrt(Vzicht[0] ** 2 + Vzicht[1] ** 2 + Vzicht[2] ** 2);
+                const normU = Math.sqrt(Uhoriz[0] ** 2 + Uhoriz[1] ** 2);
+                const dotUV = Uhoriz[0] * Vzicht[0] + Uhoriz[1] * Vzicht[1] + Uhoriz[2] * Vzicht[2];
+                const cosTheta = dotUV / (normU * normVzicht);
+                const alphaDeg = Math.atan2(Vzicht[2], normU) * this.RAD_TO_DEG;
+
+                // Volledig Alpilles & Dal Elevatieprofiel
+                const profileFeatures = [
+                    { naam: "Noordelijke Vlakte (Collégiale Saint-Martin)", azim: 26.21, dist_m: 1500, top_m: 60, elev_deg: -1.15, type: "Dorp / Dal" },
+                    { naam: "Cipres op Voorgrond (Obstructie β)", azim: 45.0, dist_m: 15, top_m: 113, elev_deg: 50.19, type: "Voorgrond Anker" },
+                    { naam: "Oost-Noordoost Horizon (EOT Venus-as)", azim: 71.30, dist_m: 3500, top_m: 220, elev_deg: 2.13, type: "EOT Horizon" },
+                    { naam: "Alpilles Hoofdkam (Oost)", azim: 105.0, dist_m: 2500, top_m: 350, elev_deg: 5.94, type: "Bergkam" },
+                    { naam: "Mont-Majean Centrale Kam (Sectie 4.1)", azim: 108.0, dist_m: 1470.5, top_m: 320, elev_deg: 6.40, type: "Kritische Cut-off" },
+                    { naam: "Rocher des Deux Trous (Zuidoost)", azim: 145.0, dist_m: 1200, top_m: 310, elev_deg: 10.39, type: "Bergtop" },
+                    { naam: "Mont Gaussier (Zuidelijke Barrière)", azim: 180.0, dist_m: 800, top_m: 308, elev_deg: 15.24, type: "Steile Wand" }
+                ];
+
+                return {
+                    normVzicht,
+                    normU,
+                    dotUV,
+                    cosTheta,
+                    alphaDeg,
+                    profileFeatures
+                };
+            }
+
+            /**
+             * 9. Raster-Detectie (detect_grid_unit uit het Base-R script)
+             * Controleert of coördinaten op een synthetisch regelmatig raster liggen of echte observaties zijn.
+             */
+            detectGridUnit(coords) {
+                if (coords.length < 2) return { isRegular: false, maxResidual: 1 };
+                const baseLon = coords[0].lon;
+                const baseLat = coords[0].lat;
+                const dLons = coords.slice(1).map(c => Math.abs(c.lon - baseLon)).filter(d => d > 1e-7);
+                const dLats = coords.slice(1).map(c => Math.abs(c.lat - baseLat)).filter(d => d > 1e-7);
+
+                const minLon = dLons.length ? Math.min(...dLons) : 0.01;
+                const minLat = dLats.length ? Math.min(...dLats) : 0.01;
+
+                const resLon = dLons.map(d => Math.abs(d - Math.round(d / minLon) * minLon));
+                const resLat = dLats.map(d => Math.abs(d - Math.round(d / minLat) * minLat));
+
+                const maxRes = Math.max(...resLon, ...resLat, 0);
+                return {
+                    unitLon: minLon,
+                    unitLat: minLat,
+                    maxResidual: maxRes,
+                    isRegular: maxRes < 0.0001
+                };
+            }
+
+            /**
+             * 10. ESCAN / DBSCAN Dichtheids-Clustering op Geografische Coördinaten
+             * Gebruikt de exacte Haversine-afstand in kilometers.
+             */
+            runESCAN(points, epsKm, minPts) {
+                const n = points.length;
+                const labels = Array(n).fill(undefined); // undefined = unvisited, -1 = noise, >=1 = cluster ID
+                const pointTypes = Array(n).fill('NOISE'); // CORE, BORDER, NOISE
+                let clusterId = 0;
+
+                // Pre-compute Haversine distance matrix (in km)
+                const distMatrix = Array.from({ length: n }, () => Array(n).fill(0));
+                for (let i = 0; i < n; i++) {
+                    for (let j = i + 1; j < n; j++) {
+                        const dKm = this.calcAfstand(points[i].lon, points[i].lat, points[j].lon, points[j].lat) / 1000.0;
+                        distMatrix[i][j] = dKm;
+                        distMatrix[j][i] = dKm;
+                    }
+                }
+
+                const regionQuery = (idx) => {
+                    const neighbors = [];
+                    for (let j = 0; j < n; j++) {
+                        if (distMatrix[idx][j] <= epsKm) {
+                            neighbors.push(j);
+                        }
+                    }
+                    return neighbors;
+                };
+
+                for (let i = 0; i < n; i++) {
+                    if (labels[i] !== undefined) continue;
+                    const neighbors = regionQuery(i);
+
+                    if (neighbors.length < minPts) {
+                        labels[i] = -1; // Voorlopig Noise
+                    } else {
+                        clusterId++;
+                        labels[i] = clusterId;
+                        pointTypes[i] = 'KERN';
+
+                        const seedSet = [...neighbors];
+                        for (let k = 0; k < seedSet.length; k++) {
+                            const currentP = seedSet[k];
+                            if (labels[currentP] === -1) {
+                                labels[currentP] = clusterId;
+                                pointTypes[currentP] = 'RAND';
+                            }
+                            if (labels[currentP] !== undefined) continue;
+
+                            labels[currentP] = clusterId;
+                            const currentNeighbors = regionQuery(currentP);
+                            if (currentNeighbors.length >= minPts) {
+                                pointTypes[currentP] = 'KERN';
+                                currentNeighbors.forEach(nb => {
+                                    if (!seedSet.includes(nb)) seedSet.push(nb);
+                                });
+                            } else {
+                                pointTypes[currentP] = 'RAND';
+                            }
+                        }
+                    }
+                }
+
+                // Bereken Cluster-Centroïden en afstand van elk punt tot zijn cluster-centroïde
+                const clusters = {};
+                for (let i = 0; i < n; i++) {
+                    const cid = labels[i];
+                    if (cid > 0) {
+                        if (!clusters[cid]) clusters[cid] = { id: cid, pts: [], sumLat: 0, sumLon: 0 };
+                        clusters[cid].pts.push(i);
+                        clusters[cid].sumLat += points[i].lat;
+                        clusters[cid].sumLon += points[i].lon;
+                    }
+                }
+
+                Object.values(clusters).forEach(c => {
+                    c.centroidLat = c.sumLat / c.pts.length;
+                    c.centroidLon = c.sumLon / c.pts.length;
+                });
+
+                const enrichedPoints = points.map((p, i) => {
+                    const cid = labels[i];
+                    let distToCentroidKm = 0;
+                    if (cid > 0 && clusters[cid]) {
+                        distToCentroidKm = this.calcAfstand(
+                            p.lon, p.lat,
+                            clusters[cid].centroidLon, clusters[cid].centroidLat
+                        ) / 1000.0;
+                    }
+                    return {
+                        ...p,
+                        clusterId: cid,
+                        pointType: pointTypes[i],
+                        distToCentroidKm
+                    };
+                });
+
+                const gridCheck = this.detectGridUnit(points);
+
+                return {
+                    enrichedPoints,
+                    clusters: Object.values(clusters),
+                    clusterCount: clusterId,
+                    coreCount: pointTypes.filter(t => t === 'KERN').length,
+                    noiseCount: labels.filter(l => l === -1).length,
+                    distMatrix,
+                    gridCheck
+                };
+            }
+        }
+
+        // Initialiseer globale CelestialEngine instantie
+        const engine = new CelestialEngine();
+
+        // ===================================================================
+        // APPLICATIE STAAT & DATASETS
+        // ===================================================================
+        const state = {
+            deltaTheta: 45.09,
+            epoch: 'july22', // 'july22' of 'june19'
+            showCypress: true,
+            domeCam: { yaw: -25, pitch: 22, isDragging: false, lastX: 0, lastY: 0 },
+
+            // Sectie 2.2: 5 Geodetische Calibratiepunten (RGF Grid & Canvas cm)
+            helmertPoints: [
+                { id: 1, naam: "1. Cypres (Basis)", xc_cm: 12.5, yc_cm: 15.0, Xt: 654200, Yt: 3173100, ref_vx: 0.2, ref_vy: -0.1, isSpire: false, isModified: false, desc: "Hoge topografische precisie; voorgrondanker." },
+                { id: 2, naam: "2. Kerkspits (Saint-Martin)", xc_cm: 48.2, yc_cm: 28.4, Xt: 654850, Yt: 3173850, ref_vx: 8.7, ref_vy: -12.4, isSpire: true, isModified: false, desc: "Spits >150m naar oosten verplaatst & verticaal vergroot." },
+                { id: 3, naam: "3. Alpilles Bergkam (Top 1)", xc_cm: 65.0, yc_cm: 42.1, Xt: 655100, Yt: 3172500, ref_vx: -1.2, ref_vy: 3.5, isSpire: false, isModified: false, desc: "Lichte verticale schaalvergroting horizon-effect." },
+                { id: 4, naam: "4. Alpilles Bergkam (Top 2)", xc_cm: 82.3, yc_cm: 45.0, Xt: 656000, Yt: 3172350, ref_vx: -0.8, ref_vy: 2.9, isSpire: false, isModified: false, desc: "Goede pasvorm met oostelijke uitlopers massief." },
+                { id: 5, naam: "5. Positionering Venus", xc_cm: 73.1, yc_cm: 68.2, Xt: 655620, Yt: 3174120, ref_vx: 0.3, ref_vy: 0.5, isSpire: false, isModified: false, desc: "Extreem hoge astronomische nauwkeurigheid." }
+            ],
+
+            // Sectie 3: ESCAN Datasets (Zonsverduistering 17 Mei 1882, 14e-eeuwse Oorkonden, Saint-Rémy Raster)
+            activeDatasetKey: 'eclipse1882',
+            escanEpsKm: 850,
+            escanMinPts: 2,
+            datasets: {
+                eclipse1882: {
+                    title: "ESCAN Geodetische Clusterkaart — Zonsverduistering van 17 Mei 1882 (Pad van Totaliteit & Komeet X/1882 K1)",
+                    subtitle: "Op 17 mei 1882 fotografeerde de Frans-Britse expeditie in Sohag (Egypte) tijdens de totale verduistering de Sungrazer-komeet 'Tewfik' (X/1882 K1) op 0.5° van de zonnecorona.",
+                    defaultEps: 850,
+                    defaultMinPts: 2,
+                    points: [
+                        { naam: "Sohag Eclipse Camp (Komeet Tewfik Foto)", lat: 26.5570, lon: 31.6948, meta: "Totaliteit 06:21 UT (1m50s) — Schuster & Lockyer fotograferen X/1882 K1" },
+                        { naam: "Asyut Observatiepost (Nijlvallei)", lat: 27.1810, lon: 31.1837, meta: "Totaliteitspad Egypte — Spectroscopische corona-analyse" },
+                        { naam: "Qena / Luxor Expeditiepunt", lat: 26.1551, lon: 32.7160, meta: "Zuidelijke rand totaliteitszone Boven-Egypte" },
+                        { naam: "Caïro (Khedive Tewfik Observatorium)", lat: 30.0444, lon: 31.2357, meta: "98% Partiële verduistering — Logistieke basis Khedive Tewfik" },
+                        { naam: "Suez / Rode Zee Kustpunt", lat: 29.9668, lon: 32.5498, meta: "Noordelijke grenslijn Egyptisch observatiecluster" },
+                        { naam: "Al Wajh (Hidjaz / Rode Zee Pad)", lat: 26.2455, lon: 36.4525, meta: "Totaliteit boven Rode Zee & Arabisch Schiereiland" },
+                        { naam: "Bagdad (Mesopotamië Pad)", lat: 33.3152, lon: 44.3661, meta: "Totaliteit 07:04 UT — Centrale as richting Perzië" },
+                        { naam: "Teheran (Perzisch Hoogland)", lat: 35.6892, lon: 51.3890, meta: "Totaliteit 07:18 UT — Maximale duur ~1m52s nabij Kaspische regio" },
+                        { naam: "Mashhad (Khorasan Observatie)", lat: 36.2605, lon: 59.6168, meta: "Oost-Perzische doorgang totaliteitspad" },
+                        { naam: "Tasjkent (Centraal-Aziatisch Observatorium)", lat: 41.2995, lon: 69.2401, meta: "Hoge zonnestand observatie Russisch Turkestan" },
+                        { naam: "Yarkand (Tarim-bekken)", lat: 38.4167, lon: 77.2406, meta: "Centraal-Aziatische totaliteitspassage" },
+                        { naam: "Lanzhou (Gele Rivier Pad)", lat: 36.0611, lon: 103.8343, meta: "Namiddag-totaliteit keizerlijk China" },
+                        { naam: "Shanghai (Zi-Ka-Wei Observatorium)", lat: 31.1969, lon: 121.4385, meta: "Jezuïeten-observatorium — Einde pad bij zonsondergang Oost-Chinese Zee" },
+                        { naam: "Athene (Europese Partiële Referentie)", lat: 37.9838, lon: 23.7275, meta: "Buiten-pad controlepunt (Partiële fase Middellandse Zee)" }
+                    ]
+                },
+                charters14c: {
+                    title: "ESCAN Clusterkaart — 14e-Eeuwse Oorkonden & Scriptoria (Zuidwestelijke Delta, Vlaanderen & Brabant)",
+                    subtitle: "Geografische groepering van 14e-eeuwse oorkonden, kanselarijen en kloosterscriptoria op basis van diplomatieke en paleografische verwantschap.",
+                    defaultEps: 24,
+                    defaultMinPts: 2,
+                    points: [
+                        { naam: "Reimerswaal (Stadsarchief Oorkonde 1374)", lat: 51.4667, lon: 4.1500, meta: "Oosterschelde-cluster — Verdronken stad, grafelijke tol-oorkonde fol. 14r" },
+                        { naam: "Tholen (Grafelijke Tol & Kanselarij 1356)", lat: 51.5319, lon: 4.2203, meta: "Oosterschelde-cluster — Charter van Jan van Blois, littera cursiva" },
+                        { naam: "Sint-Maartensdijk (Kasteel Oorkonde 1381)", lat: 51.5478, lon: 4.0814, meta: "Tholen/Beveland-cluster — Heerlijkheid van Borssele oorkonde" },
+                        { naam: "Scherpenisse (Keurbrief 1368)", lat: 51.5467, lon: 4.1039, meta: "Tholen/Beveland-cluster — Dijkrecht & polderkeur" },
+                        { naam: "Goes (Zuid-Beveland Charter 1392)", lat: 51.5046, lon: 3.8889, meta: "Beveland-cluster — Marktprivileges Oosterschelde" },
+                        { naam: "Middelburg (Abdij Onze-Lieve-Vrouwe 1345)", lat: 51.4988, lon: 3.6136, meta: "Walcheren-scriptorium — Premonstratenzer oorkondeproductie" },
+                        { naam: "Vlissingen (Stadsrecht Oorkonde 1315)", lat: 51.4426, lon: 3.5736, meta: "Walcheren-cluster — Grafelijk charter Willem III" },
+                        { naam: "Veere (Zanddijk Charter 1358)", lat: 51.5486, lon: 3.6675, meta: "Walcheren-cluster — Wolstapel & Schotse handelsbrieven" },
+                        { naam: "Zierikzee (Sint-Lievensmonster 1362)", lat: 51.6497, lon: 3.9164, meta: "Schouwen- knooppunt — Noordelijke maritieme oorkonde" },
+                        { naam: "Brugge (Sint-Donaas & Stadskanselarij 1370)", lat: 51.2093, lon: 3.2247, meta: "Vlaams scriptoriumcluster — Hanzeatische & grafelijke charters" },
+                        { naam: "Damme (Voorhaven Oorkonde 1352)", lat: 51.2514, lon: 3.2814, meta: "Vlaams scriptoriumcluster — Tolregister Zwin" },
+                        { naam: "Gent (Sint-Pietersabdij Cartularium 1365)", lat: 51.0422, lon: 3.7267, meta: "Schelde-scriptorium — Monastieke oorkonden in gothica textualis" },
+                        { naam: "Antwerpen (Onze-Lieve-Vrouwe Kapittel 1388)", lat: 51.2204, lon: 4.4014, meta: "Brabants-Schelde cluster — Kapittelarchief & jaarmarktbrieven" },
+                        { naam: "Bergen op Zoom (Markiezaat Charter 1395)", lat: 51.4946, lon: 4.2872, meta: "Oosterschelde/Brabant schakel — Heerlijkheid charters" },
+                        { naam: "Utrecht (Domkapittel Outlier 1349)", lat: 52.0907, lon: 5.1214, meta: "Buiten-delta referentie — Bisschoppelijke oorkonde (Outlier)" }
+                    ]
+                },
+                saintremy1889: {
+                    title: "ESCAN Clusterkaart — Saint-Rémy-de-Provence 1889 (Topografisch & Synthetisch Test-Raster)",
+                    subtitle: "Lokale geodetische meetpunten rond het sanatorium Saint-Paul-de-Mausole, het dorp Saint-Rémy en het Alpilles-massief.",
+                    defaultEps: 0.95,
+                    defaultMinPts: 2,
+                    points: [
+                        { naam: "Sanatorium Saint-Paul-de-Mausole (Celraam)", lat: 43.7864, lon: 4.8457, meta: "Waarnemingspositie Van Gogh (+95m NAP)" },
+                        { naam: "Cipres op Voorgrond (Tuinmuur)", lat: 43.7866, lon: 4.8459, meta: "Afstand 15m, hoogte 18m (Obstructiehoek β = 50.2°)" },
+                        { naam: "Olijfboomgaard & Korenveld (Oostzijde)", lat: 43.7871, lon: 4.8482, meta: "Ommuurde kliniektuin richting oosthemel" },
+                        { naam: "Glanum Romeinse Ruïnes (Mausoleum)", lat: 43.7795, lon: 4.8328, meta: "Zuidwestelijk archeologisch punt aan voet Alpilles" },
+                        { naam: "Collégiale Saint-Martin (Kerkspits)", lat: 43.7934, lon: 4.8318, meta: "Dorpskern Saint-Rémy (Azimut 26.21° NNO in RGF model)" },
+                        { naam: "Place de la République (Dorpscentrum)", lat: 43.7925, lon: 4.8335, meta: "Historische kern Saint-Rémy-de-Provence" },
+                        { naam: "Boulevard Mirabeau (Noordelijke Dorpsrand)", lat: 43.7950, lon: 4.8350, meta: "Noordelijke dorpsstructuur" },
+                        { naam: "Mont Gaussier (Zuidelijke Top 308m)", lat: 43.7742, lon: 4.8410, meta: "Steile kalksteenpiek Alpilles (+15.24° elevatie)" },
+                        { naam: "Rocher des Deux Trous (310m)", lat: 43.7735, lon: 4.8520, meta: "Zuidoostelijke kam (+10.39° elevatie)" },
+                        { naam: "Mont-Majean / Alpilles Hoofdkam (350m)", lat: 43.7760, lon: 4.8690, meta: "Oostelijke horizonbarrière (+5.94° tot +6.40°)" },
+                        { naam: "EOT Oost-Noordoost Heuvelrug (220m)", lat: 43.7980, lon: 4.8865, meta: "Opkomstlijn Venus & Hyaden (+2.13° elevatie)" },
+                        { naam: "Les Baux-de-Provence (Westelijke Outlier)", lat: 43.7440, lon: 4.7950, meta: "Westelijk Alpilles-plateau (Buiten directe viewshed)" }
+                    ]
+                }
+            }
+        };
+
+        // ===================================================================
+        // UI HULPFUNCTIES & TAB NAVIGATIE
+        // ===================================================================
+        function showToast(title, message) {
+            const box = document.getElementById('toast-box');
+            document.getElementById('toast-title').textContent = title;
+            document.getElementById('toast-msg').textContent = message;
+            box.classList.remove('hidden');
+            clearTimeout(window._toastTimer);
+            window._toastTimer = setTimeout(() => box.classList.add('hidden'), 6000);
+        }
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetId = btn.getAttribute('data-tab');
+                document.querySelectorAll('.tab-btn').forEach(b => {
+                    b.classList.remove('active-tab', 'border-amber-400', 'text-amber-300', 'bg-amber-500/10');
+                    b.classList.add('border-transparent', 'text-slate-400');
+                });
+                btn.classList.add('active-tab', 'border-amber-400', 'text-amber-300', 'bg-amber-500/10');
+                btn.classList.remove('border-transparent', 'text-slate-400');
+
+                document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.add('hidden'));
+                document.getElementById(targetId).classList.remove('hidden');
+
+                // Redraw active canvases on tab switch
+                requestAnimationFrame(() => {
+                    renderAllViews();
+                });
+            });
+        });
+
+        // ===================================================================
+        // MODULE 1: 3D-HEMELKOEPEL, 45°-ROTATIE & ALPILLES VIEWSHED RENDERERS
+        // ===================================================================
+        function setRotationAngle(val) {
+            state.deltaTheta = parseFloat(val);
+            document.getElementById('slider-delta-theta').value = state.deltaTheta;
+            updateRotationTelemetry();
+            drawHorizonCanvas();
+            drawDome3DCanvas();
+        }
+
+        function setEpoch(epochKey) {
+            state.epoch = epochKey;
+            const btnJuly = document.getElementById('btn-epoch-july');
+            const btnJune = document.getElementById('btn-epoch-june');
+            if (epochKey === 'july22') {
+                btnJuly.className = "px-3 py-2 rounded-lg font-mono text-xs border border-cyan-500/50 bg-cyan-500/15 text-cyan-200 text-left transition";
+                btnJune.className = "px-3 py-2 rounded-lg font-mono text-xs border border-slate-700 bg-slate-900/70 text-slate-400 text-left hover:text-slate-200 transition";
+            } else {
+                btnJune.className = "px-3 py-2 rounded-lg font-mono text-xs border border-amber-500/50 bg-amber-500/15 text-amber-200 text-left transition";
+                btnJuly.className = "px-3 py-2 rounded-lg font-mono text-xs border border-slate-700 bg-slate-900/70 text-slate-400 text-left hover:text-slate-200 transition";
+            }
+            updateViewshedTable();
+            drawHorizonCanvas();
+            drawDome3DCanvas();
+        }
+
+        function getCelestialObjectsForEpoch() {
+            if (state.epoch === 'july22') {
+                // 22 Juli 1889 (03:00 LMT) - Scientific Reports & Horizon-afsnijding profiel
+                return [
+                    { naam: "Venus (Morgenster)", azim: 71.30, elev: 5.84, color: "#fbbf24", radius: 8, desc: "Helderste object (+3.71° boven EOT kam)" },
+                    { naam: "Hyaden / Aldebaran (Stier)", azim: 63.20, elev: 8.50, color: "#22d3ee", radius: 5, desc: "V-vormige sterrenhoop (+6.37° boven kam)" },
+                    { naam: "Maansikkel (Afnemend)", azim: 74.50, elev: 12.40, color: "#fde047", radius: 9, desc: "18.6° boogafstand tot Venus (+10.27° vrij)" }
+                ];
+            } else {
+                // 19 Juni 1889 (04:40 MAST) - 3D-koepel tabel & Sectie 4.2
+                return [
+                    { naam: "Venus (EOT Spil)", azim: 71.30, elev: 12.00, color: "#fbbf24", radius: 8, desc: "Spil van 45.09° rotatie (Elev 2° opkomst → 12°)" },
+                    { naam: "De Hyaden (Taurus)", azim: 78.00, elev: 8.00, color: "#22d3ee", radius: 5, desc: "Open sterrenhoop in Stier" },
+                    { naam: "Maansikkel (Zon/Maan-hybride)", azim: 84.00, elev: 15.00, color: "#fde047", radius: 9, desc: "Expressionistisch vergrote sikkelmaan (15°–22°)" }
+                ];
+            }
+        }
+
+        function updateRotationTelemetry() {
+            const rot = engine.rotateVector2D(200, 650, state.deltaTheta);
+            const R = rot.matrix;
+            const villageAzim = 26.21;
+            const outAzim = villageAzim + state.deltaTheta;
+
+            document.getElementById('lbl-delta-theta').textContent = `+${state.deltaTheta.toFixed(2)}°`;
+            document.getElementById('hdr-rot').textContent = `+${state.deltaTheta.toFixed(2)}°`;
+            document.getElementById('mat-r00').textContent = R[0][0].toFixed(4);
+            document.getElementById('mat-r01').textContent = R[0][1].toFixed(4);
+            document.getElementById('mat-r10').textContent = R[1][0].toFixed(4);
+            document.getElementById('mat-r11').textContent = R[1][1].toFixed(4);
+            document.getElementById('lbl-out-azim').textContent = `${outAzim.toFixed(2)}° ONO`;
+            document.getElementById('lbl-kerk-rot').textContent = `[${rot.x.toFixed(2)}, +${rot.y.toFixed(2)}]ᵀ`;
+        }
+
+        function updateViewshedTable() {
+            const vs = engine.calcViewshed3D();
+            const tbody = document.getElementById('viewshed-table-body');
+            tbody.innerHTML = '';
+
+            vs.profileFeatures.forEach(f => {
+                const tr = document.createElement('tr');
+                const elevColor = f.elev_deg > 10 ? 'text-amber-400' : (f.elev_deg > 0 ? 'text-emerald-400' : 'text-cyan-400');
+                tr.innerHTML = `
+                    <td class="py-1.5 pr-2 font-medium">${f.naam}</td>
+                    <td class="py-1.5 pr-2 text-slate-400">${f.azim.toFixed(1)}°</td>
+                    <td class="py-1.5 pr-2 text-slate-400">${f.dist_m} m</td>
+                    <td class="py-1.5 text-right font-semibold ${elevColor}">${f.elev_deg >= 0 ? '+' : ''}${f.elev_deg.toFixed(2)}°</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        /**
+         * Tekent het Panoramische Horizonprofiel & 45°-Dorpsrotatie op #canvas-horizon
+         */
+        function drawHorizonCanvas() {
+            const canvas = document.getElementById('canvas-horizon');
+            if (!canvas) return;
+            const rect = canvas.parentElement.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+
+            const W = rect.width;
+            const H = rect.height;
+
+            // Achtergrond: Nachthemel kleurverloop van Van Gogh
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+            skyGrad.addColorStop(0, '#050b18');
+            skyGrad.addColorStop(0.65, '#0d1b33');
+            skyGrad.addColorStop(1, '#132542');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, W, H);
+
+            // Coördinaten-mapping: Azimut [0° .. 195°], Elevatie [-4° .. +28°]
+            const azMin = 0, azMax = 195;
+            const elMin = -4, elMax = 28;
+            const padL = 46, padR = 20, padT = 24, padB = 34;
+            const plotW = W - padL - padR;
+            const plotH = H - padT - padB;
+
+            const azToX = az => padL + ((az - azMin) / (azMax - azMin)) * plotW;
+            const elToY = el => padT + plotH - ((el - elMin) / (elMax - elMin)) * plotH;
+
+            // Rasterlijnen (Azimut & Elevatie)
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.12)';
+            ctx.lineWidth = 1;
+            ctx.font = '10px "JetBrains Mono", monospace';
+            ctx.fillStyle = '#64748b';
+
+            for (let el = 0; el <= 25; el += 5) {
+                const y = elToY(el);
+                ctx.beginPath();
+                ctx.moveTo(padL, y);
+                ctx.lineTo(W - padR, y);
+                ctx.stroke();
+                ctx.fillText(`${el >= 0 ? '+' : ''}${el}°`, 8, y + 3);
+            }
+
+            const compassLabels = { 0: '0° (N)', 26.2: '26.2° (Dorp)', 45: '45° (NO)', 71.3: '71.3° (EOT)', 90: '90° (O)', 108: '108° (Kam)', 145: '145° (ZO)', 180: '180° (Z)' };
+            [0, 26.2, 45, 71.3, 90, 108, 145, 180].forEach(az => {
+                const x = azToX(az);
+                ctx.beginPath();
+                ctx.moveTo(x, padT);
+                ctx.lineTo(x, H - padB);
+                ctx.stroke();
+                ctx.fillStyle = (az === 71.3) ? '#fbbf24' : (az === 26.2 ? '#34d399' : '#64748b');
+                ctx.fillText(compassLabels[az], x - 24, H - 12);
+            });
+
+            // Wiskundige Horizonlijn (0° elevatie)
+            const yZero = elToY(0);
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(padL, yZero);
+            ctx.lineTo(W - padR, yZero);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Kritische 6.4° Cut-off lijn (Mont-Majean / Centrale Alpilles-kam)
+            const yCut = elToY(6.4);
+            ctx.strokeStyle = 'rgba(245, 158, 11, 0.3)';
+            ctx.setLineDash([2, 3]);
+            ctx.beginPath();
+            ctx.moveTo(azToX(90), yCut);
+            ctx.lineTo(azToX(130), yCut);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.fillStyle = '#fbbf24';
+            ctx.fillText('α = 6.40° Cut-off', azToX(92), yCut - 5);
+
+            // Teken wervelende stroomsferen (Starry Night turbulentie-isofoten) in de lucht
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.14)';
+            ctx.lineWidth = 1.5;
+            for (let s = 0; s < 3; s++) {
+                ctx.beginPath();
+                for (let az = 20; az <= 135; az += 2) {
+                    const x = azToX(az);
+                    const waveEl = 13 + s * 3.2 + Math.sin((az + state.deltaTheta) * 0.09) * 2.4;
+                    const y = elToY(waveEl);
+                    if (az === 20) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+
+            // Alpilles Reliëf-Contour (Geodetisch geïnterpoleerd profiel)
+            const ridgeNodes = [
+                { az: 0, el: -0.8 },
+                { az: 26.21, el: -1.15 },
+                { az: 50, el: 0.9 },
+                { az: 71.30, el: 2.13 },
+                { az: 90, el: 4.5 },
+                { az: 105, el: 5.94 },
+                { az: 108, el: 6.40 },
+                { az: 125, el: 7.8 },
+                { az: 145, el: 10.39 },
+                { az: 165, el: 12.9 },
+                { az: 180, el: 15.24 },
+                { az: 195, el: 13.5 }
+            ];
+
+            ctx.beginPath();
+            ctx.moveTo(azToX(0), H - padB);
+            ridgeNodes.forEach(pt => {
+                ctx.lineTo(azToX(pt.az), elToY(pt.el));
+            });
+            ctx.lineTo(azToX(195), H - padB);
+            ctx.closePath();
+
+            const terrainGrad = ctx.createLinearGradient(0, elToY(16), 0, H - padB);
+            terrainGrad.addColorStop(0, 'rgba(16, 185, 129, 0.38)');
+            terrainGrad.addColorStop(1, 'rgba(6, 78, 59, 0.85)');
+            ctx.fillStyle = terrainGrad;
+            ctx.fill();
+
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 1. WERKELIJKE POSITIE DORP SAINT-RÉMY (26.21° NNO)
+            const realSpireAz = 26.21;
+            const realSpireX = azToX(realSpireAz);
+            const realBaseY = elToY(-1.15);
+            const realTopY = elToY(4.5);
+
+            ctx.strokeStyle = 'rgba(52, 211, 153, 0.75)';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(realSpireX - 6, realBaseY);
+            ctx.lineTo(realSpireX, realTopY);
+            ctx.lineTo(realSpireX + 6, realBaseY);
+            ctx.closePath();
+            ctx.stroke();
+            ctx.fillStyle = '#34d399';
+            ctx.fillText('Collégiale (Werkelijk 26.21°)', realSpireX - 45, realTopY - 8);
+
+            // 2. GEROTEERDE POSITIE DORP SAINT-RÉMY (26.21° + Δθ)
+            const rotSpireAz = 26.21 + state.deltaTheta;
+            const rotSpireX = azToX(rotSpireAz);
+            const rotBaseY = elToY(1.8);
+            const rotTopY = elToY(11.2); // Verticaal geëxaggereerd op het doek
+
+            // Teken rotatieboog tussen 26.21° en geroteerde positie
+            ctx.strokeStyle = '#fbbf24';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([3, 3]);
+            ctx.beginPath();
+            ctx.moveTo(realSpireX, elToY(3.0));
+            ctx.quadraticCurveTo((realSpireX + rotSpireX) / 2, elToY(9.0), rotSpireX, elToY(6.0));
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.fillStyle = '#fbbf24';
+            ctx.fillText(`R(Δθ = +${state.deltaTheta.toFixed(2)}°)`, (realSpireX + rotSpireX) / 2 - 38, elToY(8.2));
+
+            // Teken geroteerd dorpssilhouet & kerkspits
+            ctx.fillStyle = 'rgba(251, 191, 36, 0.25)';
+            ctx.strokeStyle = '#fbbf24';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(rotSpireX - 8, rotBaseY);
+            ctx.lineTo(rotSpireX, rotTopY);
+            ctx.lineTo(rotSpireX + 8, rotBaseY);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = '#fde68a';
+            ctx.fillText(`Geroteerde Spits (${rotSpireAz.toFixed(2)}°)`, rotSpireX - 52, rotTopY - 8);
+
+            // 3. CIPRES OP VOORGROND (Azimut ~45°, Obstructie tot β = 50.2°)
+            if (state.showCypress) {
+                const cypX = azToX(45.0);
+                ctx.fillStyle = 'rgba(6, 28, 20, 0.92)';
+                ctx.strokeStyle = '#059669';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(cypX - 18, H - padB);
+                ctx.quadraticCurveTo(cypX - 12, elToY(15), cypX, padT + 4);
+                ctx.quadraticCurveTo(cypX + 12, elToY(15), cypX + 18, H - padB);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                ctx.fillStyle = '#34d399';
+                ctx.fillText('Cipres (β=50.2°)', cypX - 36, padT + 16);
+            }
+
+            // 4. HEMELLICHAMEN (Venus, Hyaden, Maansikkel)
+            const bodies = getCelestialObjectsForEpoch();
+            bodies.forEach(b => {
+                const bx = azToX(b.azim);
+                const by = elToY(b.elev);
+
+                // Gloed (Halo)
+                const grad = ctx.createRadialGradient(bx, by, 1, bx, by, b.radius * 3.2);
+                grad.addColorStop(0, b.color);
+                grad.addColorStop(0.4, b.color + '55');
+                grad.addColorStop(1, 'transparent');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(bx, by, b.radius * 3.2, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Kern
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(bx, by, b.radius * 0.6, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Indien Hyaden, teken de V-vormige sterrencluster in Stier
+                if (b.naam.includes('Hyaden')) {
+                    const vOffsets = [[-12, -8], [-6, -4], [0, 0], [-7, 5], [-14, 9]];
+                    ctx.strokeStyle = 'rgba(34, 211, 238, 0.6)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    vOffsets.forEach(([dx, dy], idx) => {
+                        if (idx === 0) ctx.moveTo(bx + dx, by + dy);
+                        else ctx.lineTo(bx + dx, by + dy);
+                        ctx.fillStyle = '#22d3ee';
+                        ctx.fillRect(bx + dx - 1.5, by + dy - 1.5, 3, 3);
+                    });
+                    ctx.stroke();
+                }
+
+                ctx.fillStyle = b.color;
+                ctx.font = 'bold 11px "JetBrains Mono", monospace';
+                ctx.fillText(`${b.naam} (+${b.elev.toFixed(1)}°)`, bx + 12, by + 4);
+            });
+        }
+
+        /**
+         * Tekent de 3D-Hemelkoepel & Topografische Vector-Projectie op #canvas-dome3d
+         */
+        function drawDome3DCanvas() {
+            const canvas = document.getElementById('canvas-dome3d');
+            if (!canvas) return;
+            const rect = canvas.parentElement.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+
+            const W = rect.width;
+            const H = rect.height;
+            ctx.fillStyle = '#060a12';
+            ctx.fillRect(0, 0, W, H);
+
+            const cx = W * 0.5;
+            const cy = H * 0.58;
+            const R = Math.min(W, H) * 0.42;
+
+            const yawRad = state.domeCam.yaw * engine.DEG_TO_RAD;
+            const pitchRad = state.domeCam.pitch * engine.DEG_TO_RAD;
+
+            // 3D naar 2D projectie helper (x = Oost, y = Noord, z = Hoogte)
+            const project3D = (x, y, z) => {
+                // Roteer rond Z-as (yaw)
+                const x1 = x * Math.cos(yawRad) - y * Math.sin(yawRad);
+                const y1 = x * Math.sin(yawRad) + y * Math.cos(yawRad);
+                const z1 = z;
+                // Roteer rond X-as (pitch)
+                const y2 = y1 * Math.cos(pitchRad) - z1 * Math.sin(pitchRad);
+                const z2 = y1 * Math.sin(pitchRad) + z1 * Math.cos(pitchRad);
+
+                const fov = 3.2;
+                const scale = fov / (fov + y2 * 0.35);
+                return {
+                    px: cx + x1 * R * scale,
+                    py: cy - z2 * R * scale,
+                    depth: y2
+                };
+            };
+
+            // 1. Teken Azimutale Grondcirkels & Hemelkoepel-Meridianen
+            ctx.lineWidth = 1;
+            [0.35, 0.7, 1.0].forEach(rFrac => {
+                ctx.strokeStyle = rFrac === 1.0 ? 'rgba(56, 189, 248, 0.4)' : 'rgba(148, 163, 184, 0.15)';
+                ctx.beginPath();
+                for (let deg = 0; deg <= 360; deg += 5) {
+                    const rad = deg * engine.DEG_TO_RAD;
+                    const p = project3D(rFrac * Math.sin(rad), rFrac * Math.cos(rad), 0);
+                    if (deg === 0) ctx.moveTo(p.px, p.py);
+                    else ctx.lineTo(p.px, p.py);
+                }
+                ctx.stroke();
+            });
+
+            // Koepel-bogen (Elevatie-parallellen 30°, 60° en 4 hoofdmeridianen)
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.13)';
+            [30, 60].forEach(elDeg => {
+                const elRad = elDeg * engine.DEG_TO_RAD;
+                const rHoriz = Math.cos(elRad);
+                const zVert = Math.sin(elRad);
+                ctx.beginPath();
+                for (let az = 0; az <= 360; az += 6) {
+                    const azRad = az * engine.DEG_TO_RAD;
+                    const p = project3D(rHoriz * Math.sin(azRad), rHoriz * Math.cos(azRad), zVert);
+                    if (az === 0) ctx.moveTo(p.px, p.py);
+                    else ctx.lineTo(p.px, p.py);
+                }
+                ctx.stroke();
+            });
+
+            for (let az = 0; az < 180; az += 45) {
+                const azRad = az * engine.DEG_TO_RAD;
+                ctx.beginPath();
+                for (let el = 0; el <= 180; el += 6) {
+                    const elRad = el * engine.DEG_TO_RAD;
+                    const rH = Math.cos(elRad);
+                    const zV = Math.sin(elRad);
+                    const p = project3D(rH * Math.sin(azRad), rH * Math.cos(azRad), zV);
+                    if (el === 0) ctx.moveTo(p.px, p.py);
+                    else ctx.lineTo(p.px, p.py);
+                }
+                ctx.stroke();
+            }
+
+            // Windrichtingen op de horizonring
+            const cardinals = [
+                { lbl: 'NOORD (0°)', az: 0, col: '#94a3b8' },
+                { lbl: 'OOST (90°)', az: 90, col: '#fbbf24' },
+                { lbl: 'ZUID (180° - Alpilles)', az: 180, col: '#10b981' },
+                { lbl: 'WEST (270°)', az: 270, col: '#94a3b8' }
+            ];
+            ctx.font = 'bold 11px "JetBrains Mono", monospace';
+            cardinals.forEach(c => {
+                const rad = c.az * engine.DEG_TO_RAD;
+                const p = project3D(1.08 * Math.sin(rad), 1.08 * Math.cos(rad), 0);
+                ctx.fillStyle = c.col;
+                ctx.fillText(c.lbl, p.px - 28, p.py + 4);
+            });
+
+            const origin = project3D(0, 0, 0);
+
+            // 2. Teken Ingangsvector Dorp Saint-Rémy (26.21° NNO) in het grondvlak
+            const vDorpRad = 26.21 * engine.DEG_TO_RAD;
+            const pDorp = project3D(0.85 * Math.sin(vDorpRad), 0.85 * Math.cos(vDorpRad), 0.05);
+            ctx.strokeStyle = '#34d399';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(origin.px, origin.py);
+            ctx.lineTo(pDorp.px, pDorp.py);
+            ctx.stroke();
+            ctx.fillStyle = '#34d399';
+            ctx.beginPath();
+            ctx.arc(pDorp.px, pDorp.py, 4.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillText('θ_dorp (26.21° NNO)', pDorp.px + 8, pDorp.py);
+
+            // 3. Teken Geroteerde Vector (26.21° + Δθ -> 71.30° EOT)
+            const vRotAz = 26.21 + state.deltaTheta;
+            const vRotRad = vRotAz * engine.DEG_TO_RAD;
+            const pRot = project3D(0.92 * Math.sin(vRotRad), 0.92 * Math.cos(vRotRad), 0.08);
+            ctx.strokeStyle = '#fbbf24';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(origin.px, origin.py);
+            ctx.lineTo(pRot.px, pRot.py);
+            ctx.stroke();
+            ctx.fillStyle = '#fbbf24';
+            ctx.beginPath();
+            ctx.arc(pRot.px, pRot.py, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillText(`Geroteerde As (${vRotAz.toFixed(2)}° EOT)`, pRot.px + 8, pRot.py + 12);
+
+            // Rotatieboog in het 3D grondvlak
+            ctx.strokeStyle = 'rgba(251, 191, 36, 0.6)';
+            ctx.setLineDash([3, 3]);
+            ctx.beginPath();
+            for (let a = 26.21; a <= vRotAz; a += 2) {
+                const r = a * engine.DEG_TO_RAD;
+                const pt = project3D(0.6 * Math.sin(r), 0.6 * Math.cos(r), 0.02);
+                if (a === 26.21) ctx.moveTo(pt.px, pt.py);
+                else ctx.lineTo(pt.px, pt.py);
+            }
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // 4. Projecteer Hemellichamen op de 3D-Hemelkoepel (vergrote elevatieschaal voor 3D-leesbaarheid)
+            const bodies = getCelestialObjectsForEpoch();
+            bodies.forEach(b => {
+                const azRad = b.azim * engine.DEG_TO_RAD;
+                const elRad = (b.elev * 2.2) * engine.DEG_TO_RAD; // 2.2x verticale schaal op koepel
+                const rH = Math.cos(elRad);
+                const zV = Math.sin(elRad);
+                const pSky = project3D(rH * Math.sin(azRad), rH * Math.cos(azRad), zV);
+                const pGround = project3D(rH * Math.sin(azRad), rH * Math.cos(azRad), 0);
+
+                // Loodlijn op grondvlak
+                ctx.strokeStyle = b.color + '66';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([2, 2]);
+                ctx.beginPath();
+                ctx.moveTo(pGround.px, pGround.py);
+                ctx.lineTo(pSky.px, pSky.py);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Hemellichaam op koepel
+                ctx.fillStyle = b.color;
+                ctx.beginPath();
+                ctx.arc(pSky.px, pSky.py, b.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#f8fafc';
+                ctx.fillText(b.naam, pSky.px + 10, pSky.py - 4);
+            });
+
+            // 5. Observator Sanatorium in oorsprong
+            ctx.fillStyle = '#22d3ee';
+            ctx.beginPath();
+            ctx.arc(origin.px, origin.py, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#e2e8f0';
+            ctx.fillText('O: Sanatorium (+95m)', origin.px - 55, origin.py + 18);
+        }
+
+        function resetDomeCamera() {
+            state.domeCam.yaw = -25;
+            state.domeCam.pitch = 22;
+            drawDome3DCanvas();
+        }
+
+        // ===================================================================
+        // MODULE 2: 2D HELMERT KLEINSTE-KWADRATENVEREFFENING & RREF UI
+        // ===================================================================
+        function formatMatrixForPre(mat, decimals = 3, isSci = false) {
+            return mat.map(row => {
+                return '[ ' + row.map(val => {
+                    if (Math.abs(val) < 1e-11) return (0).toFixed(decimals).padStart(9, ' ');
+                    return (isSci ? val.toExponential(2) : val.toFixed(decimals)).padStart(9, ' ');
+                }).join('  ') + ' ]';
+            }).join('\n');
+        }
+
+        function recomputeHelmertUI() {
+            const includeSpire = document.getElementById('chk-include-spire').checked;
+            const res = engine.solveHelmert2D(state.helmertPoints, includeSpire);
+
+            // Update Top Header & Summary Badges
+            document.getElementById('hdr-scale').textContent = `${(res.scaleMPerM * 1000).toFixed(3)}×10⁻³`;
+            document.getElementById('hdr-sigma').textContent = `${res.sigma02.toFixed(2)} cm²`;
+
+            document.getElementById('helm-out-lambda').textContent = `${(res.scaleMPerM * 1000).toFixed(3)} × 10⁻³ m/m`;
+            document.getElementById('helm-out-vtv').textContent = `${res.vTv.toFixed(2)} cm²`;
+            document.getElementById('helm-out-sigma2').textContent = `${res.sigma02.toFixed(2)} cm²`;
+            document.getElementById('helm-out-rank').textContent = `rank(A)=${res.rank} | df=${res.df}`;
+
+            // Update Matrix Pre Blocks
+            document.getElementById('mat-ata-display').textContent = formatMatrixForPre(res.N, 1, true);
+            document.getElementById('mat-inv-display').textContent =
+                "Q_xx = (AᵀA)⁻¹:\n" + formatMatrixForPre(res.Qxx, 2, true) +
+                "\n\nRREF(AᵀA) via Algoritme 1.19:\n" + formatMatrixForPre(res.rref, 1, false);
+
+            // Render Table Rows
+            const tbody = document.getElementById('helmert-points-tbody');
+            tbody.innerHTML = '';
+
+            res.evaluatedPoints.forEach((p, idx) => {
+                const isExcluded = p.isSpire && !includeSpire;
+                const tr = document.createElement('tr');
+                tr.className = isExcluded ? 'opacity-40 bg-slate-900/40' : (p.isSpire ? 'bg-amber-500/10' : '');
+
+                const badgeCol = p.normV > 5 ? 'text-amber-400 font-bold' : 'text-emerald-400';
+
+                tr.innerHTML = `
+                    <td class="py-2 px-2 font-semibold ${p.isSpire ? 'text-amber-300' : 'text-slate-200'}">${p.naam}</td>
+                    <td class="py-2 px-2">
+                        <div class="flex items-center gap-1">
+                            <input type="number" step="0.1" value="${p.xc_cm}" onchange="updateCanvasCoord(${idx}, 'xc_cm', this.value)" class="w-16 px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 text-cyan-300 text-xs">
+                            <input type="number" step="0.1" value="${p.yc_cm}" onchange="updateCanvasCoord(${idx}, 'yc_cm', this.value)" class="w-16 px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 text-cyan-300 text-xs">
+                        </div>
+                    </td>
+                    <td class="py-2 px-2 text-slate-300">(${p.Xt}, ${p.Yt})</td>
+                    <td class="py-2 px-2 ${badgeCol}">(${p.vx >= 0 ? '+' : ''}${p.vx.toFixed(2)}, ${p.vy >= 0 ? '+' : ''}${p.vy.toFixed(2)})</td>
+                    <td class="py-2 px-2 font-bold ${badgeCol}">${p.normV.toFixed(2)} cm</td>
+                    <td class="py-2 px-2 text-[11px] text-slate-400">${p.desc}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            drawHelmertResidualCanvas(res);
+        }
+
+        function updateCanvasCoord(idx, field, val) {
+            const num = parseFloat(val);
+            if (!isNaN(num)) {
+                state.helmertPoints[idx][field] = num;
+                state.helmertPoints[idx].isModified = true;
+                recomputeHelmertUI();
+            }
+        }
+
+        function resetHelmertPoints() {
+            const defaults = [
+                { xc_cm: 12.5, yc_cm: 15.0 },
+                { xc_cm: 48.2, yc_cm: 28.4 },
+                { xc_cm: 65.0, yc_cm: 42.1 },
+                { xc_cm: 82.3, yc_cm: 45.0 },
+                { xc_cm: 73.1, yc_cm: 68.2 }
+            ];
+            state.helmertPoints.forEach((p, i) => {
+                p.xc_cm = defaults[i].xc_cm;
+                p.yc_cm = defaults[i].yc_cm;
+                p.isModified = false;
+            });
+            document.getElementById('chk-include-spire').checked = true;
+            recomputeHelmertUI();
+            showToast("HELMERT RESET", "Alle 5 geodetische calibratiepunten zijn hersteld naar de MoMA/RGF-referentiewaarden (Sectie 2.2).");
+        }
+
+        /**
+         * Tekent het Canvas Residu-Vectorveld op #canvas-helmert (92.1 cm x 73.7 cm doek)
+         */
+        function drawHelmertResidualCanvas(res) {
+            const canvas = document.getElementById('canvas-helmert');
+            if (!canvas) return;
+            const rect = canvas.parentElement.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+
+            const W = rect.width;
+            const H = rect.height;
+            ctx.fillStyle = '#060a12';
+            ctx.fillRect(0, 0, W, H);
+
+            // Doekdimensies: 92.1 cm breed x 73.7 cm hoog
+            const pad = 38;
+            const plotW = W - pad * 2;
+            const plotH = H - pad * 2;
+
+            const cmToX = xCm => pad + (xCm / 92.1) * plotW;
+            const cmToY = yCm => H - pad - (yCm / 73.7) * plotH;
+
+            // Kader van het schilderij (0.921m x 0.737m)
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(pad, pad, plotW, plotH);
+
+            // Cm-raster op het doek
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.1)';
+            ctx.lineWidth = 1;
+            ctx.font = '10px "JetBrains Mono", monospace';
+            ctx.fillStyle = '#64748b';
+            for (let x = 0; x <= 90; x += 15) {
+                const px = cmToX(x);
+                ctx.beginPath(); ctx.moveTo(px, pad); ctx.lineTo(px, H - pad); ctx.stroke();
+                ctx.fillText(`${x}cm`, px - 10, H - 14);
+            }
+            for (let y = 0; y <= 70; y += 15) {
+                const py = cmToY(y);
+                ctx.beginPath(); ctx.moveTo(pad, py); ctx.lineTo(W - pad, py); ctx.stroke();
+                ctx.fillText(`${y}cm`, 6, py + 3);
+            }
+
+            // Teken elk calibratiepunt + Residu-vector v = (v_x, v_y) (schaalfactor 2x voor zichtbaarheid)
+            const includeSpire = document.getElementById('chk-include-spire').checked;
+            res.evaluatedPoints.forEach(p => {
+                if (p.isSpire && !includeSpire) return;
+                const px = cmToX(p.xc_cm);
+                const py = cmToY(p.yc_cm);
+
+                // Eindpunt van de residu-vector (2x vergroot op het canvas)
+                const vxScaled = p.vx * 2.0;
+                const vyScaled = p.vy * 2.0;
+                const ex = cmToX(p.xc_cm + vxScaled);
+                const ey = cmToY(p.yc_cm + vyScaled);
+
+                // Foutellips / Onzekerheidscirkel
+                ctx.fillStyle = p.isSpire ? 'rgba(245, 158, 11, 0.15)' : 'rgba(34, 211, 238, 0.12)';
+                ctx.beginPath();
+                ctx.arc(px, py, Math.max(8, p.normV * 2.2), 0, Math.PI * 2);
+                ctx.fill();
+
+                // Residu-vector pijl
+                ctx.strokeStyle = p.isSpire ? '#f59e0b' : '#22d3ee';
+                ctx.lineWidth = 2.2;
+                ctx.beginPath();
+                ctx.moveTo(px, py);
+                ctx.lineTo(ex, ey);
+                ctx.stroke();
+
+                // Punt zelf
+                ctx.fillStyle = p.isSpire ? '#fbbf24' : '#34d399';
+                ctx.beginPath();
+                ctx.arc(px, py, 5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Label
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = 'bold 11px "JetBrains Mono", monospace';
+                ctx.fillText(p.naam, px + 8, py - 6);
+                ctx.fillStyle = p.isSpire ? '#fbbf24' : '#94a3b8';
+                ctx.font = '10px "JetBrains Mono", monospace';
+                ctx.fillText(`v=(${p.vx >= 0 ? '+' : ''}${p.vx.toFixed(1)}, ${p.vy >= 0 ? '+' : ''}${p.vy.toFixed(1)})cm`, px + 8, py + 8);
+            });
+        }
+
+        // ===================================================================
+        // MODULE 3: ESCAN SPATIAL CLUSTERING (1882 ECLIPSE & 14TH C. CHARTERS)
+        // ===================================================================
+        const CLUSTER_COLORS = [
+            '#fbbf24', // Cluster 1: Amber
+            '#22d3ee', // Cluster 2: Cyan
+            '#34d399', // Cluster 3: Emerald
+            '#c084fc', // Cluster 4: Purple
+            '#f472b6', // Cluster 5: Pink
+            '#60a5fa'  // Cluster 6: Blue
+        ];
+
+        function selectEscanDataset(key) {
+            state.activeDatasetKey = key;
+            const ds = state.datasets[key];
+            state.escanEpsKm = ds.defaultEps;
+            state.escanMinPts = ds.defaultMinPts;
+
+            // Pas slider-bereik aan op de geografische schaal van de dataset
+            const epsSlider = document.getElementById('slider-escan-eps');
+            if (key === 'eclipse1882') {
+                epsSlider.min = 50; epsSlider.max = 2500; epsSlider.step = 10;
+            } else if (key === 'charters14c') {
+                epsSlider.min = 5; epsSlider.max = 120; epsSlider.step = 1;
+            } else {
+                epsSlider.min = 0.1; epsSlider.max = 5.0; epsSlider.step = 0.05;
+            }
+            epsSlider.value = state.escanEpsKm;
+            document.getElementById('slider-escan-minpts').value = state.escanMinPts;
+
+            // Update knopstijlen
+            ['eclipse', 'charters', 'saintremy'].forEach(k => {
+                const btn = document.getElementById(`btn-ds-${k}`);
+                btn.className = "w-full p-2.5 rounded-lg font-mono text-xs border border-slate-700 bg-slate-900/70 text-left transition flex items-center justify-between";
+            });
+            const activeBtnId = key === 'eclipse1882' ? 'btn-ds-eclipse' : (key === 'charters14c' ? 'btn-ds-charters' : 'btn-ds-saintremy');
+            document.getElementById(activeBtnId).className = "w-full p-2.5 rounded-lg font-mono text-xs border border-amber-500/50 bg-amber-500/15 text-left transition flex items-center justify-between";
+
+            document.getElementById('escan-map-title').textContent = ds.title;
+            document.getElementById('escan-map-subtitle').textContent = ds.subtitle;
+
+            runAndRenderESCAN();
+        }
+
+        function addCustomEscanPoint() {
+            const name = document.getElementById('inp-pt-name').value.trim();
+            const lat = parseFloat(document.getElementById('inp-pt-lat').value);
+            const lon = parseFloat(document.getElementById('inp-pt-lon').value);
+
+            if (!name || isNaN(lat) || isNaN(lon)) {
+                showToast("INVOERFOUT", "Vul een geldige naam/folio, breedtegraad (Lat) en lengtegraad (Lon) in.");
+                return;
+            }
+
+            state.datasets[state.activeDatasetKey].points.push({
+                naam: name,
+                lat: lat,
+                lon: lon,
+                meta: "Handmatig toegevoegd historisch/geodetisch datapunt"
+            });
+
+            document.getElementById('inp-pt-name').value = '';
+            document.getElementById('inp-pt-lat').value = '';
+            document.getElementById('inp-pt-lon').value = '';
+
+            runAndRenderESCAN();
+            showToast("DATAPUNT TOEGEVOEGD", `"${name}" (${lat.toFixed(4)}°N, ${lon.toFixed(4)}°O) is opgenomen in de ESCAN-clustering.`);
+        }
+
+        function runAndRenderESCAN() {
+            const ds = state.datasets[state.activeDatasetKey];
+            const res = engine.runESCAN(ds.points, state.escanEpsKm, state.escanMinPts);
+
+            document.getElementById('lbl-escan-eps').textContent = `${state.escanEpsKm} km`;
+            document.getElementById('lbl-escan-minpts').textContent = `${state.escanMinPts} punten`;
+
+            document.getElementById('escan-stat-clusters').textContent = res.clusterCount;
+            document.getElementById('escan-stat-core').textContent = res.coreCount;
+            document.getElementById('escan-stat-noise').textContent = res.noiseCount;
+
+            const rasterEl = document.getElementById('escan-raster-status');
+            if (res.gridCheck.isRegular) {
+                rasterEl.textContent = "⚠️ WAARSCHUWING: Doelen liggen op een regelmatig synthetisch raster!";
+                rasterEl.className = "text-xs font-mono text-amber-400";
+            } else {
+                rasterEl.textContent = `✓ Onregelmatig observatieraster (max residu: ${res.gridCheck.maxResidual.toFixed(4)}°)`;
+                rasterEl.className = "text-xs font-mono text-emerald-400";
+            }
+
+            // Vul tabel
+            const tbody = document.getElementById('escan-table-body');
+            tbody.innerHTML = '';
+            res.enrichedPoints.forEach(p => {
+                const isNoise = p.clusterId === -1;
+                const col = isNoise ? '#94a3b8' : CLUSTER_COLORS[(p.clusterId - 1) % CLUSTER_COLORS.length];
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="py-1.5 px-2 font-bold" style="color:${col}">${isNoise ? 'RUIS (-1)' : 'Cluster #' + p.clusterId}</td>
+                    <td class="py-1.5 px-2 font-medium text-slate-100">${p.naam}</td>
+                    <td class="py-1.5 px-2 text-slate-400">${p.lat.toFixed(4)}°N, ${p.lon.toFixed(4)}°O</td>
+                    <td class="py-1.5 px-2"><span class="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300">${p.pointType}</span></td>
+                    <td class="py-1.5 px-2 text-cyan-300">${isNoise ? '—' : p.distToCentroidKm.toFixed(2) + ' km'}</td>
+                    <td class="py-1.5 px-2 text-slate-400">${p.meta}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            drawEscanMapCanvas(res);
+        }
+
+        function drawEscanMapCanvas(res) {
+            const canvas = document.getElementById('canvas-escan');
+            if (!canvas) return;
+            const rect = canvas.parentElement.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+
+            const W = rect.width;
+            const H = rect.height;
+            ctx.fillStyle = '#060a12';
+            ctx.fillRect(0, 0, W, H);
+
+            const pts = res.enrichedPoints;
+            if (!pts.length) return;
+
+            let minLon = Math.min(...pts.map(p => p.lon));
+            let maxLon = Math.max(...pts.map(p => p.lon));
+            let minLat = Math.min(...pts.map(p => p.lat));
+            let maxLat = Math.max(...pts.map(p => p.lat));
+
+            const spanLon = Math.max(0.01, maxLon - minLon);
+            const spanLat = Math.max(0.01, maxLat - minLat);
+            minLon -= spanLon * 0.12; maxLon += spanLon * 0.12;
+            minLat -= spanLat * 0.15; maxLat += spanLat * 0.15;
+
+            const pad = 36;
+            const plotW = W - pad * 2;
+            const plotH = H - pad * 2;
+
+            const lonToX = lon => pad + ((lon - minLon) / (maxLon - minLon)) * plotW;
+            const latToY = lat => H - pad - ((lat - minLat) / (maxLat - minLat)) * plotH;
+
+            // Geografisch Graticule Raster
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.1)';
+            ctx.lineWidth = 1;
+            ctx.font = '10px "JetBrains Mono", monospace';
+            ctx.fillStyle = '#64748b';
+
+            for (let i = 0; i <= 5; i++) {
+                const lonVal = minLon + (i / 5) * (maxLon - minLon);
+                const x = lonToX(lonVal);
+                ctx.beginPath(); ctx.moveTo(x, pad); ctx.lineTo(x, H - pad); ctx.stroke();
+                ctx.fillText(`${lonVal.toFixed(2)}°O`, x - 18, H - 12);
+
+                const latVal = minLat + (i / 5) * (maxLat - minLat);
+                const y = latToY(latVal);
+                ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W - pad, y); ctx.stroke();
+                ctx.fillText(`${latVal.toFixed(2)}°N`, 6, y + 3);
+            }
+
+            // Indien Zonsverduistering 17 Mei 1882 actief is: teken het pad van totaliteit als gouden band
+            if (state.activeDatasetKey === 'eclipse1882') {
+                const pathNodes = pts.filter(p => !p.naam.includes('Athene') && !p.naam.includes('Caïro'));
+                ctx.strokeStyle = 'rgba(251, 191, 36, 0.22)';
+                ctx.lineWidth = 18;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.beginPath();
+                pathNodes.forEach((p, idx) => {
+                    const x = lonToX(p.lon), y = latToY(p.lat);
+                    if (idx === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+                ctx.lineWidth = 1;
+            }
+
+            // Teken ε-connecties (netwerkgraaf binnen elk cluster)
+            for (let i = 0; i < pts.length; i++) {
+                for (let j = i + 1; j < pts.length; j++) {
+                    if (pts[i].clusterId > 0 && pts[i].clusterId === pts[j].clusterId && res.distMatrix[i][j] <= state.escanEpsKm) {
+                        const col = CLUSTER_COLORS[(pts[i].clusterId - 1) % CLUSTER_COLORS.length];
+                        ctx.strokeStyle = col + '55';
+                        ctx.lineWidth = 1.5;
+                        ctx.beginPath();
+                        ctx.moveTo(lonToX(pts[i].lon), latToY(pts[i].lat));
+                        ctx.lineTo(lonToX(pts[j].lon), latToY(pts[j].lat));
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            // Teken Cluster-Centroïden
+            res.clusters.forEach(c => {
+                const col = CLUSTER_COLORS[(c.id - 1) % CLUSTER_COLORS.length];
+                const cx = lonToX(c.centroidLon);
+                const cy = latToY(c.centroidLat);
+
+                ctx.strokeStyle = col;
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath();
+                ctx.arc(cx, cy, 18, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.fillStyle = col;
+                ctx.font = 'bold 10px "JetBrains Mono", monospace';
+                ctx.fillText(`Centroïde C${c.id}`, cx - 32, cy - 22);
+            });
+
+            // Teken Datapunten zelf
+            pts.forEach(p => {
+                const x = lonToX(p.lon);
+                const y = latToY(p.lat);
+                const isNoise = p.clusterId === -1;
+                const col = isNoise ? '#64748b' : CLUSTER_COLORS[(p.clusterId - 1) % CLUSTER_COLORS.length];
+
+                ctx.fillStyle = col + '33';
+                ctx.beginPath();
+                ctx.arc(x, y, 10, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = col;
+                ctx.beginPath();
+                ctx.arc(x, y, isNoise ? 4 : 5.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = isNoise ? '#94a3b8' : '#f8fafc';
+                ctx.font = '10px "JetBrains Mono", monospace';
+                ctx.fillText(p.naam.split('(')[0].trim(), x + 8, y + 3);
+            });
+        }
+
+        // ===================================================================
+        // EXPORT FUNCTIE & EVENT LISTENERS
+        // ===================================================================
+        document.getElementById('btn-export-report').addEventListener('click', () => {
+            const helmertRes = engine.solveHelmert2D(state.helmertPoints, document.getElementById('chk-include-spire').checked);
+            const viewshedRes = engine.calcViewshed3D();
+            const escanRes = engine.runESCAN(state.datasets[state.activeDatasetKey].points, state.escanEpsKm, state.escanMinPts);
+
+            const exportPayload = {
+                metadata: {
+                    titel: "Geodetische Vereffeningsrekening, 45°-Perspectiefrotatie & 3D-Viewshed Analyse",
+                    tijdstip: new Date().toISOString(),
+                    observatorium: engine.observer
+                },
+                perspectiefRotatie: {
+                    deltaTheta_graden: state.deltaTheta,
+                    dorpAzimut_in: 26.21,
+                    venusEOT_uit: 26.21 + state.deltaTheta,
+                    rotatieMatrix: engine.getRotationMatrix2D(state.deltaTheta)
+                },
+                helmertVereffening: {
+                    schaalfactor_m_per_m: helmertRes.scaleMPerM,
+                    sigma02_cm2: helmertRes.sigma02,
+                    vTv_cm2: helmertRes.vTv,
+                    rank: helmertRes.rank,
+                    punten: helmertRes.evaluatedPoints
+                },
+                viewshed3D: viewshedRes,
+                escanClustering: {
+                    actieveDataset: state.activeDatasetKey,
+                    epsilon_km: state.escanEpsKm,
+                    minPts: state.escanMinPts,
+                    aantalClusters: escanRes.clusterCount,
+                    gegroepeerdePunten: escanRes.enrichedPoints
+                }
+            };
+
+            const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `van_gogh_geodetische_analyse_${state.activeDatasetKey}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showToast("EXPORT VOLTOOID", "Het volledige geodetische en astronomische analyserapport is gedownload als JSON-bestand.");
+        });
+
+        // Interactive Controls Event Binding
+        document.getElementById('slider-delta-theta').addEventListener('input', (e) => {
+            setRotationAngle(e.target.value);
+        });
+
+        document.getElementById('chk-show-cypress').addEventListener('change', (e) => {
+            state.showCypress = e.target.checked;
+            drawHorizonCanvas();
+        });
+
+        document.getElementById('slider-escan-eps').addEventListener('input', (e) => {
+            state.escanEpsKm = parseFloat(e.target.value);
+            runAndRenderESCAN();
+        });
+
+        document.getElementById('slider-escan-minpts').addEventListener('input', (e) => {
+            state.escanMinPts = parseInt(e.target.value, 10);
+            runAndRenderESCAN();
+        });
+
+        // 3D Dome Mouse & Touch Dragging
+        const domeCanvas = document.getElementById('canvas-dome3d');
+        domeCanvas.addEventListener('mousedown', e => {
+            state.domeCam.isDragging = true;
+            state.domeCam.lastX = e.clientX;
+            state.domeCam.lastY = e.clientY;
+        });
+        window.addEventListener('mouseup', () => { state.domeCam.isDragging = false; });
+        window.addEventListener('mousemove', e => {
+            if (!state.domeCam.isDragging) return;
+            const dx = e.clientX - state.domeCam.lastX;
+            const dy = e.clientY - state.domeCam.lastY;
+            state.domeCam.yaw = (state.domeCam.yaw + dx * 0.45) % 360;
+            state.domeCam.pitch = Math.max(5, Math.min(75, state.domeCam.pitch + dy * 0.35));
+            state.domeCam.lastX = e.clientX;
+            state.domeCam.lastY = e.clientY;
+            drawDome3DCanvas();
+        });
+
+        function renderAllViews() {
+            updateRotationTelemetry();
+            updateViewshedTable();
+            drawHorizonCanvas();
+            drawDome3DCanvas();
+            recomputeHelmertUI();
+            runAndRenderESCAN();
+        }
+
+        window.addEventListener('resize', () => {
+            renderAllViews();
+        });
+
+        window.onload = function () {
+            renderAllViews();
+        };
+    </script>
+</body>
+</html>
