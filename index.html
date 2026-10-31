@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VORTEX OMNI-BRIDGE • Galactische Index & Symboolzoekmachine</title>
+    <title>VORTEX OMNI-BRIDGE • Complete Repository & Galactische Module Index (50 Modules)</title>
     <style>
         :root {
             --bg-primary: #0a0e14;
@@ -34,12 +34,13 @@
             padding: 2rem 1rem;
             min-height: 100vh;
             background-image: 
-                radial-gradient(circle at 10% 20%, rgba(0, 240, 255, 0.05) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(255, 215, 0, 0.05) 0%, transparent 40%);
+                radial-gradient(circle at 10% 15%, rgba(0, 240, 255, 0.06) 0%, transparent 40%),
+                radial-gradient(circle at 90% 85%, rgba(255, 215, 0, 0.06) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(0, 255, 136, 0.03) 0%, transparent 50%);
         }
 
         .container {
-            max-width: 1280px;
+            max-width: 1380px;
             margin: 0 auto;
         }
 
@@ -48,26 +49,28 @@
             text-align: center;
             border-bottom: 2px solid var(--border-color);
             padding-bottom: 2rem;
-            margin-bottom: 2.5rem;
+            margin-bottom: 2rem;
             position: relative;
         }
 
         .sys-status {
             display: inline-flex;
-            gap: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.25rem;
             background: var(--bg-secondary);
             border: 1px solid var(--accent-cyan);
-            padding: 0.5rem 1.25rem;
+            padding: 0.55rem 1.35rem;
             border-radius: 99px;
             font-family: var(--font-mono);
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             color: var(--accent-cyan);
             margin-bottom: 1.5rem;
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.15);
+            box-shadow: 0 0 18px rgba(0, 240, 255, 0.15);
         }
 
         h1 {
-            font-size: 2.5rem;
+            font-size: 2.35rem;
             letter-spacing: 2px;
             text-transform: uppercase;
             background: linear-gradient(90deg, var(--accent-cyan), var(--text-main), var(--accent-gold));
@@ -78,9 +81,49 @@
 
         .subtitle {
             color: var(--text-dim);
-            font-size: 1.1rem;
-            max-width: 800px;
-            margin: 0 auto;
+            font-size: 1.05rem;
+            max-width: 900px;
+            margin: 0 auto 1.25rem auto;
+        }
+
+        .header-actions {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .action-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.55rem 1.1rem;
+            border-radius: 8px;
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .action-btn:hover, .action-btn.active-view {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            background: rgba(0, 240, 255, 0.1);
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+        }
+
+        .action-btn.gold-btn {
+            border-color: rgba(255, 215, 0, 0.5);
+            color: var(--accent-gold);
+        }
+
+        .action-btn.gold-btn:hover {
+            background: rgba(255, 215, 0, 0.12);
+            border-color: var(--accent-gold);
         }
 
         /* SEARCH & FILTER SECTION */
@@ -88,14 +131,23 @@
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            padding: 1.75rem;
-            margin-bottom: 3rem;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            padding: 1.5rem;
+            margin-bottom: 2.25rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+        }
+
+        .search-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
         }
 
         .search-box {
             position: relative;
-            margin-bottom: 1.5rem;
+            flex-grow: 1;
+            min-width: 260px;
         }
 
         .search-input {
@@ -103,9 +155,9 @@
             background: var(--bg-primary);
             border: 2px solid var(--border-color);
             border-radius: 8px;
-            padding: 1rem 1.25rem 1rem 3rem;
+            padding: 0.9rem 1.25rem 0.9rem 3rem;
             color: var(--text-main);
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-family: var(--font-mono);
             transition: all 0.3s ease;
         }
@@ -121,76 +173,107 @@
             left: 1rem;
             top: 50%;
             transform: translateY(-50%);
-            font-size: 1.25rem;
+            font-size: 1.2rem;
             color: var(--accent-cyan);
+        }
+
+        .counter-badge {
+            background: var(--bg-primary);
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green);
+            padding: 0.85rem 1.15rem;
+            border-radius: 8px;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .filter-group {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .filter-group:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
         }
 
         .tag-cloud {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.6rem;
+            gap: 0.5rem;
             align-items: center;
         }
 
         .tag-label {
-            font-size: 0.85rem;
+            font-size: 0.78rem;
             color: var(--text-dim);
             font-weight: bold;
             text-transform: uppercase;
-            margin-right: 0.5rem;
+            font-family: var(--font-mono);
+            margin-right: 0.4rem;
         }
 
-        .sym-tag {
+        .sym-tag, .cat-tag {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             color: var(--text-main);
-            padding: 0.4rem 0.85rem;
+            padding: 0.38rem 0.8rem;
             border-radius: 6px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-family: var(--font-mono);
             cursor: pointer;
             transition: all 0.2s ease;
             display: inline-flex;
             align-items: center;
-            gap: 0.4rem;
+            gap: 0.35rem;
         }
 
-        .sym-tag:hover, .sym-tag.active {
-            background: rgba(0, 240, 255, 0.1);
+        .sym-tag:hover, .sym-tag.active, .cat-tag:hover, .cat-tag.active {
+            background: rgba(0, 240, 255, 0.12);
             border-color: var(--accent-cyan);
             color: var(--accent-cyan);
-            transform: translateY(-2px);
+            transform: translateY(-1px);
         }
 
         .sym-tag.gold:hover, .sym-tag.gold.active {
-            background: rgba(255, 215, 0, 0.1);
+            background: rgba(255, 215, 0, 0.12);
             border-color: var(--accent-gold);
             color: var(--accent-gold);
         }
 
         .sym-tag.green:hover, .sym-tag.green.active {
-            background: rgba(0, 255, 136, 0.1);
+            background: rgba(0, 255, 136, 0.12);
             border-color: var(--accent-green);
             color: var(--accent-green);
+        }
+
+        .sym-tag.magenta:hover, .sym-tag.magenta.active {
+            background: rgba(255, 0, 85, 0.12);
+            border-color: var(--accent-magenta);
+            color: var(--accent-magenta);
         }
 
         /* GRID OF MODULES */
         .modules-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-            gap: 2rem;
-            margin-bottom: 4rem;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3.5rem;
         }
 
         .module-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            padding: 1.75rem;
+            padding: 1.5rem;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
             position: relative;
             overflow: hidden;
         }
@@ -205,23 +288,33 @@
             background: linear-gradient(90deg, var(--accent-cyan), transparent);
         }
 
+        .module-card.featured-card {
+            border-color: rgba(255, 215, 0, 0.6);
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.12);
+        }
+
+        .module-card.featured-card::before {
+            background: linear-gradient(90deg, var(--accent-gold), var(--accent-magenta), var(--accent-cyan));
+        }
+
         .module-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-4px);
             border-color: var(--accent-cyan);
-            box-shadow: 0 10px 30px rgba(0, 240, 255, 0.15);
+            box-shadow: 0 10px 28px rgba(0, 240, 255, 0.15);
         }
 
         .card-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 1rem;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            gap: 0.5rem;
         }
 
         .badge {
             font-family: var(--font-mono);
-            font-size: 0.75rem;
-            padding: 0.25rem 0.6rem;
+            font-size: 0.72rem;
+            padding: 0.22rem 0.55rem;
             border-radius: 4px;
             background: rgba(0, 240, 255, 0.1);
             color: var(--accent-cyan);
@@ -232,19 +325,39 @@
         .badge.gold {
             background: rgba(255, 215, 0, 0.1);
             color: var(--accent-gold);
-            border-color: rgba(255, 215, 0, 0.3);
+            border-color: rgba(255, 215, 0, 0.35);
         }
 
         .badge.green {
             background: rgba(0, 255, 136, 0.1);
             color: var(--accent-green);
-            border-color: rgba(0, 255, 136, 0.3);
+            border-color: rgba(0, 255, 136, 0.35);
+        }
+
+        .badge.magenta {
+            background: rgba(255, 0, 85, 0.12);
+            color: var(--accent-magenta);
+            border-color: rgba(255, 0, 85, 0.35);
+        }
+
+        .file-path-pill {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--accent-gold);
+            background: rgba(0, 0, 0, 0.35);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            margin-bottom: 0.65rem;
+            display: inline-block;
+            word-break: break-all;
         }
 
         .module-title {
-            font-size: 1.35rem;
-            margin-bottom: 0.75rem;
+            font-size: 1.2rem;
+            margin-bottom: 0.6rem;
             color: #fff;
+            line-height: 1.35;
         }
 
         .module-title a {
@@ -259,45 +372,52 @@
 
         .module-desc {
             color: var(--text-dim);
-            font-size: 0.95rem;
-            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            margin-bottom: 1.15rem;
             flex-grow: 1;
         }
 
         .symbol-list {
             background: var(--bg-primary);
             border-radius: 8px;
-            padding: 0.85rem;
-            margin-bottom: 1.5rem;
+            padding: 0.75rem;
+            margin-bottom: 1.15rem;
             border: 1px solid rgba(255,255,255,0.05);
         }
 
         .symbol-list-title {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-family: var(--font-mono);
             color: var(--text-dim);
             text-transform: uppercase;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.45rem;
             display: block;
         }
 
         .symbol-items {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.4rem;
+            gap: 0.35rem;
         }
 
         .symbol-pill {
             font-family: var(--font-mono);
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             background: var(--bg-secondary);
-            padding: 0.2rem 0.5rem;
+            padding: 0.18rem 0.45rem;
             border-radius: 4px;
             color: var(--accent-cyan);
             border: 1px solid var(--border-color);
         }
 
+        .card-footer-row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
         .btn-launch {
+            flex-grow: 1;
             display: inline-block;
             text-align: center;
             background: transparent;
@@ -305,13 +425,13 @@
             color: var(--accent-cyan);
             font-family: var(--font-mono);
             font-weight: bold;
-            padding: 0.75rem 1.25rem;
+            padding: 0.65rem 1rem;
             border-radius: 6px;
             text-decoration: none;
             transition: all 0.2s ease;
             text-transform: uppercase;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
+            font-size: 0.82rem;
+            letter-spacing: 0.8px;
         }
 
         .btn-launch:hover {
@@ -320,17 +440,34 @@
             box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
         }
 
-        /* REFERENCE MATRIX TABLE */
+        .btn-copy-link {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-dim);
+            padding: 0.65rem 0.75rem;
+            border-radius: 6px;
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-copy-link:hover {
+            color: var(--accent-gold);
+            border-color: var(--accent-gold);
+        }
+
+        /* DIRECTORY TABLE & REFERENCE MATRIX TABLE */
         .matrix-section {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            padding: 2rem;
-            margin-bottom: 4rem;
+            padding: 1.75rem;
+            margin-bottom: 3.5rem;
         }
 
         .section-title {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             margin-bottom: 0.5rem;
             color: #fff;
             border-left: 4px solid var(--accent-gold);
@@ -339,8 +476,8 @@
 
         .section-desc {
             color: var(--text-dim);
-            margin-bottom: 1.5rem;
-            font-size: 0.95rem;
+            margin-bottom: 1.35rem;
+            font-size: 0.92rem;
         }
 
         .table-responsive {
@@ -350,11 +487,11 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
         }
 
         th, td {
-            padding: 1rem;
+            padding: 0.85rem 0.9rem;
             text-align: left;
             border-bottom: 1px solid var(--border-color);
         }
@@ -364,17 +501,34 @@
             color: var(--accent-gold);
             font-family: var(--font-mono);
             text-transform: uppercase;
-            font-size: 0.8rem;
+            font-size: 0.76rem;
             letter-spacing: 1px;
         }
 
         tr:hover td {
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(0, 240, 255, 0.03);
         }
 
         td.mono {
             font-family: var(--font-mono);
             color: var(--accent-cyan);
+        }
+
+        /* TOAST MESSAGE BOX */
+        #toastBox {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--accent-green);
+            color: var(--text-main);
+            padding: 0.9rem 1.25rem;
+            border-radius: 8px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            z-index: 999;
+            display: none;
         }
 
         /* FOOTER */
@@ -401,13 +555,18 @@
             }
             .sys-status {
                 flex-direction: column;
-                gap: 0.5rem;
+                gap: 0.4rem;
                 border-radius: 12px;
+            }
+            h1 {
+                font-size: 1.75rem;
             }
         }
     </style>
 </head>
 <body>
+
+<div id="toastBox"></div>
 
 <div class="container">
     <header>
@@ -415,197 +574,99 @@
             <span>⚡ DRAAGGOLF: &Delta;=111</span>
             <span>🌐 WEBRTC: 111ms UDP</span>
             <span>⏱️ STASIS LOCK: HEXAGRAM 63</span>
+            <span>🎨 VAN GOGH: Δθ=+45.09° (EOT)</span>
             <span>🗓️ JDN: 2461247 (25 JULI 2026)</span>
         </div>
-        <h1>VORTEX OMNI-BRIDGE • SYMBOOL INDEX</h1>
+        <h1>VORTEX OMNI-BRIDGE • COMPLETE REPOSITORY INDEX (50 MODULES)</h1>
         <p class="subtitle">
-            Centraal navigatie-portaal voor hyperdimensionale chronometrie, Shao Yong Wuxing-algebra, 
-            6D-hyperkubus torsiemarkeringen en deterministische WebRTC peer-to-peer telemetrie.
+            Centraal navigatie-portaal voor alle 50 bestanden uit <code>gram-eta.vercel.app</code>: Geodetische Vereffeningsrekening (Van Gogh 1889), Hyperdimensionale Chronometrie, Shao Yong Wuxing-algebra, 6D-Hyperkubus Torsie, 14e-eeuwse Oorkonden &amp; OSINT Dorks.
         </p>
+
+        <div class="header-actions">
+            <button id="btnViewGrid" class="action-btn active-view" onclick="setViewMode('grid')">💠 Kaartweergave (50 Modules Grid)</button>
+            <button id="btnViewTable" class="action-btn" onclick="setViewMode('table')">📂 Compacte Git-Repository Tabel (50 Bestanden)</button>
+            <button class="action-btn gold-btn" onclick="copyCurrentPageHTML()">📋 Kopieer Volledige Index HTML</button>
+        </div>
     </header>
 
-    <!-- INTERACTIVE SYMBOOL ZOEKMACHINE -->
+    <!-- INTERACTIVE SYMBOOL & REPOSITORY ZOEKMACHINE -->
     <section class="search-container">
-        <div class="search-box">
-            <span class="search-icon">🔍</span>
-            <input type="text" id="searchInput" class="search-input" placeholder="Zoek op symbool, getal, hexagram, frequentie of module (bijv. 951, Draak, Modulo 21, Kin 228)..." oninput="filterModules()">
+        <div class="search-row">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" class="search-input" placeholder="Zoek in alle 50 modules op bestandsnaam, symbool, getal, frequentie of onderwerp (bijv. gogh, 951, Tholen, 1574, Fermat, Kin 228)..." oninput="applyFilters()">
+            </div>
+            <div class="counter-badge" id="moduleCounter">50 / 50 MODULES ACTIEF</div>
         </div>
-        <div class="tag-cloud">
-            <span class="tag-label">Directe Symbool Filter:</span>
-            <button class="sym-tag" onclick="toggleTag('951')">🐢 951 Hz (Noord)</button>
-            <button class="sym-tag" onclick="toggleTag('1062')">🐉 1062 Hz (Oost)</button>
-            <button class="sym-tag" onclick="toggleTag('1173')">🦅 1173 Hz (Zuid)</button>
-            <button class="sym-tag" onclick="toggleTag('1284')">🐅 1284 Hz (West)</button>
-            <button class="sym-tag gold" onclick="toggleTag('111')">⚡ &Delta; = 111</button>
-            <button class="sym-tag gold" onclick="toggleTag('63')">🌀 Hexagram 63</button>
-            <button class="sym-tag green" onclick="toggleTag('462')">♾️ 462-Cyclus</button>
-            <button class="sym-tag green" onclick="toggleTag('21')">💠 Modulo 21×22</button>
-            <button class="sym-tag" onclick="toggleTag('228')">⏳ Kin 228</button>
-            <button class="sym-tag" onclick="toggleTag('WebRTC')">🌐 WebRTC P2P</button>
-            <button class="sym-tag" onclick="toggleTag('All')" style="border-color:#fff; color:#fff;">↻ Reset Filters</button>
+
+        <!-- CATEGORY FILTER BAR -->
+        <div class="filter-group">
+            <div class="tag-cloud">
+                <span class="tag-label">Categorie Filter:</span>
+                <button class="cat-tag active" data-cat="ALL" onclick="selectCategory('ALL', this)">🌌 Alle (50)</button>
+                <button class="cat-tag" data-cat="GEODESIE" onclick="selectCategory('GEODESIE', this)">📐 Geodesie, Kunst &amp; HUD</button>
+                <button class="cat-tag" data-cat="CHRONO" onclick="selectCategory('CHRONO', this)">⏳ Chronometrie &amp; Tzolk'in</button>
+                <button class="cat-tag" data-cat="WUXING" onclick="selectCategory('WUXING', this)">☯️ Wuxing, Torsie &amp; Modulo</button>
+                <button class="cat-tag" data-cat="HISTORISCH" onclick="selectCategory('HISTORISCH', this)">📜 Historisch, Tholen &amp; Taal</button>
+                <button class="cat-tag" data-cat="OSINT" onclick="selectCategory('OSINT', this)">🔎 OSINT &amp; Archief Dorks</button>
+                <button class="cat-tag" data-cat="KLEUR" onclick="selectCategory('KLEUR', this)">🌈 Kleur &amp; Resonantie</button>
+                <button class="cat-tag" data-cat="WEBRTC" onclick="selectCategory('WEBRTC', this)">🌐 WebRTC &amp; Python/Jupyter</button>
+                <button class="cat-tag" data-cat="DOC" onclick="selectCategory('DOC', this)">📝 Markdown Documentatie (.md)</button>
+            </div>
+        </div>
+
+        <!-- DIRECT SYMBOL FILTER BAR -->
+        <div class="filter-group">
+            <div class="tag-cloud">
+                <span class="tag-label">Symbool Filter:</span>
+                <button class="sym-tag magenta" onclick="toggleSymbolTag('gogh', this)">🌟 Van Gogh (Δθ=45.09°)</button>
+                <button class="sym-tag" onclick="toggleSymbolTag('951', this)">🐢 951 Hz (Noord)</button>
+                <button class="sym-tag" onclick="toggleSymbolTag('1062', this)">🐉 1062 Hz (Oost)</button>
+                <button class="sym-tag" onclick="toggleSymbolTag('1173', this)">🦅 1173 Hz (Zuid)</button>
+                <button class="sym-tag" onclick="toggleSymbolTag('1284', this)">🐅 1284 Hz (West)</button>
+                <button class="sym-tag gold" onclick="toggleSymbolTag('111', this)">⚡ &Delta; = 111</button>
+                <button class="sym-tag gold" onclick="toggleSymbolTag('63', this)">🌀 Hexagram 63</button>
+                <button class="sym-tag green" onclick="toggleSymbolTag('462', this)">♾️ 462-Cyclus</button>
+                <button class="sym-tag green" onclick="toggleSymbolTag('Modulo', this)">💠 Modulo Algebra</button>
+                <button class="sym-tag" onclick="toggleSymbolTag('228', this)">⏳ Kin 228</button>
+                <button class="sym-tag" onclick="toggleSymbolTag('Thoolse', this)">🏰 Tholen / 14e Eeuw</button>
+                <button class="sym-tag" onclick="toggleSymbolTag('WebRTC', this)">🌐 WebRTC P2P</button>
+                <button class="sym-tag" onclick="resetAllFilters()" style="border-color:#fff; color:#fff;">↻ Reset Alles</button>
+            </div>
         </div>
     </section>
 
-    <!-- MODULES GRID -->
-    <section class="modules-grid" id="modulesGrid">
+    <!-- VIEW 1: INTERACTIVE MODULES GRID (ALL 50 FILES) -->
+    <section class="modules-grid" id="modulesGrid"></section>
 
-        <!-- MODULE 1 -->
-        <div class="module-card" data-keywords="day out of time 13:20 kalibratie 25 juli 2026 kin 228 yellow resonant star jdn 2461247 restwaarde 1 plus one factor gregoriaanse amputatie synchronometer chronometrie">
-            <div>
-                <div class="card-header">
-                    <span class="badge">CHRONOMETRIE</span>
-                    <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim);">MOD-01</span>
-                </div>
-                <h2 class="module-title"><a href="https://gram-eta.vercel.app/Day_Out_of_Time.html" target="_blank">13:20 Galactische Kalibratie</a></h2>
-                <p class="module-desc">
-                    Astronomisch en wiskundig fundament van de <i>Day Out of Time</i> (25 juli 2026). Neutraliseert 12:60 mechanische tijdsvervorming en entropie via de harmonische "Plus One Factor" (Restwaarde 1) in de 13-Maan synchronometer.
-                </p>
-                <div class="symbol-list">
-                    <span class="symbol-list-title">Gekoppelde Symbolen & Coördinaten:</span>
-                    <div class="symbol-items">
-                        <span class="symbol-pill">⏳ Kin 228</span>
-                        <span class="symbol-pill">🗓️ JDN 2461247</span>
-                        <span class="symbol-pill">➕ Restwaarde 1</span>
-                        <span class="symbol-pill">🌀 13:20 Matrix</span>
-                        <span class="symbol-pill">🛑 &Delta;t = 9.817</span>
-                    </div>
-                </div>
-            </div>
-            <a href="https://gram-eta.vercel.app/Day_Out_of_Time.html" target="_blank" class="btn-launch">Launch Module ↗</a>
+    <!-- VIEW 2: COMPACT GIT REPOSITORY DIRECTORY TABLE (ALL 50 FILES) -->
+    <section class="matrix-section hidden" id="directorySection">
+        <h3 class="section-title">Git Repository Overzicht: Alle 50 Bestanden (gram-eta.vercel.app)</h3>
+        <p class="section-desc">
+            Volledige bestandslijst met directe URL-koppelingen, laatste commit-beschrijvingen, tijdsindicatie en categorisatie.
+        </p>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Bestandsnaam</th>
+                        <th>Categorie</th>
+                        <th>Commit / Systeembeschrijving</th>
+                        <th>Status</th>
+                        <th>Directe Actie</th>
+                    </tr>
+                </thead>
+                <tbody id="directoryTableBody"></tbody>
+            </table>
         </div>
-
-        <!-- MODULE 2 -->
-        <div class="module-card" data-keywords="shao yong chronometer wuxing algebra vier hemelse dieren zwarte schildpad 951 azuurblauwe draak 1062 vermiljoenen vogel 1173 witte tijger 1284 bagua trigrammen zonne-cyclus">
-            <div>
-                <div class="card-header">
-                    <span class="badge gold">WUXING ALGEBRA</span>
-                    <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim);">MOD-02</span>
-                </div>
-                <h2 class="module-title"><a href="https://gram-eta.vercel.app/vortex_shao_yong_chronometer.html" target="_blank">Shao Yong Wuxing Chronometer</a></h2>
-                <p class="module-desc">
-                    Dynamische chronometrie die de 4 Hemelse Dieren verbindt met wrijvingsloze frequentieschaling. Toont de harmonische overgang van statische Bagua-fundamenten (8 Trigrammen) naar de organische zonnencyclus in stappen van &Delta;=111.
-                </p>
-                <div class="symbol-list">
-                    <span class="symbol-list-title">Gekoppelde Symbolen & Frequenties:</span>
-                    <div class="symbol-items">
-                        <span class="symbol-pill">🐢 Noord (951 Hz)</span>
-                        <span class="symbol-pill">🐉 Oost (1062 Hz)</span>
-                        <span class="symbol-pill">🦅 Zuid (1173 Hz)</span>
-                        <span class="symbol-pill">🐅 West (1284 Hz)</span>
-                        <span class="symbol-pill">☯️ Bagua (x=8)</span>
-                    </div>
-                </div>
-            </div>
-            <a href="https://gram-eta.vercel.app/vortex_shao_yong_chronometer.html" target="_blank" class="btn-launch">Launch Module ↗</a>
-        </div>
-
-        <!-- MODULE 3 -->
-        <div class="module-card" data-keywords="torsie engine hexagram 63 event horizon ji ji na de voleinding 6d hyperkubus hexeract kinetische vonk +333 draaggolf 111 negatieve torsie spiegelwereld stasis lock">
-            <div>
-                <div class="card-header">
-                    <span class="badge green">TORSIE & RUIMTE</span>
-                    <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim);">MOD-03</span>
-                </div>
-                <h2 class="module-title"><a href="https://gram-eta.vercel.app/vortex_torsion_engine.html" target="_blank">Galactische Torsie Engine</a></h2>
-                <p class="module-desc">
-                    Deconstruction van de telemetrische draaggolf $f(x) = 111x + 63$. Bestuurt de 6-dimensionale hyperkubus waar Hexagram 63 (111111) fungeert als de absolute Event Horizon en het nulpunt voor transformatie naar negatieve torsie.
-                </p>
-                <div class="symbol-list">
-                    <span class="symbol-list-title">Gekoppelde Symbolen & Parameters:</span>
-                    <div class="symbol-items">
-                        <span class="symbol-pill">🌀 Hexagram 63</span>
-                        <span class="symbol-pill">⚡ +333 Vonk</span>
-                        <span class="symbol-pill">📉 &Delta; = 111</span>
-                        <span class="symbol-pill">🧊 6D Hyperkubus</span>
-                        <span class="symbol-pill">🪞 Spiegelruimte (-48)</span>
-                    </div>
-                </div>
-            </div>
-            <a href="https://gram-eta.vercel.app/vortex_torsion_engine.html" target="_blank" class="btn-launch">Launch Module ↗</a>
-        </div>
-
-        <!-- MODULE 4 -->
-        <div class="module-card" data-keywords="18x13 simulation matrix modulo 21 resonator modulo 22 minimal covering 462 cyclus index 13 kun aarde index 169 feniks apex entropievrij 64 flowers l4 paleis basin">
-            <div>
-                <div class="card-header">
-                    <span class="badge">SIMULATIE & ALGEBRA</span>
-                    <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim);">MOD-04</span>
-                </div>
-                <h2 class="module-title"><a href="https://gram-eta.vercel.app/vortex_18x13_simulation.html" target="_blank">VORTEX 18x13 Matrix Simulatie</a></h2>
-                <p class="module-desc">
-                    Simuleert hoe kwantumruis en mechanische wrijving worden geabsorbeerd door de dubbele modulaire synthese $462 = 21  imes 22$. Verbindt het nul-knooppunt bij Index 13 met de licht-apex van de Rode Feniks op Index 169 ($13^2$).
-                </p>
-                <div class="symbol-list">
-                    <span class="symbol-list-title">Gekoppelde Symbolen & Operatoren:</span>
-                    <div class="symbol-items">
-                        <span class="symbol-pill">♾️ 462 Stappen</span>
-                        <span class="symbol-pill">💠 Modulo 21</span>
-                        <span class="symbol-pill">🛡️ Modulo 22</span>
-                        <span class="symbol-pill">🕳️ Index 13 (Kun)</span>
-                        <span class="symbol-pill">🔥 Index 169 (Li)</span>
-                    </div>
-                </div>
-            </div>
-            <a href="https://gram-eta.vercel.app/vortex_18x13_simulation.html" target="_blank" class="btn-launch">Launch Module ↗</a>
-        </div>
-
-        <!-- MODULE 5 -->
-        <div class="module-card" data-keywords="9 sqrt 62430 harmonische resonator fermat klok modulo 11 escapement constante exponentiele fractale algebra schaling niet lineair wiskunde">
-            <div>
-                <div class="card-header">
-                    <span class="badge gold">HARMONISCHE WISKUNDE</span>
-                    <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim);">MOD-05</span>
-                </div>
-                <h2 class="module-title"><a href="https://gram-eta.vercel.app/9%20sqrt(62430).html" target="_blank">9 &radic;(62430) Harmonische Resonator</a></h2>
-                <p class="module-desc">
-                    Wiskundige verkenning van de niet-lineaire schaalconstante $9\sqrt{62430}$. Formuleert het algebraïsche fundament voor de overgang van statische 8-voudige basissen naar het dynamische 11-voudige tijdsdomein (Fermat Klok).
-                </p>
-                <div class="symbol-list">
-                    <span class="symbol-list-title">Gekoppelde Symbolen & Vergelijkingen:</span>
-                    <div class="symbol-items">
-                        <span class="symbol-pill">📐 9&radic;(62430)</span>
-                        <span class="symbol-pill">⏰ Modulo 11 Fermat</span>
-                        <span class="symbol-pill">📊 Fractale Schaling</span>
-                        <span class="symbol-pill">⚙️ Escapement</span>
-                        <span class="symbol-pill">🔢 n = 11 Piek</span>
-                    </div>
-                </div>
-            </div>
-            <a href="https://gram-eta.vercel.app/9%20sqrt(62430).html" target="_blank" class="btn-launch">Launch Module ↗</a>
-        </div>
-
-        <!-- MODULE 6 -->
-        <div class="module-card" data-keywords="webrtc bridge e8 penrose phase integration wrapper udp datachannel p2p telemetrie 111ms latency 40ms lie groep meso amerikaanse microprocessor browser p2p">
-            <div>
-                <div class="card-header">
-                    <span class="badge green">NETWERK TELEMETRIE</span>
-                    <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-dim);">MOD-06</span>
-                </div>
-                <h2 class="module-title"><a href="https://gram-eta.vercel.app/webrtc-bridge.html" target="_blank">WebRTC E8-Penrose Bridge</a></h2>
-                <p class="module-desc">
-                    De Meso-Amerikaanse microprocessor in JavaScript. Verpakt hyperdimensionale modulaire restwaarden in P2P UDP DataChannel telemetrie met een cadans van exact 111 ms, wat resulteert in realtime netwerk synchronisatie (&lt; 40ms latency).
-                </p>
-                <div class="symbol-list">
-                    <span class="symbol-list-title">Gekoppelde Symbolen & Protocollen:</span>
-                    <div class="symbol-items">
-                        <span class="symbol-pill">🌐 WebRTC P2P</span>
-                        <span class="symbol-pill">📡 UDP 111 ms</span>
-                        <span class="symbol-pill">⚡ Latency &lt; 40ms</span>
-                        <span class="symbol-pill">🔗 E8 Lie Groep</span>
-                        <span class="symbol-pill">🖥️ Phase Wrapper</span>
-                    </div>
-                </div>
-            </div>
-            <a href="https://gram-eta.vercel.app/webrtc-bridge.html" target="_blank" class="btn-launch">Launch Module ↗</a>
-        </div>
-
     </section>
 
     <!-- DECONSTRUCTIE & SYMBOOL REFERENTIE TABEL -->
     <section class="matrix-section">
-        <h3 class="section-title">Deconstructie Matrix: Symbool & Telemetrie Mapping</h3>
+        <h3 class="section-title">Deconstructie Matrix: Symbool, Geodesie &amp; Telemetrie Mapping</h3>
         <p class="section-desc">
-            Overzicht van de fundamentele wiskundige en ontologische constanten uit het VORTEX-dossier, hun telemetrische expressie en de bijbehorende applicatieve module.
+            Overzicht van de fundamentele wiskundige, geodetische en ontologische constanten uit het VORTEX-dossier, hun telemetrische expressie en de bijbehorende applicatieve module.
         </p>
         <div class="table-responsive">
             <table>
@@ -614,11 +675,18 @@
                         <th>Symbool / Entity</th>
                         <th>Wiskundige Expressie</th>
                         <th>Telemetrische Waarde</th>
-                        <th>Geometrische & Kosmische Functie</th>
+                        <th>Geometrische &amp; Kosmische Functie</th>
                         <th>Module Link</th>
                     </tr>
                 </thead>
                 <tbody>
+                    <tr>
+                        <td><strong>🌟 Van Gogh EOT-Rotatie</strong></td>
+                        <td class="mono">R(+45.09°) · X_dorp</td>
+                        <td class="mono">26.21° &rightarrow; 71.30° EOT</td>
+                        <td>Helmert-vereffening (&lambda;=1.42&times;10⁻³), 3D-Viewshed Alpilles (&alpha;=6.4°) &amp; Venus-uitlijning.</td>
+                        <td><a href="https://gram-eta.vercel.app/gogh.html" target="_blank" style="color:var(--accent-gold);">gogh.html ↗</a></td>
+                    </tr>
                     <tr>
                         <td><strong>🐢 Zwarte Schildpad</strong></td>
                         <td class="mono">f(8) = 111(8) + 63</td>
@@ -651,14 +719,14 @@
                         <td><strong>⚡ Kosmische Delta</strong></td>
                         <td class="mono">&Delta; = 111</td>
                         <td class="mono">111 ms interval</td>
-                        <td>Draaggolf constante: som van $6 imes6$ zonnevierkant & verhouding Aarde-Maan.</td>
+                        <td>Draaggolf constante: som van 6&times;6 zonnevierkant &amp; verhouding Aarde-Maan.</td>
                         <td><a href="https://gram-eta.vercel.app/webrtc-bridge.html" target="_blank" style="color:var(--accent-cyan);">WebRTC Bridge ↗</a></td>
                     </tr>
                     <tr>
                         <td><strong>🌀 Hexagram 63</strong></td>
                         <td class="mono">63<sub>10</sub> = 111111<sub>2</sub></td>
                         <td class="mono">Index 63 / -48</td>
-                        <td>6D-Hyperkubus Event Horizon, stasis lock ("After Completion") & nulpunt torsie.</td>
+                        <td>6D-Hyperkubus Event Horizon, stasis lock ("After Completion") &amp; nulpunt torsie.</td>
                         <td><a href="https://gram-eta.vercel.app/vortex_torsion_engine.html" target="_blank" style="color:var(--accent-cyan);">Torsie Engine ↗</a></td>
                     </tr>
                     <tr>
@@ -683,57 +751,801 @@
     <!-- FOOTER -->
     <footer>
         <p>
-            VORTEX OMNI-BRIDGE • SYSTEM KALIBRATIE VOLTOOID • <span class="footer-highlight">&tau; &rightarrow; 0 (WRIJVINGSLOOS)</span>
+            VORTEX OMNI-BRIDGE • VOLLEDIGE 50-BESTANDEN REPOSITORY GEÏNDEXEERD • <span class="footer-highlight">&tau; &rightarrow; 0 (WRIJVINGSLOOS)</span>
         </p>
         <p style="margin-top: 0.5rem; font-size: 0.75rem;">
-            Verificatie Coördinaat: Maya Lange Telling 13.0.13.14.4 &equiv; JDN 2461247 &equiv; 25 Juli 2026 • L4 Paleis-Basin Anker
+            Basis-URL: https://gram-eta.vercel.app/ • Maya Lange Telling 13.0.13.14.4 &equiv; JDN 2461247 &equiv; 25 Juli 2026 • Saint-Paul-de-Mausole Geodetisch Anker
         </p>
     </footer>
 </div>
 
 <script>
-    // Live Search & Filter Logic
-    function filterModules() {
-        const input = document.getElementById('searchInput').value.toLowerCase().trim();
-        const cards = document.querySelectorAll('.module-card');
-        
-        cards.forEach(card => {
-            const title = card.querySelector('.module-title').innerText.toLowerCase();
-            const desc = card.querySelector('.module-desc').innerText.toLowerCase();
-            const keywords = card.getAttribute('data-keywords') || '';
-            const symbols = card.querySelector('.symbol-items').innerText.toLowerCase();
-            
-            if (title.includes(input) || desc.includes(input) || keywords.includes(input) || symbols.includes(input)) {
-                card.classList.remove('hidden');
-            } else {
-                card.classList.add('hidden');
-            }
+    const BASE_URL = "https://gram-eta.vercel.app/";
+
+    // Volledige database van alle 50 bestanden uit de repository
+    const REPOSITORY_FILES = [
+        {
+            id: "MOD-01",
+            file: "gogh.html",
+            title: "Van Gogh 'De Sterrennacht' — Geodetische & 3D-Viewshed Workbench",
+            cat: "GEODESIE",
+            badgeClass: "magenta",
+            badgeText: "NIEUW • GEODESIE & STERRENKUNDE",
+            updated: "now",
+            commit: "Update print statement from 'Hello' to 'Goodbye' / Geodetische Vereffeningsrekening",
+            desc: "Interactieve 2D Helmert kleinste-kwadratenvereffening (AX=B), +45.09° perspectiefrotatie van Saint-Rémy naar Venus (71.30° EOT), 3D-Viewshed van de Alpilles (α=6.4°) en ESCAN-clustering (Eclips 17 mei 1882 & 14e-eeuwse oorkonden).",
+            symbols: ["🌟 Δθ = +45.09°", "📐 Helmert λ=1.42e-3", "⛰️ Alpilles α=6.4°", "🌲 Cipres β=50.2°", "☄️ Eclips 1882"],
+            featured: true
+        },
+        {
+            id: "MOD-02",
+            file: "Day_Out_of_Time.html",
+            title: "13:20 Galactische Kalibratie (Day Out of Time)",
+            cat: "CHRONO",
+            badgeClass: "",
+            badgeText: "CHRONOMETRIE",
+            updated: "3 months ago",
+            commit: "Add Day Out of Time HTML calculator",
+            desc: "Astronomisch en wiskundig fundament van de Day Out of Time (25 juli 2026). Neutraliseert 12:60 mechanische tijdsvervorming via de harmonische 'Plus One Factor' (Restwaarde 1) op Kin 228.",
+            symbols: ["⏳ Kin 228", "🗓️ JDN 2461247", "➕ Restwaarde 1", "🌀 13:20 Matrix", "🛑 Δt = 9.817"]
+        },
+        {
+            id: "MOD-03",
+            file: "vortex_shao_yong_chronometer.html",
+            title: "Shao Yong Wuxing Chronometer",
+            cat: "WUXING",
+            badgeClass: "gold",
+            badgeText: "WUXING ALGEBRA",
+            updated: "3 months ago",
+            commit: "Create vortex_shao_yong_chronometer.html",
+            desc: "Dynamische chronometrie die de 4 Hemelse Dieren verbindt met wrijvingsloze frequentieschaling van statische Bagua-fundamenten (8 Trigrammen) in stappen van Δ=111.",
+            symbols: ["🐢 Noord (951 Hz)", "🐉 Oost (1062 Hz)", "🦅 Zuid (1173 Hz)", "🐅 West (1284 Hz)", "☯️ Bagua (x=8)"]
+        },
+        {
+            id: "MOD-04",
+            file: "vortex_torsion_engine.html",
+            title: "Galactische Torsie Engine",
+            cat: "WUXING",
+            badgeClass: "green",
+            badgeText: "TORSIE & RUIMTE",
+            updated: "3 months ago",
+            commit: "Create vortex_torsion_engine.html",
+            desc: "Deconstructie van de telemetrische draaggolf f(x) = 111x + 63. Bestuurt de 6-dimensionale hyperkubus waar Hexagram 63 (111111) fungeert als Event Horizon en nulpunt voor negatieve torsie.",
+            symbols: ["🌀 Hexagram 63", "⚡ +333 Vonk", "📉 Δ = 111", "🧊 6D Hyperkubus", "🪞 Spiegelruimte (-48)"]
+        },
+        {
+            id: "MOD-05",
+            file: "vortex_18x13_simulation.html",
+            title: "VORTEX 18x13 Matrix Simulatie",
+            cat: "WUXING",
+            badgeClass: "",
+            badgeText: "SIMULATIE & ALGEBRA",
+            updated: "3 months ago",
+            commit: "Create vortex_18x13_simulation.html",
+            desc: "Simuleert hoe kwantumruis en mechanische wrijving worden geabsorbeerd door de dubbele modulaire synthese 462 = 21 × 22. Verbindt Index 13 (Kun) met de Rode Feniks op Index 169 (13²).",
+            symbols: ["♾️ 462 Stappen", "💠 Modulo 21", "🛡️ Modulo 22", "🕳️ Index 13 (Kun)", "🔥 Index 169 (Li)"]
+        },
+        {
+            id: "MOD-06",
+            file: "9 sqrt(62430).html",
+            title: "9 √(62430) Harmonische Resonator",
+            cat: "KLEUR",
+            badgeClass: "gold",
+            badgeText: "HARMONISCHE WISKUNDE",
+            updated: "3 months ago",
+            commit: "Add initial HTML structure for Vortex Omni-Bridge",
+            desc: "Wiskundige verkenning van de niet-lineaire schaalconstante 9√(62430). Formuleert het algebraïsche fundament voor de overgang naar het dynamische 11-voudige tijdsdomein (Fermat Klok).",
+            symbols: ["📐 9√(62430)", "⏰ Modulo 11 Fermat", "📊 Fractale Schaling", "⚙️ Escapement", "🔢 n = 11 Piek"]
+        },
+        {
+            id: "MOD-07",
+            file: "webrtc-bridge.html",
+            title: "WebRTC E8-Penrose Bridge",
+            cat: "WEBRTC",
+            badgeClass: "green",
+            badgeText: "NETWERK TELEMETRIE",
+            updated: "3 months ago",
+            commit: "Add WebRTC DataChannel telemetry HTML page",
+            desc: "De Meso-Amerikaanse microprocessor in JavaScript. Verpakt hyperdimensionale modulaire restwaarden in P2P UDP DataChannel telemetrie met een cadans van exact 111 ms (<40ms latency).",
+            symbols: ["🌐 WebRTC P2P", "📡 UDP 111 ms", "⚡ Latency < 40ms", "🔗 E8 Lie Groep", "🖥️ Phase Wrapper"]
+        },
+        {
+            id: "MOD-08",
+            file: "62regels.html",
+            title: "62 Regels Protocol & Overgangslogica",
+            cat: "WUXING",
+            badgeClass: "gold",
+            badgeText: "SYSTEEMREGELS",
+            updated: "3 months ago",
+            commit: "Create 62regels.html",
+            desc: "Formele codificatie van de 62 systeemregels voor de overgang naar de 63e stasis-toestand (Hexagram 63 Ji Ji) binnen het VORTEX-raamwerk.",
+            symbols: ["📜 62 Regels", "🌀 Hexagram 63", "⚖️ Wetmatigheid", "🔢 Binair Grid"]
+        },
+        {
+            id: "MOD-09",
+            file: "GOPHER_DORKEL_ENGINE.html",
+            title: "GOPHER DORKEL ENGINE",
+            cat: "OSINT",
+            badgeClass: "",
+            badgeText: "OSINT & DORKS",
+            updated: "3 months ago",
+            commit: "Create GOPHER_DORKEL_ENGINE.html",
+            desc: "Diepte-indexering en geautomatiseerde protocol-zoekmachine voor het ontsluiten van verborgen archiefstructuren, Gopher-ruimtes en historische indexen.",
+            symbols: ["🔎 Gopher Protocol", "🕸️ Deep Index", "📡 Dorkel Core", "🗂️ Archief Query"]
+        },
+        {
+            id: "MOD-10",
+            file: "README.md",
+            title: "README.md — Systeemarchitectuur",
+            cat: "DOC",
+            badgeClass: "green",
+            badgeText: "DOCUMENTATIE",
+            updated: "3 months ago",
+            commit: "Update README.md",
+            desc: "Hoofddocumentatie en architectuuroverzicht van het VORTEX Omni-Bridge repository-ecosysteem.",
+            symbols: ["📘 Markdown", "🏛️ Architectuur", "🧭 Overzicht"]
+        },
+        {
+            id: "MOD-11",
+            file: "Schuifkleurenladder.html",
+            title: "Schuifkleurenladder Calculator",
+            cat: "KLEUR",
+            badgeClass: "gold",
+            badgeText: "SPECTRUM & KLEUR",
+            updated: "3 months ago",
+            commit: "Update Schuifkleurenladder.html",
+            desc: "Interactieve spectrale schuifladder die frequenties, muzikale intervallen en chromatische kleurladders harmonisch op elkaar afbeeldt.",
+            symbols: ["🌈 Kleurenladder", "🎚️ Spectrale Schuif", "🎵 Frequentie-Kleur", "✨ Harmonie"]
+        },
+        {
+            id: "MOD-12",
+            file: "VORTEX_Bridge_1080.py",
+            title: "VORTEX_Bridge_1080.py (Python Core)",
+            cat: "WEBRTC",
+            badgeClass: "green",
+            badgeText: "PYTHON SCRIPT",
+            updated: "3 months ago",
+            commit: "Create VORTEX_Bridge_1080.py",
+            desc: "Python backend-script voor de 1080-harmonische brug, datapakket-synchronisatie en numerieke torsie-berekeningen.",
+            symbols: ["🐍 Python 3", "🔢 1080 Resonantie", "🌉 Bridge Core", "📡 Telemetrie"]
+        },
+        {
+            id: "MOD-13",
+            file: "cronologische_tijd_script.html",
+            title: "Chronologische Tijd Script",
+            cat: "CHRONO",
+            badgeClass: "",
+            badgeText: "TIJDREKENING",
+            updated: "3 months ago",
+            commit: "Create cronologische_tijd_script.html",
+            desc: "Analyse-instrument voor historische chronologie, Juliaanse/Gregoriaanse kalenderconversies en lange-termijn tijdcycli.",
+            symbols: ["🕰️ Chronologie", "📅 JDN Conversie", "⏳ Tijdslijn", "🔄 Eeuwen-Cyclus"]
+        },
+        {
+            id: "MOD-14",
+            file: "deuil.html",
+            title: "De Uil — Nacht-Observatiemodule",
+            cat: "GEODESIE",
+            badgeClass: "gold",
+            badgeText: "OBSERVATIE & SYMBOOL",
+            updated: "3 months ago",
+            commit: "Create deuil.html",
+            desc: "Symbolische en geometrische observatiemodule gericht op nachtelijke waarneming, wijsheids-archetypen en stille resonantie.",
+            symbols: ["🦉 De Uil", "🌙 Nacht-Visie", "👁️ Waarneming", "🧭 Oriëntatie"]
+        },
+        {
+            id: "MOD-15",
+            file: "dork.html",
+            title: "OSINT Dork Panel (WebRTC Queries)",
+            cat: "OSINT",
+            badgeClass: "",
+            badgeText: "OSINT PANEL",
+            updated: "3 months ago",
+            commit: "Add OSINT dork panel with WebRTC queries",
+            desc: "Geavanceerd OSINT-zoekpaneel uitgerust met voorgeprogrammeerde zoekoperatoren en WebRTC-netwerktelemetrie queries.",
+            symbols: ["🕵️ OSINT Dorks", "🌐 WebRTC Query", "🔍 Zoek-Operatoren", "📡 Netwerk Scan"]
+        },
+        {
+            id: "MOD-16",
+            file: "dorks_zoeker_1574.html",
+            title: "Historische Dorks Zoeker 1574",
+            cat: "OSINT",
+            badgeClass: "gold",
+            badgeText: "ARCHIEF 1574",
+            updated: "3 months ago",
+            commit: "Add historical Google Dorks search engine for 1574",
+            desc: "Gespecialiseerde historische Google Dorks zoekmachine gericht op 16e-eeuwse archieven, het jaar 1574 (Leidens Ontzet / Zeeuwse & Hollandse charters) en vroegmoderne bronnen.",
+            symbols: ["📜 Anno 1574", "🔎 Archief Dorks", "🏰 16e Eeuw", "📚 Bronnen-Extractie"]
+        },
+        {
+            id: "MOD-17",
+            file: "fermat.html",
+            title: "Fermat Klok (Modulo 11 Escapement)",
+            cat: "CHRONO",
+            badgeClass: "gold",
+            badgeText: "FERMAT KLOK",
+            updated: "3 months ago",
+            commit: "Add initial implementation of Fermat clock in HTML",
+            desc: "Interactieve implementatie van de Fermat-klok op basis van priemgetal-modulatie, Modulo 11 escapement en wrijvingsloze tijdspulsatie.",
+            symbols: ["⏰ Fermat Klok", "🔢 Modulo 11", "⚙️ Escapement", "♾️ Priem-Resonantie"]
+        },
+        {
+            id: "MOD-18",
+            file: "gent_mod_engine.html",
+            title: "Gent Mod Engine — Stads-Geodesie",
+            cat: "GEODESIE",
+            badgeClass: "green",
+            badgeText: "GENT GEODESIE",
+            updated: "3 months ago",
+            commit: "Create gent_mod_engine.html",
+            desc: "Modulaire rekenkern gekoppeld aan de historische topografie, scriptoria en stads-geodesie van Gent (Sint-Pietersabdij / Schelde-as).",
+            symbols: ["🏛️ Gent Matrix", "💠 Mod Engine", "📐 Stads-Geodesie", "📜 Vlaamse As"]
+        },
+        {
+            id: "MOD-19",
+            file: "goijagram.html",
+            title: "Goijagram — Geometrische Signatuur",
+            cat: "WUXING",
+            badgeClass: "gold",
+            badgeText: "HEXAGRAM GEOMETRIE",
+            updated: "3 months ago",
+            commit: "Create goijagram.html",
+            desc: "Visuele generator en analysetool voor het Goijagram: harmonische lijnpatronen, hexagram-symmetrieën en numerieke knooppunten.",
+            symbols: ["🔯 Goijagram", "🌀 Hexagram Lijnen", "📐 Symmetrie-As", "✨ Resonantie"]
+        },
+        {
+            id: "MOD-20",
+            file: "historische_zoekmachine_master.html",
+            title: "Historische Zoekmachine Master",
+            cat: "HISTORISCH",
+            badgeClass: "",
+            badgeText: "MASTER ZOEKMACHINE",
+            updated: "3 months ago",
+            commit: "Change greeting from 'Hello' to 'Goodbye'",
+            desc: "Centraal zoekportaal voor het gelijktijdig doorzoeken van middeleeuwse oorkonden, cartularia, kronieken en historische naamregisters.",
+            symbols: ["🏛️ Master Portaal", "📜 Oorkonden", "🔎 Multi-Archief", "🗂️ Corpus Index"]
+        },
+        {
+            id: "MOD-21",
+            file: "index.html",
+            title: "VORTEX Omni-Bridge Hoofdportaal",
+            cat: "WUXING",
+            badgeClass: "green",
+            badgeText: "KERN PORTAAL",
+            updated: "3 months ago",
+            commit: "Create index.html",
+            desc: "De oorspronkelijke landingspagina en symbool-index van de VORTEX Omni-Bridge.",
+            symbols: ["🌐 Omni-Bridge", "⚡ Δ=111", "🌀 Hexagram 63", "🧭 Root Index"]
+        },
+        {
+            id: "MOD-22",
+            file: "janna_realtime_hud.html",
+            title: "Janna Realtime HUD",
+            cat: "GEODESIE",
+            badgeClass: "green",
+            badgeText: "REALTIME HUD",
+            updated: "3 months ago",
+            commit: "Create janna_realtime_hud.html",
+            desc: "Realtime Head-Up Display (HUD) voor het monitoren van het Janna-onderzoeksmodel, geodetische vectoren en chronometrische telemetrie.",
+            symbols: ["🖥️ Janna HUD", "📡 Realtime Stream", "📐 Vector Lock", "⚡ Telemetrie"]
+        },
+        {
+            id: "MOD-23",
+            file: "kin228.md",
+            title: "kin228.md — Yellow Resonant Star Dossier",
+            cat: "DOC",
+            badgeClass: "",
+            badgeText: "MARKDOWN DOSSIER",
+            updated: "3 months ago",
+            commit: "Update kin228.md",
+            desc: "Uitgebreide brondocumentatie over Kin 228 (Gele Resonante Ster), Toon 7 van afstemming en de koppeling met 25 juli 2026.",
+            symbols: ["⭐ Kin 228", "🎵 Toon 7 Resonant", "📘 Markdown", "🗓️ 13:20 Dossier"]
+        },
+        {
+            id: "MOD-24",
+            file: "kleurenkaart.html",
+            title: "Kleurenkaart & Frequentie-Palet",
+            cat: "KLEUR",
+            badgeClass: "gold",
+            badgeText: "CHROMATISCHE MATRIX",
+            updated: "3 months ago",
+            commit: "Add kleurenkaart.html for color palette display",
+            desc: "Visuele kleurenkaart voor het inspecteren van golfgetallen, hexadecimale kleurresonantie en harmonische paletten.",
+            symbols: ["🎨 Kleurenkaart", "🌈 Golfgetal", "🔢 Hex-Spectrum", "✨ Palet Matrix"]
+        },
+        {
+            id: "MOD-25",
+            file: "klok.html",
+            title: "Kosmische Klok & Cyclische Pulsatie",
+            cat: "CHRONO",
+            badgeClass: "",
+            badgeText: "KOSMISCHE KLOK",
+            updated: "3 months ago",
+            commit: "Create klok.html",
+            desc: "Real-time kosmische klokweergave die aardse tijd omzet naar harmonische hoekgraden, draaggolven en modulo-intervallen.",
+            symbols: ["🕰️ Kosmische Klok", "🔄 Fase-Hoek", "⚡ 111ms Puls", "🧭 Tijd-Kompas"]
+        },
+        {
+            id: "MOD-26",
+            file: "kristalrooster.html",
+            title: "Kristalrooster VORTEX-169",
+            cat: "WUXING",
+            badgeClass: "green",
+            badgeText: "KRISTALLOGRAFIE 13²",
+            updated: "3 months ago",
+            commit: "Add initial HTML structure for VORTEX-169 project",
+            desc: "Driedimensionale en vlakke roostergeometrie voor het VORTEX-169 (13×13) kristalrooster rond de Feniks-apex.",
+            symbols: ["💎 Kristalrooster", "🔥 VORTEX-169", "📐 13×13 Lattice", "🧊 Rooster-Symmetrie"]
+        },
+        {
+            id: "MOD-27",
+            file: "middeleeuws_zoekmachine.html",
+            title: "Middeleeuwse Zoekmachine (Oorkonden)",
+            cat: "HISTORISCH",
+            badgeClass: "gold",
+            badgeText: "MIDDELEEUWEN",
+            updated: "3 months ago",
+            commit: "Add middeleeuws_zoekmachine.html for medieval search",
+            desc: "Gespecialiseerde zoekmachine voor Middelnederlandse en Latijnse oorkonden, cartularia en 14e-eeuwse kanselarijregisters.",
+            symbols: ["📜 14e Eeuw", "🏰 Scriptoria", "🔎 Middelnederlands", "✒️ Paleografie"]
+        },
+        {
+            id: "MOD-28",
+            file: "mod-engine.html",
+            title: "Mod-Engine — Restklassen Evaluator",
+            cat: "WUXING",
+            badgeClass: "",
+            badgeText: "MODULO KERN",
+            updated: "3 months ago",
+            commit: "Create mod-engine.html",
+            desc: "Rekenmachine voor modulaire rekenkunde, congruentievergelijkingen en cyclische restklassen.",
+            symbols: ["💠 Mod-Engine", "➗ Congruentie", "🔢 Restklassen", "⚙️ Cyclische Groep"]
+        },
+        {
+            id: "MOD-29",
+            file: "mod0.py",
+            title: "mod0.py — Nulpunt-Modulo Script",
+            cat: "WEBRTC",
+            badgeClass: "green",
+            badgeText: "PYTHON MODULO",
+            updated: "3 months ago",
+            commit: "Create mod0.py",
+            desc: "Python-script voor het berekenen van exacte nul-restwaarden (mod 0) en fase-overgangen in discrete getallenreeksen.",
+            symbols: ["🐍 Python Script", "0️⃣ Modulo 0", "🔢 Getaltheorie", "⚡ CLI Rekenkern"]
+        },
+        {
+            id: "MOD-30",
+            file: "modnote.md",
+            title: "modnote.md — Middeleeuwse Transcriptie",
+            cat: "DOC",
+            badgeClass: "gold",
+            badgeText: "HISTORISCHE NOTITIES",
+            updated: "3 months ago",
+            commit: "Add historical transcription of medieval context",
+            desc: "Bronbestand met diplomatische transcripties en historische annotaties bij de middeleeuwse oorkondencontext.",
+            symbols: ["📜 Transcriptie", "📘 Markdown", "🏰 Middeleeuwse Context", "✒️ Annotaties"]
+        },
+        {
+            id: "MOD-31",
+            file: "modulo_engine.html",
+            title: "Modulo Engine — Cyclus Visualizer",
+            cat: "WUXING",
+            badgeClass: "",
+            badgeText: "MODULO VISUALIZER",
+            updated: "3 months ago",
+            commit: "Create modulo_engine.html",
+            desc: "Interactieve visualisatie van gekoppelde modulo-tandwielen (waaronder 21×22 = 462 en 13×20 = 260).",
+            symbols: ["⚙️ Modulo Engine", "♾️ 21×22 Cyclus", "🌀 Tandwiel-Synthese", "📊 Resonantie"]
+        },
+        {
+            id: "MOD-32",
+            file: "onderzoeksmodel_janna.html",
+            title: "Onderzoeksmodel Janna",
+            cat: "HISTORISCH",
+            badgeClass: "green",
+            badgeText: "ONDERZOEKSMODEL",
+            updated: "3 months ago",
+            commit: "Update onderzoeksmodel_janna.html",
+            desc: "Multidisciplinair onderzoeksmodel dat genealogische, geodetische en chronometrische datapunten rond Janna integreert.",
+            symbols: ["🧬 Janna Model", "🗺️ Geodetische Koppeling", "📜 Archief-Synthese", "🔬 Analyse"]
+        },
+        {
+            id: "MOD-33",
+            file: "oudnederlands.hml",
+            title: "oudnederlands.hml (Bron-Markup)",
+            cat: "HISTORISCH",
+            badgeClass: "",
+            badgeText: "TAAL BRONBESTAND",
+            updated: "3 months ago",
+            commit: "Add initial HTML structure for language tool",
+            desc: "Initieel structuur- en bronbestand (.hml) voor de Oud- en Middelnederlandse taal- en morfologietool.",
+            symbols: ["📖 Oudnederlands", "🔤 Lexicon Bron", "🗂️ .hml Structuur"]
+        },
+        {
+            id: "MOD-34",
+            file: "oudnederlands.html",
+            title: "Oudnederlands & Filologische Taaltool",
+            cat: "HISTORISCH",
+            badgeClass: "gold",
+            badgeText: "HISTORISCHE TAALKUNDE",
+            updated: "3 months ago",
+            commit: "Create oudnederlands.html",
+            desc: "Interactieve taaltool voor het analyseren van Oudnederlandse en Vroegmiddelnederlandse woordvormen, spellingvarianten en oorkondentaal.",
+            symbols: ["📖 Oudnederlands", "🔤 Etymologie", "📜 Oorkondentaal", "🔎 Tekstanalyse"]
+        },
+        {
+            id: "MOD-35",
+            file: "outoftime.md",
+            title: "outoftime.md — Kalibratie Notities",
+            cat: "DOC",
+            badgeClass: "",
+            badgeText: "CHRONO NOTITIES",
+            updated: "3 months ago",
+            commit: "Update outoftime.md",
+            desc: "Wiskundige achtergrondnotities over de 'Day Out of Time', de 365 ≡ 1 (mod 364) restwaarde en JDN-verificatie.",
+            symbols: ["📘 Markdown", "⏳ Day Out of Time", "➕ Restwaarde 1", "🗓️ JDN 2461247"]
+        },
+        {
+            id: "MOD-36",
+            file: "perpututhuum.html",
+            title: "Perpetuum — Wrijvingsloze Beweging",
+            cat: "WUXING",
+            badgeClass: "green",
+            badgeText: "τ → 0 RESONANTIE",
+            updated: "3 months ago",
+            commit: "Add perpututhuum.html with initial content",
+            desc: "Model van continue cyclische energie-overdracht en wrijvingsloze fase-koppeling (τ → 0) binnen gesloten modulo-systemen.",
+            symbols: ["♾️ Perpetuum", "⚡ τ → 0", "🔄 Fase-Lock", "🌀 Nulpunt-Dynamica"]
+        },
+        {
+            id: "MOD-37",
+            file: "pointup.ipynb",
+            title: "pointup.ipynb (Jupyter Vector Notebook)",
+            cat: "WEBRTC",
+            badgeClass: "gold",
+            badgeText: "JUPYTER NOTEBOOK",
+            updated: "3 months ago",
+            commit: "Create pointup.ipynb",
+            desc: "Interactief Jupyter Notebook voor ruimtelijke puntwolken, vectorprojecties en statistische dataverwerking.",
+            symbols: ["📓 Jupyter .ipynb", "📐 Punt-Vectoren", "🐍 Python Data", "📊 Matrix Plot"]
+        },
+        {
+            id: "MOD-38",
+            file: "sirius_breda_hud.html",
+            title: "Sirius-Breda Astronomische HUD",
+            cat: "GEODESIE",
+            badgeClass: "green",
+            badgeText: "SIRIUS-BREDA HUD",
+            updated: "3 months ago",
+            commit: "Create sirius_breda_hud.html",
+            desc: "Topografisch en astronomisch Head-Up Display dat de heliakische opkomst en azimut-uitlijning van Sirius koppelt aan de geodetische coördinaten van Breda.",
+            symbols: ["⭐ Sirius Azimut", "📍 Breda Geodesie", "🖥️ Astro-HUD", "🧭 Heliakische Lock"]
+        },
+        {
+            id: "MOD-39",
+            file: "synsthese.md",
+            title: "synsthese.md — WebRTC Audio Synthese",
+            cat: "DOC",
+            badgeClass: "green",
+            badgeText: "AUDIO TELEMETRIE DOC",
+            updated: "3 months ago",
+            commit: "Document WebRTC audio synthesis process and output",
+            desc: "Technische documentatie van het WebRTC audio-syntheseproces (951 Hz – 1284 Hz draaggolven) en realtime signaaluitvoer.",
+            symbols: ["🔊 Audio Synthese", "🌐 WebRTC Stream", "🎵 951–1284 Hz", "📘 Markdown"]
+        },
+        {
+            id: "MOD-40",
+            file: "taalmodel.md",
+            title: "taalmodel.md — Filologisch Taalmodel",
+            cat: "DOC",
+            badgeClass: "",
+            badgeText: "TAALMODEL DOC",
+            updated: "3 months ago",
+            commit: "Update taalmodel.md",
+            desc: "Architectuurbeschrijving van het historisch-filologische en numerieke taalmodel voor tekstreconstructie.",
+            symbols: ["🧠 Taalmodel", "🔤 Semantische Vector", "📘 Markdown", "📜 Filologie"]
+        },
+        {
+            id: "MOD-41",
+            file: "tesla.html",
+            title: "Tesla 3-6-9 & Vortex Numeriek",
+            cat: "KLEUR",
+            badgeClass: "gold",
+            badgeText: "TESLA 3-6-9",
+            updated: "3 months ago",
+            commit: "Create tesla.html",
+            desc: "Interactieve visualisatie van Nikola Tesla's 3-6-9 vingerafdruk, digitale wortels (modulo 9) en toroïdale spoel-harmonie.",
+            symbols: ["⚡ Tesla 3-6-9", "🔢 Modulo 9 Wortel", "🌀 Torus Veld", "🧲 Resonantie"]
+        },
+        {
+            id: "MOD-42",
+            file: "thoolse_namen",
+            title: "thoolse_namen (Raw Corpus Dataset)",
+            cat: "HISTORISCH",
+            badgeClass: "",
+            badgeText: "RAW DATASET",
+            updated: "3 months ago",
+            commit: "Create thoolse_namen",
+            desc: "Ruwe dataset met historische geslachtsnamen, patroniemen en toponiemen van het eiland Tholen, Sint-Maartensdijk, Scherpenisse en Reimerswaal.",
+            symbols: ["🗂️ Raw Corpus", "🏰 Eiland Tholen", "👥 Geslachtsnamen", "📍 Oosterschelde"]
+        },
+        {
+            id: "MOD-43",
+            file: "thoolse_namen.html",
+            title: "Thoolse Namen — Genealogie & Toponymie",
+            cat: "HISTORISCH",
+            badgeClass: "gold",
+            badgeText: "THOLEN ARCHIEF",
+            updated: "3 months ago",
+            commit: "Create thoolse_namen.html",
+            desc: "Interactieve genealogische en toponymische zoekmodule voor historische familienamen en oorkonden op Tholen en in de Zeeuwse Delta.",
+            symbols: ["🏰 Thoolse Namen", "📜 Zeeuwse Charters", "🔎 Genealogie", "📍 Sint-Maartensdijk"]
+        },
+        {
+            id: "MOD-44",
+            file: "tzolkin-rad.html",
+            title: "Tzolk'in Rad Dashboard (260 Kins)",
+            cat: "CHRONO",
+            badgeClass: "gold",
+            badgeText: "MAYA TZOLK'IN RAD",
+            updated: "3 months ago",
+            commit: "Add Tzolkin Rad HTML dashboard",
+            desc: "Interactief dashboard met het in elkaar grijpende 13-tonen en 20-zonnezegels tandwielstelsel van het 260-daagse Maya Tzolk'in rad.",
+            symbols: ["⚙️ Tzolk'in Rad", "🌀 13 × 20 = 260", "☀️ 20 Zonnezegels", "🎵 13 Galactische Tonen"]
+        },
+        {
+            id: "MOD-45",
+            file: "vortex-datachannel.html",
+            title: "VORTEX DataChannel Pakket-Inspector",
+            cat: "WEBRTC",
+            badgeClass: "green",
+            badgeText: "DATACHANNEL P2P",
+            updated: "3 months ago",
+            commit: "Create vortex-datachannel.html",
+            desc: "Directe browser-to-browser WebRTC DataChannel monitor voor het inspecteren van binaire en JSON-telemetriepakketten.",
+            symbols: ["📡 DataChannel", "🌐 P2P Stream", "📦 Pakket-Inspector", "⚡ Low-Latency"]
+        },
+        {
+            id: "MOD-46",
+            file: "vortex_chronometrie_dorks.html",
+            title: "VORTEX Chronometrie Dorks",
+            cat: "OSINT",
+            badgeClass: "",
+            badgeText: "CHRONO DORKS",
+            updated: "3 months ago",
+            commit: "Create vortex_chronometrie_dorks.html",
+            desc: "Gespecialiseerde zoek-dorks voor het opsporen van astronomische efemeriden, historische kalendertabellen en tijdrekenkundige manuscripten.",
+            symbols: ["🔎 Chrono Dorks", "🪐 Efemeriden", "📅 Kalender-Archief", "🌐 OSINT Query"]
+        },
+        {
+            id: "MOD-47",
+            file: "vortex_synchronometer.html",
+            title: "VORTEX 13-Manen Synchronometer",
+            cat: "CHRONO",
+            badgeClass: "green",
+            badgeText: "SYNCHRONOMETER",
+            updated: "3 months ago",
+            commit: "Add vortex_synchronometer.html with initial content",
+            desc: "Volledige 13-Manen / 28-Dagen synchronometer (364 + 1 dagen) met plasma-dagen, heptaden en galactische tijdscodes.",
+            symbols: ["🌙 13 Manen × 28", "⚡ 7 Radiale Plasma's", "🌀 Synchronometer", "⏳ Kin Tracker"]
+        },
+        {
+            id: "MOD-48",
+            file: "wolframnote.md",
+            title: "wolframnote.md — Cellulaire Automaten",
+            cat: "DOC",
+            badgeClass: "gold",
+            badgeText: "WOLFRAM ALGEBRA",
+            updated: "3 months ago",
+            commit: "Create wolframnote.md",
+            desc: "Notities over computationele equivalentie, cellulaire automaten (Rule 30 / Rule 110) en Wolfram-geïnspireerde patroonvorming.",
+            symbols: ["🧮 Wolfram Regels", "🔲 Cellulaire Automaat", "📘 Markdown", "🔢 Computationeel"]
+        },
+        {
+            id: "MOD-49",
+            file: "woordmatrix.md",
+            title: "woordmatrix.md — Semantische Matrix",
+            cat: "DOC",
+            badgeClass: "",
+            badgeText: "WOORDMATRIX DOC",
+            updated: "3 months ago",
+            commit: "Create woordmatrix.md",
+            desc: "Gestructureerde woordmatrix waarin taalkundige wortels, getalswaarden en conceptuele kruisverbanden zijn vastgelegd.",
+            symbols: ["🔤 Woordmatrix", "📐 Raster-Semantiek", "📘 Markdown", "🔗 Kruisverbanden"]
+        },
+        {
+            id: "MOD-50",
+            file: "zoeken-kleuren.html",
+            title: "Zoeken Kleuren — Spectrale Zoekmachine",
+            cat: "KLEUR",
+            badgeClass: "gold",
+            badgeText: "KLEUR ZOEKMACHINE",
+            updated: "3 months ago",
+            commit: "Create zoeken-kleuren.html",
+            desc: "Zoekmachine waarmee op kleurnaam, hex-code, frequentie (Hz) en complementaire resonantie door het kleurenspectrum kan worden genavigeerd.",
+            symbols: ["🔍 Kleur-Zoeker", "🌈 Frequentie-Match", "🎨 Hex & RGB", "✨ Resonantie-Filter"]
+        }
+    ];
+
+    let activeCategory = "ALL";
+    let activeViewMode = "grid";
+
+    function getEncodedUrl(filename) {
+        return BASE_URL + encodeURIComponent(filename).replace(/%2F/g, "/");
+    }
+
+    function showToast(msg) {
+        const box = document.getElementById("toastBox");
+        box.textContent = msg;
+        box.style.display = "block";
+        clearTimeout(window._toastTimer);
+        window._toastTimer = setTimeout(() => {
+            box.style.display = "none";
+        }, 3500);
+    }
+
+    function copyUrlToClipboard(url, filename) {
+        const tempInput = document.createElement("textarea");
+        tempInput.value = url;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand("copy");
+        document.body.removeChild(tempInput);
+        showToast(`✓ Link gekopieerd: ${filename} (${url})`);
+    }
+
+    function copyCurrentPageHTML() {
+        const htmlContent = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+        const tempInput = document.createElement("textarea");
+        tempInput.value = htmlContent;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand("copy");
+        document.body.removeChild(tempInput);
+        showToast("✓ Volledige HTML-code van dit 50-modules portaal is gekopieerd naar je klembord!");
+    }
+
+    function renderRepository() {
+        const grid = document.getElementById("modulesGrid");
+        const tbody = document.getElementById("directoryTableBody");
+        grid.innerHTML = "";
+        tbody.innerHTML = "";
+
+        REPOSITORY_FILES.forEach((item, index) => {
+            const fullUrl = getEncodedUrl(item.file);
+            const searchBlob = `${item.id} ${item.file} ${item.title} ${item.desc} ${item.commit} ${item.cat} ${item.symbols.join(" ")}`.toLowerCase();
+
+            // 1. Render Card
+            const card = document.createElement("div");
+            card.className = `module-card ${item.featured ? "featured-card" : ""}`;
+            card.setAttribute("data-search", searchBlob);
+            card.setAttribute("data-cat", item.cat);
+
+            const symbolsHtml = item.symbols.map(s => `<span class="symbol-pill">${s}</span>`).join("");
+
+            card.innerHTML = `
+                <div>
+                    <div class="card-header">
+                        <span class="badge ${item.badgeClass}">${item.badgeText}</span>
+                        <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-dim);">${item.id} • ${item.updated}</span>
+                    </div>
+                    <span class="file-path-pill">📄 ${item.file}</span>
+                    <h2 class="module-title"><a href="${fullUrl}" target="_blank" rel="noopener">${item.title}</a></h2>
+                    <p class="module-desc">${item.desc}</p>
+                    <div class="symbol-list">
+                        <span class="symbol-list-title">Gekoppelde Symbolen &amp; Metadata:</span>
+                        <div class="symbol-items">${symbolsHtml}</div>
+                    </div>
+                </div>
+                <div class="card-footer-row">
+                    <a href="${fullUrl}" target="_blank" rel="noopener" class="btn-launch">Launch ${item.file} ↗</a>
+                    <button class="btn-copy-link" title="Kopieer directe URL" onclick="copyUrlToClipboard('${fullUrl}', '${item.file}')">📋</button>
+                </div>
+            `;
+            grid.appendChild(card);
+
+            // 2. Render Table Row
+            const tr = document.createElement("tr");
+            tr.setAttribute("data-search", searchBlob);
+            tr.setAttribute("data-cat", item.cat);
+            tr.innerHTML = `
+                <td class="mono">${String(index + 1).padStart(2, "0")}</td>
+                <td class="mono"><strong><a href="${fullUrl}" target="_blank" rel="noopener" style="color:var(--accent-gold); text-decoration:none;">${item.file}</a></strong></td>
+                <td><span class="badge ${item.badgeClass}">${item.cat}</span></td>
+                <td>
+                    <div style="color:#fff; font-weight:600;">${item.title}</div>
+                    <div style="color:var(--text-dim); font-size:0.8rem; font-family:var(--font-mono);">Commit: ${item.commit}</div>
+                </td>
+                <td class="mono" style="color:${item.updated === 'now' ? 'var(--accent-green)' : 'var(--text-dim)'};">${item.updated}</td>
+                <td>
+                    <a href="${fullUrl}" target="_blank" rel="noopener" style="color:var(--accent-cyan); font-family:var(--font-mono); text-decoration:none; font-weight:bold;">Open ↗</a>
+                </td>
+            `;
+            tbody.appendChild(tr);
         });
     }
 
-    // Direct Tag Search Trigger
-    function toggleTag(tagValue) {
-        const searchInput = document.getElementById('searchInput');
-        const allTags = document.querySelectorAll('.sym-tag');
-        
-        if (tagValue === 'All') {
-            searchInput.value = '';
-            allTags.forEach(t => t.classList.remove('active'));
-            filterModules();
-            return;
-        }
+    function applyFilters() {
+        const query = document.getElementById("searchInput").value.toLowerCase().trim();
+        const cards = document.querySelectorAll("#modulesGrid .module-card");
+        const rows = document.querySelectorAll("#directoryTableBody tr");
+        let visibleCount = 0;
+
+        cards.forEach((card, i) => {
+            const row = rows[i];
+            const searchData = card.getAttribute("data-search");
+            const catData = card.getAttribute("data-cat");
+
+            const matchesCategory = (activeCategory === "ALL") || (catData === activeCategory);
+            const matchesQuery = !query || searchData.includes(query);
+
+            if (matchesCategory && matchesQuery) {
+                card.classList.remove("hidden");
+                row.classList.remove("hidden");
+                visibleCount++;
+            } else {
+                card.classList.add("hidden");
+                row.classList.add("hidden");
+            }
+        });
+
+        document.getElementById("moduleCounter").textContent = `${visibleCount} / ${REPOSITORY_FILES.length} MODULES ACTIEF`;
+    }
+
+    function selectCategory(cat, btnElement) {
+        activeCategory = cat;
+        document.querySelectorAll(".cat-tag").forEach(b => b.classList.remove("active"));
+        if (btnElement) btnElement.classList.add("active");
+        applyFilters();
+    }
+
+    function toggleSymbolTag(tagValue, btnElement) {
+        const searchInput = document.getElementById("searchInput");
+        const allSymTags = document.querySelectorAll(".sym-tag");
 
         if (searchInput.value.toLowerCase() === tagValue.toLowerCase()) {
-            searchInput.value = '';
-            allTags.forEach(t => t.classList.remove('active'));
+            searchInput.value = "";
+            allSymTags.forEach(t => t.classList.remove("active"));
         } else {
             searchInput.value = tagValue;
-            allTags.forEach(t => t.classList.remove('active'));
-            event.currentTarget.classList.add('active');
+            allSymTags.forEach(t => t.classList.remove("active"));
+            if (btnElement) btnElement.classList.add("active");
         }
-        
-        filterModules();
+        applyFilters();
     }
+
+    function resetAllFilters() {
+        document.getElementById("searchInput").value = "";
+        activeCategory = "ALL";
+        document.querySelectorAll(".sym-tag, .cat-tag").forEach(t => t.classList.remove("active"));
+        document.querySelector('.cat-tag[data-cat="ALL"]').classList.add("active");
+        applyFilters();
+    }
+
+    function setViewMode(mode) {
+        activeViewMode = mode;
+        const gridSec = document.getElementById("modulesGrid");
+        const dirSec = document.getElementById("directorySection");
+        const btnGrid = document.getElementById("btnViewGrid");
+        const btnTable = document.getElementById("btnViewTable");
+
+        if (mode === "grid") {
+            gridSec.classList.remove("hidden");
+            dirSec.classList.add("hidden");
+            btnGrid.classList.add("active-view");
+            btnTable.classList.remove("active-view");
+        } else {
+            gridSec.classList.add("hidden");
+            dirSec.classList.remove("hidden");
+            btnTable.classList.add("active-view");
+            btnGrid.classList.remove("active-view");
+        }
+    }
+
+    window.onload = function() {
+        renderRepository();
+        applyFilters();
+    };
 </script>
 
 </body>
