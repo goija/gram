@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VORTEX OMNI-BRIDGE • Complete Repository & Galactische Module Index (50 Modules)</title>
+    <title>VORTEX OMNI-BRIDGE • Complete Repository &amp; Tree Index (51 Modules)</title>
     <style>
         :root {
             --bg-primary: #0a0e14;
@@ -57,20 +57,45 @@
             display: inline-flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 1.25rem;
+            gap: 1.15rem;
             background: var(--bg-secondary);
             border: 1px solid var(--accent-cyan);
             padding: 0.55rem 1.35rem;
             border-radius: 99px;
             font-family: var(--font-mono);
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             color: var(--accent-cyan);
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.25rem;
             box-shadow: 0 0 18px rgba(0, 240, 255, 0.15);
         }
 
+        .commit-banner {
+            display: inline-flex;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.85rem;
+            background: rgba(0, 255, 136, 0.07);
+            border: 1px solid rgba(0, 255, 136, 0.35);
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            padding: 0.45rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.25rem;
+        }
+
+        .commit-hash {
+            background: var(--bg-primary);
+            color: var(--accent-gold);
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 215, 0, 0.35);
+            font-weight: bold;
+        }
+
         h1 {
-            font-size: 2.35rem;
+            font-size: 2.3rem;
             letter-spacing: 2px;
             text-transform: uppercase;
             background: linear-gradient(90deg, var(--accent-cyan), var(--text-main), var(--accent-gold));
@@ -81,8 +106,8 @@
 
         .subtitle {
             color: var(--text-dim);
-            font-size: 1.05rem;
-            max-width: 900px;
+            font-size: 1.03rem;
+            max-width: 920px;
             margin: 0 auto 1.25rem auto;
         }
 
@@ -98,7 +123,7 @@
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             color: var(--text-main);
-            padding: 0.55rem 1.1rem;
+            padding: 0.58rem 1.15rem;
             border-radius: 8px;
             font-family: var(--font-mono);
             font-size: 0.82rem;
@@ -112,8 +137,8 @@
         .action-btn:hover, .action-btn.active-view {
             border-color: var(--accent-cyan);
             color: var(--accent-cyan);
-            background: rgba(0, 240, 255, 0.1);
-            box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+            background: rgba(0, 240, 255, 0.12);
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.22);
         }
 
         .action-btn.gold-btn {
@@ -257,6 +282,208 @@
             color: var(--accent-magenta);
         }
 
+        /* INTERACTIVE TREE EXPLORER SECTION */
+        .tree-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.75rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+        }
+
+        .tree-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding-bottom: 1rem;
+            margin-bottom: 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tree-controls {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .tree-btn {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--accent-cyan);
+            padding: 0.4rem 0.85rem;
+            border-radius: 6px;
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tree-btn:hover {
+            background: rgba(0, 240, 255, 0.12);
+            border-color: var(--accent-cyan);
+        }
+
+        .tree-root-box {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.25rem;
+            font-family: var(--font-mono);
+            overflow-x: auto;
+        }
+
+        .tree-root-label {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            font-size: 0.95rem;
+            color: var(--accent-gold);
+            font-weight: bold;
+            margin-bottom: 1rem;
+            padding-bottom: 0.65rem;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .tree-branch {
+            margin-bottom: 0.85rem;
+            border-left: 2px solid rgba(0, 240, 255, 0.25);
+            margin-left: 0.65rem;
+            padding-left: 0.9rem;
+        }
+
+        .tree-folder-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 0.55rem 0.9rem;
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+        }
+
+        .tree-folder-header:hover {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 240, 255, 0.08);
+        }
+
+        .tree-folder-title {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.86rem;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .tree-folder-meta {
+            font-size: 0.75rem;
+            color: var(--accent-cyan);
+        }
+
+        .tree-children {
+            margin-top: 0.4rem;
+            padding-left: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.28rem;
+        }
+
+        .tree-node {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            padding: 0.38rem 0.65rem;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid transparent;
+            transition: all 0.15s;
+            font-size: 0.82rem;
+        }
+
+        .tree-node:hover {
+            background: rgba(0, 240, 255, 0.07);
+            border-color: rgba(0, 240, 255, 0.3);
+        }
+
+        .tree-node.featured-node {
+            background: rgba(255, 215, 0, 0.07);
+            border-color: rgba(255, 215, 0, 0.35);
+        }
+
+        .tree-node-left {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tree-ascii {
+            color: var(--text-dim);
+            font-weight: bold;
+            user-select: none;
+        }
+
+        .tree-file-link {
+            color: var(--accent-gold);
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .tree-file-link:hover {
+            color: var(--accent-cyan);
+            text-decoration: underline;
+        }
+
+        .tree-desc-snippet {
+            color: var(--text-dim);
+            font-size: 0.78rem;
+        }
+
+        .tree-node-right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tree-time-pill {
+            font-size: 0.72rem;
+            padding: 0.12rem 0.45rem;
+            border-radius: 4px;
+            background: var(--bg-secondary);
+            color: var(--text-dim);
+            border: 1px solid var(--border-color);
+        }
+
+        .tree-time-pill.fresh {
+            color: var(--accent-green);
+            border-color: rgba(0, 255, 136, 0.5);
+            background: rgba(0, 255, 136, 0.1);
+            font-weight: bold;
+        }
+
+        .tree-open-btn {
+            color: var(--accent-cyan);
+            text-decoration: none;
+            font-size: 0.75rem;
+            padding: 0.15rem 0.5rem;
+            border: 1px solid rgba(0, 240, 255, 0.35);
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .tree-open-btn:hover {
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+        }
+
         /* GRID OF MODULES */
         .modules-grid {
             display: grid;
@@ -289,8 +516,8 @@
         }
 
         .module-card.featured-card {
-            border-color: rgba(255, 215, 0, 0.6);
-            box-shadow: 0 0 25px rgba(255, 215, 0, 0.12);
+            border-color: rgba(255, 215, 0, 0.65);
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.14);
         }
 
         .module-card.featured-card::before {
@@ -559,7 +786,7 @@
                 border-radius: 12px;
             }
             h1 {
-                font-size: 1.75rem;
+                font-size: 1.7rem;
             }
         }
     </style>
@@ -574,17 +801,30 @@
             <span>⚡ DRAAGGOLF: &Delta;=111</span>
             <span>🌐 WEBRTC: 111ms UDP</span>
             <span>⏱️ STASIS LOCK: HEXAGRAM 63</span>
-            <span>🎨 VAN GOGH: Δθ=+45.09° (EOT)</span>
+            <span>🔭 CARTE DU CIEL: 1887</span>
+            <span>🎨 VAN GOGH: &Delta;&theta;=+45.09° (EOT)</span>
             <span>🗓️ JDN: 2461247 (25 JULI 2026)</span>
         </div>
-        <h1>VORTEX OMNI-BRIDGE • COMPLETE REPOSITORY INDEX (50 MODULES)</h1>
+
+        <div>
+            <div class="commit-banner">
+                <span>👤 <strong>goija</strong></span>
+                <span>Create <code>sterrewacht.html</code></span>
+                <span class="commit-hash">1516083 &middot; now</span>
+                <span style="color:var(--accent-green);">✓ 51 / 51 Repository Bestanden Geïndexeerd</span>
+            </div>
+        </div>
+
+        <h1>VORTEX OMNI-BRIDGE • REPOSITORY &amp; TREE INDEX (51 MODULES)</h1>
         <p class="subtitle">
-            Centraal navigatie-portaal voor alle 50 bestanden uit <code>gram-eta.vercel.app</code>: Geodetische Vereffeningsrekening (Van Gogh 1889), Hyperdimensionale Chronometrie, Shao Yong Wuxing-algebra, 6D-Hyperkubus Torsie, 14e-eeuwse Oorkonden &amp; OSINT Dorks.
+            Centraal navigatie-portaal en interactieve boomstructuur voor alle 51 bestanden uit <code>gram-eta.vercel.app</code>: Sterrewacht &amp; Carte du Ciel (1887), Geodetische Vereffeningsrekening (Van Gogh 1889), Hyperdimensionale Chronometrie, Shao Yong Wuxing-algebra, 6D-Hyperkubus Torsie, 14e-eeuwse Oorkonden &amp; OSINT Dorks.
         </p>
 
         <div class="header-actions">
-            <button id="btnViewGrid" class="action-btn active-view" onclick="setViewMode('grid')">💠 Kaartweergave (50 Modules Grid)</button>
-            <button id="btnViewTable" class="action-btn" onclick="setViewMode('table')">📂 Compacte Git-Repository Tabel (50 Bestanden)</button>
+            <button id="btnViewAll" class="action-btn active-view" onclick="setViewMode('all')">🌳+💠 Gecombineerd (Tree + 51 Kaarten)</button>
+            <button id="btnViewTree" class="action-btn" onclick="setViewMode('tree')">🌳 Interactieve Boomstructuur (Tree View)</button>
+            <button id="btnViewGrid" class="action-btn" onclick="setViewMode('grid')">💠 Kaartweergave (51 Modules Grid)</button>
+            <button id="btnViewTable" class="action-btn" onclick="setViewMode('table')">📂 Git-Repository Tabel (51 Bestanden)</button>
             <button class="action-btn gold-btn" onclick="copyCurrentPageHTML()">📋 Kopieer Volledige Index HTML</button>
         </div>
     </header>
@@ -594,24 +834,24 @@
         <div class="search-row">
             <div class="search-box">
                 <span class="search-icon">🔍</span>
-                <input type="text" id="searchInput" class="search-input" placeholder="Zoek in alle 50 modules op bestandsnaam, symbool, getal, frequentie of onderwerp (bijv. gogh, 951, Tholen, 1574, Fermat, Kin 228)..." oninput="applyFilters()">
+                <input type="text" id="searchInput" class="search-input" placeholder="Zoek live in de Tree &amp; 51 modules op bestandsnaam, symbool, commit of onderwerp (bijv. sterrewacht, gogh, 951, Tholen, 1574, Fermat, Kin 228)..." oninput="applyFilters()">
             </div>
-            <div class="counter-badge" id="moduleCounter">50 / 50 MODULES ACTIEF</div>
+            <div class="counter-badge" id="moduleCounter">51 / 51 MODULES ACTIEF</div>
         </div>
 
         <!-- CATEGORY FILTER BAR -->
         <div class="filter-group">
             <div class="tag-cloud">
                 <span class="tag-label">Categorie Filter:</span>
-                <button class="cat-tag active" data-cat="ALL" onclick="selectCategory('ALL', this)">🌌 Alle (50)</button>
-                <button class="cat-tag" data-cat="GEODESIE" onclick="selectCategory('GEODESIE', this)">📐 Geodesie, Kunst &amp; HUD</button>
-                <button class="cat-tag" data-cat="CHRONO" onclick="selectCategory('CHRONO', this)">⏳ Chronometrie &amp; Tzolk'in</button>
-                <button class="cat-tag" data-cat="WUXING" onclick="selectCategory('WUXING', this)">☯️ Wuxing, Torsie &amp; Modulo</button>
-                <button class="cat-tag" data-cat="HISTORISCH" onclick="selectCategory('HISTORISCH', this)">📜 Historisch, Tholen &amp; Taal</button>
-                <button class="cat-tag" data-cat="OSINT" onclick="selectCategory('OSINT', this)">🔎 OSINT &amp; Archief Dorks</button>
-                <button class="cat-tag" data-cat="KLEUR" onclick="selectCategory('KLEUR', this)">🌈 Kleur &amp; Resonantie</button>
-                <button class="cat-tag" data-cat="WEBRTC" onclick="selectCategory('WEBRTC', this)">🌐 WebRTC &amp; Python/Jupyter</button>
-                <button class="cat-tag" data-cat="DOC" onclick="selectCategory('DOC', this)">📝 Markdown Documentatie (.md)</button>
+                <button class="cat-tag active" data-cat="ALL" onclick="selectCategory('ALL', this)">🌌 Alle (51)</button>
+                <button class="cat-tag" data-cat="GEODESIE" onclick="selectCategory('GEODESIE', this)">🔭 Geodesie, Sterrewacht &amp; HUD (6)</button>
+                <button class="cat-tag" data-cat="CHRONO" onclick="selectCategory('CHRONO', this)">⏳ Chronometrie &amp; Tzolk'in (6)</button>
+                <button class="cat-tag" data-cat="WUXING" onclick="selectCategory('WUXING', this)">☯️ Wuxing, Torsie &amp; Modulo (10)</button>
+                <button class="cat-tag" data-cat="HISTORISCH" onclick="selectCategory('HISTORISCH', this)">📜 Historisch, Tholen &amp; Taal (7)</button>
+                <button class="cat-tag" data-cat="OSINT" onclick="selectCategory('OSINT', this)">🔎 OSINT &amp; Archief Dorks (5)</button>
+                <button class="cat-tag" data-cat="KLEUR" onclick="selectCategory('KLEUR', this)">🌈 Kleur &amp; Resonantie (5)</button>
+                <button class="cat-tag" data-cat="WEBRTC" onclick="selectCategory('WEBRTC', this)">🌐 WebRTC &amp; Python/Jupyter (5)</button>
+                <button class="cat-tag" data-cat="DOC" onclick="selectCategory('DOC', this)">📝 Markdown Documentatie (7)</button>
             </div>
         </div>
 
@@ -619,7 +859,8 @@
         <div class="filter-group">
             <div class="tag-cloud">
                 <span class="tag-label">Symbool Filter:</span>
-                <button class="sym-tag magenta" onclick="toggleSymbolTag('gogh', this)">🌟 Van Gogh (Δθ=45.09°)</button>
+                <button class="sym-tag magenta" onclick="toggleSymbolTag('sterrewacht', this)">🔭 Sterrewacht (1887)</button>
+                <button class="sym-tag magenta" onclick="toggleSymbolTag('gogh', this)">🌟 Van Gogh (&Delta;&theta;=45.09°)</button>
                 <button class="sym-tag" onclick="toggleSymbolTag('951', this)">🐢 951 Hz (Noord)</button>
                 <button class="sym-tag" onclick="toggleSymbolTag('1062', this)">🐉 1062 Hz (Oost)</button>
                 <button class="sym-tag" onclick="toggleSymbolTag('1173', this)">🦅 1173 Hz (Zuid)</button>
@@ -636,14 +877,39 @@
         </div>
     </section>
 
-    <!-- VIEW 1: INTERACTIVE MODULES GRID (ALL 50 FILES) -->
+    <!-- VIEW A: INTERACTIVE REPOSITORY TREE EXPLORER (51 FILES) -->
+    <section class="tree-section" id="treeSection">
+        <div class="tree-header-bar">
+            <div>
+                <h3 class="section-title" style="margin-bottom:0.2rem;">Interactieve VORTEX Repository Tree (51 Bestanden)</h3>
+                <p style="color:var(--text-dim); font-size:0.85rem;">
+                    Hiërarchische boomstructuur van <code>https://gram-eta.vercel.app/</code> gegroepeerd op domein. Klik op een map om in/uit te klappen of open direct een bestand.
+                </p>
+            </div>
+            <div class="tree-controls">
+                <button class="tree-btn" onclick="expandCollapseAllTree(true)">➕ Alles Uitklappen</button>
+                <button class="tree-btn" onclick="expandCollapseAllTree(false)">➖ Alles Inklappen</button>
+                <button class="tree-btn" style="color:var(--accent-gold); border-color:rgba(255,215,0,0.4);" onclick="copyAsciiTree()">📋 Kopieer ASCII Tree</button>
+            </div>
+        </div>
+
+        <div class="tree-root-box">
+            <div class="tree-root-label">
+                <span>📦 <strong>gram-eta.vercel.app/</strong></span>
+                <span style="color:var(--text-dim); font-size:0.8rem;">(branch: main &bull; commit 1516083 &bull; 51 nodes)</span>
+            </div>
+            <div id="treeContainer"></div>
+        </div>
+    </section>
+
+    <!-- VIEW B: INTERACTIVE MODULES GRID (ALL 51 FILES) -->
     <section class="modules-grid" id="modulesGrid"></section>
 
-    <!-- VIEW 2: COMPACT GIT REPOSITORY DIRECTORY TABLE (ALL 50 FILES) -->
+    <!-- VIEW C: COMPACT GIT REPOSITORY DIRECTORY TABLE (ALL 51 FILES) -->
     <section class="matrix-section hidden" id="directorySection">
-        <h3 class="section-title">Git Repository Overzicht: Alle 50 Bestanden (gram-eta.vercel.app)</h3>
+        <h3 class="section-title">Git Repository Overzicht: Alle 51 Bestanden (gram-eta.vercel.app)</h3>
         <p class="section-desc">
-            Volledige bestandslijst met directe URL-koppelingen, laatste commit-beschrijvingen, tijdsindicatie en categorisatie.
+            Volledige alfabetische en chronologische bestandslijst met directe URL-koppelingen, laatste commit-beschrijvingen (`1516083 · now`) en categorisatie.
         </p>
         <div class="table-responsive">
             <table>
@@ -653,7 +919,7 @@
                         <th>Bestandsnaam</th>
                         <th>Categorie</th>
                         <th>Commit / Systeembeschrijving</th>
-                        <th>Status</th>
+                        <th>Laatste Commit</th>
                         <th>Directe Actie</th>
                     </tr>
                 </thead>
@@ -664,9 +930,9 @@
 
     <!-- DECONSTRUCTIE & SYMBOOL REFERENTIE TABEL -->
     <section class="matrix-section">
-        <h3 class="section-title">Deconstructie Matrix: Symbool, Geodesie &amp; Telemetrie Mapping</h3>
+        <h3 class="section-title">Deconstructie Matrix: Symbool, Sterrewacht 1887, Geodesie &amp; Telemetrie Mapping</h3>
         <p class="section-desc">
-            Overzicht van de fundamentele wiskundige, geodetische en ontologische constanten uit het VORTEX-dossier, hun telemetrische expressie en de bijbehorende applicatieve module.
+            Overzicht van de fundamentele wiskundige, astrofotografische, geodetische en ontologische constanten uit het VORTEX-dossier, hun telemetrische expressie en de bijbehorende applicatieve module.
         </p>
         <div class="table-responsive">
             <table>
@@ -681,11 +947,18 @@
                 </thead>
                 <tbody>
                     <tr>
+                        <td><strong>🔭 Sterrewacht &amp; Carte du Ciel (1887)</strong></td>
+                        <td class="mono">&xi; = Ax+By+C, &eta; = Dx+Ey+F</td>
+                        <td class="mono">18 Zones (+90°..-90°) • 1mm=60&Prime;</td>
+                        <td>Astrographisch Congres Parijs (april 1887), Gautier-Réseau (27&times;27), Bureau des Dames &amp; Kapteyn/Leiden/Ukkel.</td>
+                        <td><a href="https://gram-eta.vercel.app/sterrewacht.html" target="_blank" style="color:var(--accent-magenta); font-weight:bold;">sterrewacht.html ↗</a></td>
+                    </tr>
+                    <tr>
                         <td><strong>🌟 Van Gogh EOT-Rotatie</strong></td>
-                        <td class="mono">R(+45.09°) · X_dorp</td>
+                        <td class="mono">R(+45.09°) &middot; X_dorp</td>
                         <td class="mono">26.21° &rightarrow; 71.30° EOT</td>
-                        <td>Helmert-vereffening (&lambda;=1.42&times;10⁻³), 3D-Viewshed Alpilles (&alpha;=6.4°) &amp; Venus-uitlijning.</td>
-                        <td><a href="https://gram-eta.vercel.app/gogh.html" target="_blank" style="color:var(--accent-gold);">gogh.html ↗</a></td>
+                        <td>Helmert-vereffening (&lambda;=1.42&times;10⁻³), 3D-Viewshed Alpilles (&alpha;=6.4°) &amp; Venus-uitlijning (juli 1889).</td>
+                        <td><a href="https://gram-eta.vercel.app/gogh.html" target="_blank" style="color:var(--accent-gold); font-weight:bold;">gogh.html ↗</a></td>
                     </tr>
                     <tr>
                         <td><strong>🐢 Zwarte Schildpad</strong></td>
@@ -751,10 +1024,10 @@
     <!-- FOOTER -->
     <footer>
         <p>
-            VORTEX OMNI-BRIDGE • VOLLEDIGE 50-BESTANDEN REPOSITORY GEÏNDEXEERD • <span class="footer-highlight">&tau; &rightarrow; 0 (WRIJVINGSLOOS)</span>
+            VORTEX OMNI-BRIDGE • VOLLEDIGE 51-BESTANDEN REPOSITORY &amp; TREE GEÏNDEXEERD • <span class="footer-highlight">&tau; &rightarrow; 0 (WRIJVINGSLOOS)</span>
         </p>
         <p style="margin-top: 0.5rem; font-size: 0.75rem;">
-            Basis-URL: https://gram-eta.vercel.app/ • Maya Lange Telling 13.0.13.14.4 &equiv; JDN 2461247 &equiv; 25 Juli 2026 • Saint-Paul-de-Mausole Geodetisch Anker
+            Basis-URL: https://gram-eta.vercel.app/ • Laatste Commit: <code>1516083 (Create sterrewacht.html)</code> • Saint-Paul-de-Mausole &amp; Observatoire de Paris Anker
         </p>
     </footer>
 </div>
@@ -762,23 +1035,60 @@
 <script>
     const BASE_URL = "https://gram-eta.vercel.app/";
 
-    // Volledige database van alle 50 bestanden uit de repository
+    const CATEGORY_META = {
+        GEODESIE:   { icon: "🔭", name: "01_GEODESIE_STERREWACHT_HUD", label: "Geodesie, Sterrewacht (1887), Van Gogh (1889) & HUD" },
+        CHRONO:     { icon: "⏳", name: "02_CHRONOMETRIE_TZOLKIN", label: "Galactische Chronometrie, Fermat Klok & Tzolk'in" },
+        WUXING:     { icon: "☯️", name: "03_WUXING_TORSIE_MODULO", label: "Shao Yong Wuxing, 6D-Torsie & Modulo-Algebra" },
+        HISTORISCH: { icon: "📜", name: "04_HISTORISCH_THOLEN_TAAL", label: "14e-Eeuwse Oorkonden, Tholen & Oudnederlands" },
+        OSINT:      { icon: "🔎", name: "05_OSINT_ARCHIEF_DORKS", label: "OSINT Zoekmachines, Gopher & 1574 Archief-Dorks" },
+        KLEUR:      { icon: "🌈", name: "06_KLEUR_HARMONISCHE_RESONANTIE", label: "Spectrale Kleurenladders, Tesla 3-6-9 & 9√(62430)" },
+        WEBRTC:     { icon: "🌐", name: "07_WEBRTC_PYTHON_JUPYTER", label: "WebRTC P2P DataChannel, Python Cores & Jupyter" },
+        DOC:        { icon: "📝", name: "08_MARKDOWN_KENNISBANK", label: "Markdown Documentatie, Transcripties & Notities (.md)" }
+    };
+
+    // Volledige database van alle 51 bestanden uit gram-eta.vercel.app
     const REPOSITORY_FILES = [
         {
             id: "MOD-01",
+            file: "sterrewacht.html",
+            title: "MATHGEO-1887 • Sterrewacht & Carte du Ciel Geodetische Cockpit",
+            cat: "GEODESIE",
+            badgeClass: "magenta",
+            badgeText: "NIEUW • COMMIT 1516083",
+            updated: "now",
+            commit: "Create sterrewacht.html",
+            desc: "Interactieve wereldkaart van het Astrographisch Congres in Parijs (april 1887, Amédée Mouchez), de 18 internationale Carte du Ciel sterrenwachten (+90° tot -90°), het 'Bureau des Dames' Gautier-Réseau micrometer-meetstation (3-voudige belichting), Kapteyn (Groningen), Leiden, Ukkel en Van Gogh (1887–1889).",
+            symbols: ["🔭 Carte du Ciel 1887", "📏 1mm = 60″ Réseau", "👩‍🔬 Bureau des Dames", "🇳🇱 Kapteyn & Leiden", "🛰️ Gaia DR3 Proper Motion"],
+            featured: true
+        },
+        {
+            id: "MOD-02",
             file: "gogh.html",
             title: "Van Gogh 'De Sterrennacht' — Geodetische & 3D-Viewshed Workbench",
             cat: "GEODESIE",
-            badgeClass: "magenta",
-            badgeText: "NIEUW • GEODESIE & STERRENKUNDE",
-            updated: "now",
-            commit: "Update print statement from 'Hello' to 'Goodbye' / Geodetische Vereffeningsrekening",
+            badgeClass: "gold",
+            badgeText: "GEODESIE & STERRENKUNDE",
+            updated: "35 minutes ago",
+            commit: "Update print statement from 'Hello' to 'Goodbye'",
             desc: "Interactieve 2D Helmert kleinste-kwadratenvereffening (AX=B), +45.09° perspectiefrotatie van Saint-Rémy naar Venus (71.30° EOT), 3D-Viewshed van de Alpilles (α=6.4°) en ESCAN-clustering (Eclips 17 mei 1882 & 14e-eeuwse oorkonden).",
             symbols: ["🌟 Δθ = +45.09°", "📐 Helmert λ=1.42e-3", "⛰️ Alpilles α=6.4°", "🌲 Cipres β=50.2°", "☄️ Eclips 1882"],
             featured: true
         },
         {
-            id: "MOD-02",
+            id: "MOD-03",
+            file: "index.html",
+            title: "VORTEX Omni-Bridge Hoofdportaal & Galactische Index",
+            cat: "WUXING",
+            badgeClass: "green",
+            badgeText: "ROOT PORTAAL",
+            updated: "27 minutes ago",
+            commit: "Update print statement from 'Hello' to 'Goodbye'",
+            desc: "Het centrale VORTEX Omni-Bridge navigatieportaal met directe toegang tot alle 51 modules, de symbool-zoekmachine en de boomstructuur.",
+            symbols: ["🌐 Omni-Bridge Root", "⚡ Δ=111", "🌀 Hexagram 63", "🌳 51-File Tree"],
+            featured: true
+        },
+        {
+            id: "MOD-04",
             file: "Day_Out_of_Time.html",
             title: "13:20 Galactische Kalibratie (Day Out of Time)",
             cat: "CHRONO",
@@ -790,7 +1100,7 @@
             symbols: ["⏳ Kin 228", "🗓️ JDN 2461247", "➕ Restwaarde 1", "🌀 13:20 Matrix", "🛑 Δt = 9.817"]
         },
         {
-            id: "MOD-03",
+            id: "MOD-05",
             file: "vortex_shao_yong_chronometer.html",
             title: "Shao Yong Wuxing Chronometer",
             cat: "WUXING",
@@ -802,7 +1112,7 @@
             symbols: ["🐢 Noord (951 Hz)", "🐉 Oost (1062 Hz)", "🦅 Zuid (1173 Hz)", "🐅 West (1284 Hz)", "☯️ Bagua (x=8)"]
         },
         {
-            id: "MOD-04",
+            id: "MOD-06",
             file: "vortex_torsion_engine.html",
             title: "Galactische Torsie Engine",
             cat: "WUXING",
@@ -814,7 +1124,7 @@
             symbols: ["🌀 Hexagram 63", "⚡ +333 Vonk", "📉 Δ = 111", "🧊 6D Hyperkubus", "🪞 Spiegelruimte (-48)"]
         },
         {
-            id: "MOD-05",
+            id: "MOD-07",
             file: "vortex_18x13_simulation.html",
             title: "VORTEX 18x13 Matrix Simulatie",
             cat: "WUXING",
@@ -826,7 +1136,7 @@
             symbols: ["♾️ 462 Stappen", "💠 Modulo 21", "🛡️ Modulo 22", "🕳️ Index 13 (Kun)", "🔥 Index 169 (Li)"]
         },
         {
-            id: "MOD-06",
+            id: "MOD-08",
             file: "9 sqrt(62430).html",
             title: "9 √(62430) Harmonische Resonator",
             cat: "KLEUR",
@@ -838,7 +1148,7 @@
             symbols: ["📐 9√(62430)", "⏰ Modulo 11 Fermat", "📊 Fractale Schaling", "⚙️ Escapement", "🔢 n = 11 Piek"]
         },
         {
-            id: "MOD-07",
+            id: "MOD-09",
             file: "webrtc-bridge.html",
             title: "WebRTC E8-Penrose Bridge",
             cat: "WEBRTC",
@@ -850,7 +1160,7 @@
             symbols: ["🌐 WebRTC P2P", "📡 UDP 111 ms", "⚡ Latency < 40ms", "🔗 E8 Lie Groep", "🖥️ Phase Wrapper"]
         },
         {
-            id: "MOD-08",
+            id: "MOD-10",
             file: "62regels.html",
             title: "62 Regels Protocol & Overgangslogica",
             cat: "WUXING",
@@ -862,7 +1172,7 @@
             symbols: ["📜 62 Regels", "🌀 Hexagram 63", "⚖️ Wetmatigheid", "🔢 Binair Grid"]
         },
         {
-            id: "MOD-09",
+            id: "MOD-11",
             file: "GOPHER_DORKEL_ENGINE.html",
             title: "GOPHER DORKEL ENGINE",
             cat: "OSINT",
@@ -874,7 +1184,7 @@
             symbols: ["🔎 Gopher Protocol", "🕸️ Deep Index", "📡 Dorkel Core", "🗂️ Archief Query"]
         },
         {
-            id: "MOD-10",
+            id: "MOD-12",
             file: "README.md",
             title: "README.md — Systeemarchitectuur",
             cat: "DOC",
@@ -886,7 +1196,7 @@
             symbols: ["📘 Markdown", "🏛️ Architectuur", "🧭 Overzicht"]
         },
         {
-            id: "MOD-11",
+            id: "MOD-13",
             file: "Schuifkleurenladder.html",
             title: "Schuifkleurenladder Calculator",
             cat: "KLEUR",
@@ -898,7 +1208,7 @@
             symbols: ["🌈 Kleurenladder", "🎚️ Spectrale Schuif", "🎵 Frequentie-Kleur", "✨ Harmonie"]
         },
         {
-            id: "MOD-12",
+            id: "MOD-14",
             file: "VORTEX_Bridge_1080.py",
             title: "VORTEX_Bridge_1080.py (Python Core)",
             cat: "WEBRTC",
@@ -910,7 +1220,7 @@
             symbols: ["🐍 Python 3", "🔢 1080 Resonantie", "🌉 Bridge Core", "📡 Telemetrie"]
         },
         {
-            id: "MOD-13",
+            id: "MOD-15",
             file: "cronologische_tijd_script.html",
             title: "Chronologische Tijd Script",
             cat: "CHRONO",
@@ -922,7 +1232,7 @@
             symbols: ["🕰️ Chronologie", "📅 JDN Conversie", "⏳ Tijdslijn", "🔄 Eeuwen-Cyclus"]
         },
         {
-            id: "MOD-14",
+            id: "MOD-16",
             file: "deuil.html",
             title: "De Uil — Nacht-Observatiemodule",
             cat: "GEODESIE",
@@ -934,7 +1244,7 @@
             symbols: ["🦉 De Uil", "🌙 Nacht-Visie", "👁️ Waarneming", "🧭 Oriëntatie"]
         },
         {
-            id: "MOD-15",
+            id: "MOD-17",
             file: "dork.html",
             title: "OSINT Dork Panel (WebRTC Queries)",
             cat: "OSINT",
@@ -946,7 +1256,7 @@
             symbols: ["🕵️ OSINT Dorks", "🌐 WebRTC Query", "🔍 Zoek-Operatoren", "📡 Netwerk Scan"]
         },
         {
-            id: "MOD-16",
+            id: "MOD-18",
             file: "dorks_zoeker_1574.html",
             title: "Historische Dorks Zoeker 1574",
             cat: "OSINT",
@@ -958,7 +1268,7 @@
             symbols: ["📜 Anno 1574", "🔎 Archief Dorks", "🏰 16e Eeuw", "📚 Bronnen-Extractie"]
         },
         {
-            id: "MOD-17",
+            id: "MOD-19",
             file: "fermat.html",
             title: "Fermat Klok (Modulo 11 Escapement)",
             cat: "CHRONO",
@@ -970,7 +1280,7 @@
             symbols: ["⏰ Fermat Klok", "🔢 Modulo 11", "⚙️ Escapement", "♾️ Priem-Resonantie"]
         },
         {
-            id: "MOD-18",
+            id: "MOD-20",
             file: "gent_mod_engine.html",
             title: "Gent Mod Engine — Stads-Geodesie",
             cat: "GEODESIE",
@@ -982,7 +1292,7 @@
             symbols: ["🏛️ Gent Matrix", "💠 Mod Engine", "📐 Stads-Geodesie", "📜 Vlaamse As"]
         },
         {
-            id: "MOD-19",
+            id: "MOD-21",
             file: "goijagram.html",
             title: "Goijagram — Geometrische Signatuur",
             cat: "WUXING",
@@ -994,7 +1304,7 @@
             symbols: ["🔯 Goijagram", "🌀 Hexagram Lijnen", "📐 Symmetrie-As", "✨ Resonantie"]
         },
         {
-            id: "MOD-20",
+            id: "MOD-22",
             file: "historische_zoekmachine_master.html",
             title: "Historische Zoekmachine Master",
             cat: "HISTORISCH",
@@ -1006,19 +1316,7 @@
             symbols: ["🏛️ Master Portaal", "📜 Oorkonden", "🔎 Multi-Archief", "🗂️ Corpus Index"]
         },
         {
-            id: "MOD-21",
-            file: "index.html",
-            title: "VORTEX Omni-Bridge Hoofdportaal",
-            cat: "WUXING",
-            badgeClass: "green",
-            badgeText: "KERN PORTAAL",
-            updated: "3 months ago",
-            commit: "Create index.html",
-            desc: "De oorspronkelijke landingspagina en symbool-index van de VORTEX Omni-Bridge.",
-            symbols: ["🌐 Omni-Bridge", "⚡ Δ=111", "🌀 Hexagram 63", "🧭 Root Index"]
-        },
-        {
-            id: "MOD-22",
+            id: "MOD-23",
             file: "janna_realtime_hud.html",
             title: "Janna Realtime HUD",
             cat: "GEODESIE",
@@ -1030,7 +1328,7 @@
             symbols: ["🖥️ Janna HUD", "📡 Realtime Stream", "📐 Vector Lock", "⚡ Telemetrie"]
         },
         {
-            id: "MOD-23",
+            id: "MOD-24",
             file: "kin228.md",
             title: "kin228.md — Yellow Resonant Star Dossier",
             cat: "DOC",
@@ -1042,7 +1340,7 @@
             symbols: ["⭐ Kin 228", "🎵 Toon 7 Resonant", "📘 Markdown", "🗓️ 13:20 Dossier"]
         },
         {
-            id: "MOD-24",
+            id: "MOD-25",
             file: "kleurenkaart.html",
             title: "Kleurenkaart & Frequentie-Palet",
             cat: "KLEUR",
@@ -1054,7 +1352,7 @@
             symbols: ["🎨 Kleurenkaart", "🌈 Golfgetal", "🔢 Hex-Spectrum", "✨ Palet Matrix"]
         },
         {
-            id: "MOD-25",
+            id: "MOD-26",
             file: "klok.html",
             title: "Kosmische Klok & Cyclische Pulsatie",
             cat: "CHRONO",
@@ -1066,7 +1364,7 @@
             symbols: ["🕰️ Kosmische Klok", "🔄 Fase-Hoek", "⚡ 111ms Puls", "🧭 Tijd-Kompas"]
         },
         {
-            id: "MOD-26",
+            id: "MOD-27",
             file: "kristalrooster.html",
             title: "Kristalrooster VORTEX-169",
             cat: "WUXING",
@@ -1078,7 +1376,7 @@
             symbols: ["💎 Kristalrooster", "🔥 VORTEX-169", "📐 13×13 Lattice", "🧊 Rooster-Symmetrie"]
         },
         {
-            id: "MOD-27",
+            id: "MOD-28",
             file: "middeleeuws_zoekmachine.html",
             title: "Middeleeuwse Zoekmachine (Oorkonden)",
             cat: "HISTORISCH",
@@ -1090,7 +1388,7 @@
             symbols: ["📜 14e Eeuw", "🏰 Scriptoria", "🔎 Middelnederlands", "✒️ Paleografie"]
         },
         {
-            id: "MOD-28",
+            id: "MOD-29",
             file: "mod-engine.html",
             title: "Mod-Engine — Restklassen Evaluator",
             cat: "WUXING",
@@ -1102,7 +1400,7 @@
             symbols: ["💠 Mod-Engine", "➗ Congruentie", "🔢 Restklassen", "⚙️ Cyclische Groep"]
         },
         {
-            id: "MOD-29",
+            id: "MOD-30",
             file: "mod0.py",
             title: "mod0.py — Nulpunt-Modulo Script",
             cat: "WEBRTC",
@@ -1114,7 +1412,7 @@
             symbols: ["🐍 Python Script", "0️⃣ Modulo 0", "🔢 Getaltheorie", "⚡ CLI Rekenkern"]
         },
         {
-            id: "MOD-30",
+            id: "MOD-31",
             file: "modnote.md",
             title: "modnote.md — Middeleeuwse Transcriptie",
             cat: "DOC",
@@ -1126,7 +1424,7 @@
             symbols: ["📜 Transcriptie", "📘 Markdown", "🏰 Middeleeuwse Context", "✒️ Annotaties"]
         },
         {
-            id: "MOD-31",
+            id: "MOD-32",
             file: "modulo_engine.html",
             title: "Modulo Engine — Cyclus Visualizer",
             cat: "WUXING",
@@ -1138,7 +1436,7 @@
             symbols: ["⚙️ Modulo Engine", "♾️ 21×22 Cyclus", "🌀 Tandwiel-Synthese", "📊 Resonantie"]
         },
         {
-            id: "MOD-32",
+            id: "MOD-33",
             file: "onderzoeksmodel_janna.html",
             title: "Onderzoeksmodel Janna",
             cat: "HISTORISCH",
@@ -1150,7 +1448,7 @@
             symbols: ["🧬 Janna Model", "🗺️ Geodetische Koppeling", "📜 Archief-Synthese", "🔬 Analyse"]
         },
         {
-            id: "MOD-33",
+            id: "MOD-34",
             file: "oudnederlands.hml",
             title: "oudnederlands.hml (Bron-Markup)",
             cat: "HISTORISCH",
@@ -1162,7 +1460,7 @@
             symbols: ["📖 Oudnederlands", "🔤 Lexicon Bron", "🗂️ .hml Structuur"]
         },
         {
-            id: "MOD-34",
+            id: "MOD-35",
             file: "oudnederlands.html",
             title: "Oudnederlands & Filologische Taaltool",
             cat: "HISTORISCH",
@@ -1174,7 +1472,7 @@
             symbols: ["📖 Oudnederlands", "🔤 Etymologie", "📜 Oorkondentaal", "🔎 Tekstanalyse"]
         },
         {
-            id: "MOD-35",
+            id: "MOD-36",
             file: "outoftime.md",
             title: "outoftime.md — Kalibratie Notities",
             cat: "DOC",
@@ -1186,7 +1484,7 @@
             symbols: ["📘 Markdown", "⏳ Day Out of Time", "➕ Restwaarde 1", "🗓️ JDN 2461247"]
         },
         {
-            id: "MOD-36",
+            id: "MOD-37",
             file: "perpututhuum.html",
             title: "Perpetuum — Wrijvingsloze Beweging",
             cat: "WUXING",
@@ -1198,7 +1496,7 @@
             symbols: ["♾️ Perpetuum", "⚡ τ → 0", "🔄 Fase-Lock", "🌀 Nulpunt-Dynamica"]
         },
         {
-            id: "MOD-37",
+            id: "MOD-38",
             file: "pointup.ipynb",
             title: "pointup.ipynb (Jupyter Vector Notebook)",
             cat: "WEBRTC",
@@ -1210,7 +1508,7 @@
             symbols: ["📓 Jupyter .ipynb", "📐 Punt-Vectoren", "🐍 Python Data", "📊 Matrix Plot"]
         },
         {
-            id: "MOD-38",
+            id: "MOD-39",
             file: "sirius_breda_hud.html",
             title: "Sirius-Breda Astronomische HUD",
             cat: "GEODESIE",
@@ -1222,7 +1520,7 @@
             symbols: ["⭐ Sirius Azimut", "📍 Breda Geodesie", "🖥️ Astro-HUD", "🧭 Heliakische Lock"]
         },
         {
-            id: "MOD-39",
+            id: "MOD-40",
             file: "synsthese.md",
             title: "synsthese.md — WebRTC Audio Synthese",
             cat: "DOC",
@@ -1234,7 +1532,7 @@
             symbols: ["🔊 Audio Synthese", "🌐 WebRTC Stream", "🎵 951–1284 Hz", "📘 Markdown"]
         },
         {
-            id: "MOD-40",
+            id: "MOD-41",
             file: "taalmodel.md",
             title: "taalmodel.md — Filologisch Taalmodel",
             cat: "DOC",
@@ -1246,7 +1544,7 @@
             symbols: ["🧠 Taalmodel", "🔤 Semantische Vector", "📘 Markdown", "📜 Filologie"]
         },
         {
-            id: "MOD-41",
+            id: "MOD-42",
             file: "tesla.html",
             title: "Tesla 3-6-9 & Vortex Numeriek",
             cat: "KLEUR",
@@ -1258,7 +1556,7 @@
             symbols: ["⚡ Tesla 3-6-9", "🔢 Modulo 9 Wortel", "🌀 Torus Veld", "🧲 Resonantie"]
         },
         {
-            id: "MOD-42",
+            id: "MOD-43",
             file: "thoolse_namen",
             title: "thoolse_namen (Raw Corpus Dataset)",
             cat: "HISTORISCH",
@@ -1270,7 +1568,7 @@
             symbols: ["🗂️ Raw Corpus", "🏰 Eiland Tholen", "👥 Geslachtsnamen", "📍 Oosterschelde"]
         },
         {
-            id: "MOD-43",
+            id: "MOD-44",
             file: "thoolse_namen.html",
             title: "Thoolse Namen — Genealogie & Toponymie",
             cat: "HISTORISCH",
@@ -1282,7 +1580,7 @@
             symbols: ["🏰 Thoolse Namen", "📜 Zeeuwse Charters", "🔎 Genealogie", "📍 Sint-Maartensdijk"]
         },
         {
-            id: "MOD-44",
+            id: "MOD-45",
             file: "tzolkin-rad.html",
             title: "Tzolk'in Rad Dashboard (260 Kins)",
             cat: "CHRONO",
@@ -1294,7 +1592,7 @@
             symbols: ["⚙️ Tzolk'in Rad", "🌀 13 × 20 = 260", "☀️ 20 Zonnezegels", "🎵 13 Galactische Tonen"]
         },
         {
-            id: "MOD-45",
+            id: "MOD-46",
             file: "vortex-datachannel.html",
             title: "VORTEX DataChannel Pakket-Inspector",
             cat: "WEBRTC",
@@ -1306,7 +1604,7 @@
             symbols: ["📡 DataChannel", "🌐 P2P Stream", "📦 Pakket-Inspector", "⚡ Low-Latency"]
         },
         {
-            id: "MOD-46",
+            id: "MOD-47",
             file: "vortex_chronometrie_dorks.html",
             title: "VORTEX Chronometrie Dorks",
             cat: "OSINT",
@@ -1318,7 +1616,7 @@
             symbols: ["🔎 Chrono Dorks", "🪐 Efemeriden", "📅 Kalender-Archief", "🌐 OSINT Query"]
         },
         {
-            id: "MOD-47",
+            id: "MOD-48",
             file: "vortex_synchronometer.html",
             title: "VORTEX 13-Manen Synchronometer",
             cat: "CHRONO",
@@ -1330,7 +1628,7 @@
             symbols: ["🌙 13 Manen × 28", "⚡ 7 Radiale Plasma's", "🌀 Synchronometer", "⏳ Kin Tracker"]
         },
         {
-            id: "MOD-48",
+            id: "MOD-49",
             file: "wolframnote.md",
             title: "wolframnote.md — Cellulaire Automaten",
             cat: "DOC",
@@ -1342,7 +1640,7 @@
             symbols: ["🧮 Wolfram Regels", "🔲 Cellulaire Automaat", "📘 Markdown", "🔢 Computationeel"]
         },
         {
-            id: "MOD-49",
+            id: "MOD-50",
             file: "woordmatrix.md",
             title: "woordmatrix.md — Semantische Matrix",
             cat: "DOC",
@@ -1354,7 +1652,7 @@
             symbols: ["🔤 Woordmatrix", "📐 Raster-Semantiek", "📘 Markdown", "🔗 Kruisverbanden"]
         },
         {
-            id: "MOD-50",
+            id: "MOD-51",
             file: "zoeken-kleuren.html",
             title: "Zoeken Kleuren — Spectrale Zoekmachine",
             cat: "KLEUR",
@@ -1368,7 +1666,7 @@
     ];
 
     let activeCategory = "ALL";
-    let activeViewMode = "grid";
+    let activeViewMode = "all"; // 'all' | 'tree' | 'grid' | 'table'
 
     function getEncodedUrl(filename) {
         return BASE_URL + encodeURIComponent(filename).replace(/%2F/g, "/");
@@ -1402,20 +1700,117 @@
         tempInput.select();
         document.execCommand("copy");
         document.body.removeChild(tempInput);
-        showToast("✓ Volledige HTML-code van dit 50-modules portaal is gekopieerd naar je klembord!");
+        showToast("✓ Volledige HTML-code van dit 51-modules portaal (incl. Tree) gekopieerd naar klembord!");
+    }
+
+    function copyAsciiTree() {
+        const lines = ["gram-eta.vercel.app/ (51 files • commit 1516083)"];
+        const catKeys = Object.keys(CATEGORY_META);
+        catKeys.forEach((catKey, cIdx) => {
+            const meta = CATEGORY_META[catKey];
+            const items = REPOSITORY_FILES.filter(f => f.cat === catKey);
+            const isLastCat = cIdx === catKeys.length - 1;
+            lines.push(`${isLastCat ? "└──" : "├──"} [${meta.name}] (${items.length} files)`);
+            items.forEach((it, iIdx) => {
+                const isLastItem = iIdx === items.length - 1;
+                const prefix = isLastCat ? "    " : "│   ";
+                lines.push(`${prefix}${isLastItem ? "└──" : "├──"} ${it.file} (${it.updated}) — ${ getEncodedUrl(it.file) }`);
+            });
+        });
+
+        const tempInput = document.createElement("textarea");
+        tempInput.value = lines.join("\n");
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand("copy");
+        document.body.removeChild(tempInput);
+        showToast("🌳 ASCII Boomstructuur van alle 51 bestanden gekopieerd naar je klembord!");
+    }
+
+    function toggleTreeBranch(catKey) {
+        const childBox = document.getElementById(`treeChildren_${catKey}`);
+        const arrow = document.getElementById(`treeArrow_${catKey}`);
+        if (!childBox) return;
+        const isHidden = childBox.classList.toggle("hidden");
+        if (arrow) arrow.textContent = isHidden ? "▶" : "▼";
+    }
+
+    function expandCollapseAllTree(expand) {
+        Object.keys(CATEGORY_META).forEach(catKey => {
+            const childBox = document.getElementById(`treeChildren_${catKey}`);
+            const arrow = document.getElementById(`treeArrow_${catKey}`);
+            if (childBox) {
+                childBox.classList.toggle("hidden", !expand);
+                if (arrow) arrow.textContent = expand ? "▼" : "▶";
+            }
+        });
     }
 
     function renderRepository() {
+        const treeContainer = document.getElementById("treeContainer");
         const grid = document.getElementById("modulesGrid");
         const tbody = document.getElementById("directoryTableBody");
+
+        treeContainer.innerHTML = "";
         grid.innerHTML = "";
         tbody.innerHTML = "";
 
+        // 1. Render Interactive Hierarchical Tree by Category
+        Object.keys(CATEGORY_META).forEach(catKey => {
+            const meta = CATEGORY_META[catKey];
+            const branchItems = REPOSITORY_FILES.filter(f => f.cat === catKey);
+
+            const branchDiv = document.createElement("div");
+            branchDiv.className = "tree-branch";
+            branchDiv.setAttribute("data-branch-cat", catKey);
+
+            const nodesHtml = branchItems.map((item, idx) => {
+                const fullUrl = getEncodedUrl(item.file);
+                const isLast = idx === branchItems.length - 1;
+                const branchChar = isLast ? "└──" : "├──";
+                const searchBlob = `${item.id} ${item.file} ${item.title} ${item.desc} ${item.commit} ${item.cat} ${item.symbols.join(" ")}`.toLowerCase();
+                const isFresh = item.updated === "now" || item.updated.includes("minutes");
+
+                return `
+                    <div class="tree-node ${item.featured ? 'featured-node' : ''}" data-search="${searchBlob}" data-cat="${item.cat}">
+                        <div class="tree-node-left">
+                            <span class="tree-ascii">${branchChar}</span>
+                            <span>${item.featured ? '🌟' : '📄'}</span>
+                            <a href="${fullUrl}" target="_blank" rel="noopener" class="tree-file-link">${item.file}</a>
+                            <span class="tree-desc-snippet">— ${item.title}</span>
+                        </div>
+                        <div class="tree-node-right">
+                            <span class="tree-time-pill ${isFresh ? 'fresh' : ''}">${item.commit} &bull; ${item.updated}</span>
+                            <button class="tree-open-btn" style="background:transparent; cursor:pointer;" onclick="copyUrlToClipboard('${fullUrl}', '${item.file}')" title="Kopieer URL">📋</button>
+                            <a href="${fullUrl}" target="_blank" rel="noopener" class="tree-open-btn">Launch ↗</a>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+
+            branchDiv.innerHTML = `
+                <div class="tree-folder-header" onclick="toggleTreeBranch('${catKey}')">
+                    <div class="tree-folder-title">
+                        <span id="treeArrow_${catKey}" style="color:var(--accent-cyan);">▼</span>
+                        <span>${meta.icon} <strong>/${meta.name}/</strong></span>
+                        <span style="color:var(--text-dim); font-weight:normal; font-size:0.8rem;">— ${meta.label}</span>
+                    </div>
+                    <span class="tree-folder-meta" id="treeCount_${catKey}">${branchItems.length} bestanden</span>
+                </div>
+                <div class="tree-children" id="treeChildren_${catKey}">
+                    ${nodesHtml}
+                </div>
+            `;
+            treeContainer.appendChild(branchDiv);
+        });
+
+        // 2. Render Cards & Table Rows
         REPOSITORY_FILES.forEach((item, index) => {
             const fullUrl = getEncodedUrl(item.file);
             const searchBlob = `${item.id} ${item.file} ${item.title} ${item.desc} ${item.commit} ${item.cat} ${item.symbols.join(" ")}`.toLowerCase();
+            const isFresh = item.updated === "now" || item.updated.includes("minutes");
 
-            // 1. Render Card
+            // Card
             const card = document.createElement("div");
             card.className = `module-card ${item.featured ? "featured-card" : ""}`;
             card.setAttribute("data-search", searchBlob);
@@ -1427,7 +1822,7 @@
                 <div>
                     <div class="card-header">
                         <span class="badge ${item.badgeClass}">${item.badgeText}</span>
-                        <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-dim);">${item.id} • ${item.updated}</span>
+                        <span style="font-family: var(--font-mono); font-size: 0.78rem; color: ${isFresh ? 'var(--accent-green)' : 'var(--text-dim)'}; font-weight:${isFresh ? 'bold' : 'normal'};">${item.id} • ${item.updated}</span>
                     </div>
                     <span class="file-path-pill">📄 ${item.file}</span>
                     <h2 class="module-title"><a href="${fullUrl}" target="_blank" rel="noopener">${item.title}</a></h2>
@@ -1444,7 +1839,7 @@
             `;
             grid.appendChild(card);
 
-            // 2. Render Table Row
+            // Table Row
             const tr = document.createElement("tr");
             tr.setAttribute("data-search", searchBlob);
             tr.setAttribute("data-cat", item.cat);
@@ -1456,7 +1851,7 @@
                     <div style="color:#fff; font-weight:600;">${item.title}</div>
                     <div style="color:var(--text-dim); font-size:0.8rem; font-family:var(--font-mono);">Commit: ${item.commit}</div>
                 </td>
-                <td class="mono" style="color:${item.updated === 'now' ? 'var(--accent-green)' : 'var(--text-dim)'};">${item.updated}</td>
+                <td class="mono" style="color:${isFresh ? 'var(--accent-green)' : 'var(--text-dim)'}; font-weight:${isFresh ? 'bold' : 'normal'};">${item.updated}</td>
                 <td>
                     <a href="${fullUrl}" target="_blank" rel="noopener" style="color:var(--accent-cyan); font-family:var(--font-mono); text-decoration:none; font-weight:bold;">Open ↗</a>
                 </td>
@@ -1469,6 +1864,7 @@
         const query = document.getElementById("searchInput").value.toLowerCase().trim();
         const cards = document.querySelectorAll("#modulesGrid .module-card");
         const rows = document.querySelectorAll("#directoryTableBody tr");
+        const treeNodes = document.querySelectorAll("#treeContainer .tree-node");
         let visibleCount = 0;
 
         cards.forEach((card, i) => {
@@ -1487,6 +1883,29 @@
                 card.classList.add("hidden");
                 row.classList.add("hidden");
             }
+        });
+
+        // Filter Tree Nodes & Update Branch Counters
+        treeNodes.forEach(node => {
+            const searchData = node.getAttribute("data-search");
+            const catData = node.getAttribute("data-cat");
+            const matchesCategory = (activeCategory === "ALL") || (catData === activeCategory);
+            const matchesQuery = !query || searchData.includes(query);
+
+            if (matchesCategory && matchesQuery) {
+                node.classList.remove("hidden");
+            } else {
+                node.classList.add("hidden");
+            }
+        });
+
+        Object.keys(CATEGORY_META).forEach(catKey => {
+            const branch = document.querySelector(`.tree-branch[data-branch-cat="${catKey}"]`);
+            if (!branch) return;
+            const visibleInBranch = branch.querySelectorAll(".tree-node:not(.hidden)").length;
+            const countSpan = document.getElementById(`treeCount_${catKey}`);
+            if (countSpan) countSpan.textContent = `${visibleInBranch} bestanden`;
+            branch.classList.toggle("hidden", visibleInBranch === 0);
         });
 
         document.getElementById("moduleCounter").textContent = `${visibleCount} / ${REPOSITORY_FILES.length} MODULES ACTIEF`;
@@ -1519,27 +1938,24 @@
         activeCategory = "ALL";
         document.querySelectorAll(".sym-tag, .cat-tag").forEach(t => t.classList.remove("active"));
         document.querySelector('.cat-tag[data-cat="ALL"]').classList.add("active");
+        expandCollapseAllTree(true);
         applyFilters();
     }
 
     function setViewMode(mode) {
         activeViewMode = mode;
+        const treeSec = document.getElementById("treeSection");
         const gridSec = document.getElementById("modulesGrid");
         const dirSec = document.getElementById("directorySection");
-        const btnGrid = document.getElementById("btnViewGrid");
-        const btnTable = document.getElementById("btnViewTable");
 
-        if (mode === "grid") {
-            gridSec.classList.remove("hidden");
-            dirSec.classList.add("hidden");
-            btnGrid.classList.add("active-view");
-            btnTable.classList.remove("active-view");
-        } else {
-            gridSec.classList.add("hidden");
-            dirSec.classList.remove("hidden");
-            btnTable.classList.add("active-view");
-            btnGrid.classList.remove("active-view");
-        }
+        document.getElementById("btnViewAll").classList.toggle("active-view", mode === "all");
+        document.getElementById("btnViewTree").classList.toggle("active-view", mode === "tree");
+        document.getElementById("btnViewGrid").classList.toggle("active-view", mode === "grid");
+        document.getElementById("btnViewTable").classList.toggle("active-view", mode === "table");
+
+        treeSec.classList.toggle("hidden", mode !== "all" && mode !== "tree");
+        gridSec.classList.toggle("hidden", mode !== "all" && mode !== "grid");
+        dirSec.classList.toggle("hidden", mode !== "table");
     }
 
     window.onload = function() {
